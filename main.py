@@ -1,7 +1,7 @@
 from antlr4 import *
 from generated.AsmLexer import AsmLexer
 from generated.AsmParser import AsmParser
-from macro_processor import process_macros
+from macro_processor import process_macros, read_mlb
 from assembler import ObjectModule, assemble
 from ast_builder import build_ast
 from linker import link
@@ -59,12 +59,13 @@ def write_object_file(filename: str, obj: ObjectModule):
 
 
 if __name__ == '__main__':
+    library_macros = read_mlb()
     source_files = sys.argv[1:]
     objects = []
     for filepath in source_files:
         root, ext = os.path.splitext(filepath)
         input_stream = FileStream(filepath)
-        macro_expanded_input_stream = process_macros(input_stream)
+        macro_expanded_input_stream = process_macros(input_stream, library_macros)
         lexer = AsmLexer(macro_expanded_input_stream)
         token_stream = CommonTokenStream(lexer)
         parser = AsmParser(token_stream)

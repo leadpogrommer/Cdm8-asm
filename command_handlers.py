@@ -1,4 +1,3 @@
-from ctypes import ArgumentError
 from asm_commands import instructions as insset, assembly_directives as dirset
 from ast_nodes import *
 from dataclasses import dataclass
@@ -24,7 +23,7 @@ def assert_args(args, *types, single_type=False):
     ts = [(t if get_origin(t) is None else get_args(t)) for t in types]
     if single_type:
         if len(ts) != 1:
-            raise TypeError('exactly one type must be specified when single_type is True')
+            raise TypeError('Exactly one type must be specified when single_type is True')
         ts = ts * len(args)
     elif len(args) != len(ts):
         raise Exception(f'Expected {len(ts)} arguments, but found {len(args)}')
@@ -117,6 +116,8 @@ def spmove_handler(opcode: int, arguments: list):
 
 def dc_handler(arguments: list):
     assert_args(arguments, ArgDcConstant, single_type=True)
+    if len(arguments) == 0:
+        raise Exception('At least one argument must be provided')
 
     data = bytearray()
     label_uses = dict()
