@@ -1,8 +1,9 @@
 from antlr4 import *
-from assembler import ObjectModule, assemble
-from ast_builder import build_ast
 from generated.AsmLexer import AsmLexer
 from generated.AsmParser import AsmParser
+from macro_processor import process_macros
+from assembler import ObjectModule, assemble
+from ast_builder import build_ast
 from linker import link
 import os.path
 import sys
@@ -62,9 +63,11 @@ if __name__ == '__main__':
     objects = []
     for filepath in source_files:
         root, ext = os.path.splitext(filepath)
-        lexer = AsmLexer(FileStream(filepath))
-        tokenStream = CommonTokenStream(lexer)
-        parser = AsmParser(tokenStream)
+        input_stream = FileStream(filepath)
+        macro_expanded_input_stream = process_macros(input_stream)
+        lexer = AsmLexer(macro_expanded_input_stream)
+        token_stream = CommonTokenStream(lexer)
+        parser = AsmParser(token_stream)
         cst = parser.program()
         r = build_ast(cst)
         obj = assemble(r)

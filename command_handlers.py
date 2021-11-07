@@ -92,7 +92,7 @@ def ldi_handler(opcode: int, arguments: list):
         return CodeSegment(cmd_piece.data, {1: arg}, {})
     elif isinstance(arg, TemplateFieldNode):
         if arg.negative:
-            raise Exception('Cannot use negative template fields in "ldsa" (at least cocas.py doesn\'t allow it)')
+            raise Exception('Cannot use negative template fields in "ldi" (at least cocas.py doesn\'t allow it)')
         cmd_piece.data.append(0)
         return CodeSegment(cmd_piece.data, {}, {1: arg})
 
