@@ -1,4 +1,4 @@
-from asm_commands import assembly_directives as dirset
+from asm_commands import instructions as insset, assembly_directives as dirset
 from ast_nodes import *
 from command_handlers import assemble_command
 from dataclasses import dataclass
@@ -11,10 +11,8 @@ class Template:
         self.labels: dict[str, int] = dict()
 
 @dataclass
-class Section:
+class CodeBlock:
     def __init__(self):
-        self.address: int = 0
-        self.name: str = ''
         self.data: bytearray = bytearray()
         self.label_uses: dict[int, str] = dict()
         self.tfield_uses: dict[int, TemplateFieldNode] = dict()
@@ -22,6 +20,26 @@ class Section:
         self.labels: dict[str, int] = dict()
         self.ents: dict[str, int] = dict()
         self.exts: set[str] = set()
+
+    def append_block(self, other):
+        self.data += other.data
+        self.label_uses.update(other.label_uses)
+        self.tfield_uses.update(other.tfield_uses)
+        self.ext_uses.update(other.ext_uses)
+        self.labels.update(other.labels)
+        self.ents.update(other.ents)
+        self.exts.update(other.exts)
+
+    def append_branch(self, branch, addr):
+        self.data += bytearray([insset['branch'][branch], addr])
+
+
+@dataclass
+class Section(CodeBlock):
+    def __init__(self):
+        self.address: int = 0
+        self.name: str = ''
+        super().__init__()
 
 @dataclass
 class ObjectSectionRecord:
@@ -65,6 +83,163 @@ def assemble_template(sn: TemplateSectionNode):
     template.labels['_'] = size
     return template
 
+def assemble_label_declaration(line: LabelDeclarationNode, start_addr: int):
+    block = CodeBlock()
+    label_name = line.label.name
+    if (label_name in block.labels or
+        label_name in block.ents or
+        label_name in block.exts):
+        raise Exception(f'Duplicate label "{label_name}" declaration')
+
+    if line.external:
+        block.exts.add(label_name)
+    else:
+        block.labels[label_name] = start_addr
+        if line.entry:
+            block.ents[label_name] = start_addr
+    return block
+
+def assemble_instruction(line: InstructionNode, start_addr: int):
+    block = CodeBlock()
+    cmd_piece = assemble_command(line)
+    for offset, label in cmd_piece.label_uses.items():
+        block.label_uses[start_addr + offset] = label.name
+    for offset, tfield in cmd_piece.tfield_uses.items():
+        block.tfield_uses[start_addr + offset] = tfield
+    block.data += cmd_piece.data
+    return block
+
+def assemble_conditional_statement(line: ConditionalStatementNode, start_addr: int, loop_stack: list):
+    block = CodeBlock()
+    else_block_present = len(line.else_lines) > 0
+    cond_count = len(line.conditions)
+    cond_addr = start_addr
+    next_or_addr = [-1] * cond_count
+    last_or = 0
+
+    cond_blocks = []
+    for i in range(cond_count):
+        cond_blocks.append(assemble_code_block(line.conditions[i].lines, cond_addr, loop_stack))
+        cond_addr += len(cond_blocks[i].data) + 2
+        if line.conditions[i].conjunction != 'and':
+            for j in range(last_or, i):
+                next_or_addr[j] = cond_addr
+            last_or = i
+
+    then_addr = cond_addr
+    then_block = assemble_code_block(line.then_lines, then_addr, loop_stack)
+    else_addr = cond_addr + len(then_block.data)
+    if else_block_present:
+        else_addr += 2
+        else_block = assemble_code_block(line.else_lines, else_addr, loop_stack)
+
+    for i in range(cond_count):
+        block.append_block(cond_blocks[i])
+        if line.conditions[i].conjunction is None:
+            branch = f'bn{line.conditions[i].branch_mnemonic}'
+            branch_addr = else_addr
+        elif line.conditions[i].conjunction == 'or':
+            branch = f'b{line.conditions[i].branch_mnemonic}'
+            branch_addr = then_addr
+        elif line.conditions[i].conjunction == 'and':
+            branch = f'bn{line.conditions[i].branch_mnemonic}'
+            branch_addr = next_or_addr[i]
+        block.append_branch(branch, branch_addr)
+
+    block.append_block(then_block)
+    if else_block_present:
+        finally_addr = else_addr + len(else_block.data)
+        block.append_branch('br', finally_addr)
+        block.append_block(else_block)
+    return block
+
+def assemble_while_loop(line: WhileLoopNode, start_addr: int, loop_stack: list):
+    loop_stack.append([[], []]) # Objects?
+    block = CodeBlock()
+    cond_addr = start_addr
+    cond_block = assemble_code_block(line.condition_lines, cond_addr, loop_stack)
+    loop_body_addr = cond_addr + len(cond_block.data) + 2
+    loop_body_block = assemble_code_block(line.lines, loop_body_addr, loop_stack)
+    finally_addr = loop_body_addr + len(loop_body_block.data) + 2
+
+    block.append_block(cond_block)
+    branch = f'bn{line.branch_mnemonic}'
+    block.append_branch(branch, finally_addr)
+    block.append_block(loop_body_block)
+    block.append_branch('br', cond_addr)
+
+    for break_pos in loop_stack[-1][0]:
+        block.data[break_pos - start_addr] = finally_addr
+    for continue_pos in loop_stack[-1][1]:
+        block.data[continue_pos - start_addr] = cond_addr
+    loop_stack.pop()
+
+    return block
+
+def assemble_until_loop(line: UntilLoopNode, start_addr: int, loop_stack: list):
+    loop_stack.append([[], []]) # Objects?
+    block = CodeBlock()
+    loop_body_addr = start_addr
+    loop_body_block = assemble_code_block(line.lines, loop_body_addr, loop_stack)
+    cond_addr = loop_body_addr + len(loop_body_block.data)
+    finally_addr = cond_addr + 2
+
+    block.append_block(loop_body_block)
+    branch = f'bn{line.branch_mnemonic}'
+    block.append_branch(branch, loop_body_addr)
+
+    for break_pos in loop_stack[-1][0]:
+        block.data[break_pos - start_addr] = finally_addr
+    for continue_pos in loop_stack[-1][1]:
+        block.data[continue_pos - start_addr] = cond_addr
+    loop_stack.pop()
+
+    return block
+
+def assemble_save_restore_statement(line: SaveRestoreStatement, start_addr: int, loop_stack: list):
+    block = CodeBlock()
+    block.data.append(insset['unary']['push'] + line.saved_register.number)
+    block.append_block(assemble_code_block(line.lines, start_addr + 1, loop_stack))
+    block.data.append(insset['unary']['pop'] + line.restored_register.number)
+    return block
+
+def assemble_break_statement(start_addr: int, loop_stack: list):
+    block = CodeBlock()
+    block.append_branch('br', 0)
+    if len(loop_stack) == 0:
+        raise Exception('"break" not allowed outside of a loop')
+    loop_stack[-1][0].append(start_addr + 1)
+    return block
+
+def assemble_continue_statement(start_addr: int, loop_stack: list):
+    block = CodeBlock()
+    block.append_branch('br', 0)
+    if len(loop_stack) == 0:
+        raise Exception('"continue" not allowed outside of a loop')
+    loop_stack[-1][1].append(start_addr + 1)
+    return block
+
+def assemble_code_block(lines: list, start_addr: int, loop_stack: list):
+    block = CodeBlock()
+    for line in lines:
+        if   isinstance(line, LabelDeclarationNode):
+            block.append_block(assemble_label_declaration(line, start_addr + len(block.data)))
+        elif isinstance(line, InstructionNode):
+            block.append_block(assemble_instruction(line, start_addr + len(block.data)))
+        elif isinstance(line, ConditionalStatementNode):
+            block.append_block(assemble_conditional_statement(line, start_addr + len(block.data), loop_stack))
+        elif isinstance(line, WhileLoopNode):
+            block.append_block(assemble_while_loop(line, start_addr + len(block.data), loop_stack))
+        elif isinstance(line, UntilLoopNode):
+            block.append_block(assemble_until_loop(line, start_addr + len(block.data), loop_stack))
+        elif isinstance(line, SaveRestoreStatement):
+            block.append_block(assemble_save_restore_statement(line, start_addr + len(block.data), loop_stack))
+        elif isinstance(line, BreakStatementNode):
+            block.append_block(assemble_break_statement(start_addr + len(block.data), loop_stack))
+        elif isinstance(line, ContinueStatementNode):
+            block.append_block(assemble_continue_statement(start_addr + len(block.data), loop_stack))
+    return block
+
 def assemble_section(sn: SectionNode):
     section = Section()
     if isinstance(sn, AbsoluteSectionNode):
@@ -74,38 +249,18 @@ def assemble_section(sn: SectionNode):
         section.address = 0
         section.name = sn.name
 
-    for line in sn.lines:
-        if isinstance(line, LabelDeclarationNode):
-            label_name = line.label.name
-            if (label_name in section.labels or
-                label_name in section.ents or
-                label_name in section.exts):
-                raise Exception(f'Duplicate label "{label_name}" declaration')
+    section.append_block(assemble_code_block(sn.lines, section.address, []))
 
-            if line.external:
-                section.exts.add(label_name)
-            else:
-                section.labels[label_name] = len(section.data) + section.address
-                if line.entry:
-                    section.ents[label_name] = len(section.data) + section.address
-
-        elif isinstance(line, InstructionNode):
-            cmd_piece = assemble_command(line)
-            for offset, label in cmd_piece.label_uses.items():
-                section.label_uses[len(section.data) + offset] = label.name
-            for offset, tfield in cmd_piece.tfield_uses.items():
-                section.tfield_uses[len(section.data) + offset] = tfield
-            section.data += cmd_piece.data
     return section
 
 def fill_labels(s: Section, local_labels: dict):
     for label_pos, label_name in s.label_uses.items():
         if label_name in s.labels:
-            s.data[label_pos] = s.labels[label_name]
+            s.data[label_pos - s.address] = s.labels[label_name]
         elif label_name in s.exts:
-            s.ext_uses[label_pos + s.address] = label_name
+            s.ext_uses[label_pos] = label_name
         elif label_name in local_labels:
-            s.data[label_pos] = local_labels[label_name]
+            s.data[label_pos - s.address] = local_labels[label_name]
         else:
             raise Exception(f'Label "{label_name}" not found')
 

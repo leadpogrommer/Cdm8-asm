@@ -38,12 +38,82 @@ class BuildAstVisitor(AsmParserVisitor):
         return int(ctx.getText(), base=0)
 
     def visitSection_body(self, ctx:AsmParser.Section_bodyContext) -> list:
+        return self.visitCode_block(ctx.code_block())
+
+    def visitConditional(self, ctx: AsmParser.ConditionalContext):
+        conditions = self.visitConditions(ctx.conditions())
+        then_lines = self.visitCode_block(ctx.code_block())
+        else_lines = self.visitElse_clause(ctx.else_clause()) if ctx.else_clause() else []
+        return ConditionalStatementNode(conditions, then_lines, else_lines)
+
+    def visitConditions(self, ctx: AsmParser.ConditionsContext):
+        conditions = []
+        for cond in ctx.connective_condition():
+            conditions.append(self.visitConnective_condition(cond))
+        conditions.append(self.visitCondition(ctx.condition()))
+        return conditions
+
+    def visitConnective_condition(self, ctx: AsmParser.Connective_conditionContext):
+        cond = self.visitCondition(ctx.condition())
+        cond.conjunction = ctx.conjunction().getText()
+        if cond.conjunction != 'and' and cond.conjunction != 'or':
+            raise Exception('Expected "and" or "or" in compound condition')
+        return cond
+
+    def visitCondition(self, ctx: AsmParser.ConditionContext):
+        lines = self.visitCode_block(ctx.code_block())
+        return ConditionNode(lines, ctx.branch_mnemonic().getText(), None)
+
+    def visitElse_clause(self, ctx: AsmParser.Else_clauseContext):
+        return self.visitCode_block(ctx.code_block())
+
+    def visitWhile_loop(self, ctx: AsmParser.While_loopContext):
+        condition_lines = self.visitWhile_condition(ctx.while_condition())
+        lines = self.visitCode_block(ctx.code_block())
+        return WhileLoopNode(condition_lines, ctx.branch_mnemonic().getText(), lines)
+
+    def visitWhile_condition(self, ctx: AsmParser.While_conditionContext):
+        return self.visitCode_block(ctx.code_block())
+
+    def visitUntil_loop(self, ctx: AsmParser.Until_loopContext):
+        lines = self.visitCode_block(ctx.code_block())
+        return UntilLoopNode(lines, ctx.branch_mnemonic().getText())
+
+    def visitSave_restore_statement(self, ctx: AsmParser.Save_restore_statementContext):
+        saved_register = self.visitSave_statement(ctx.save_statement())
+        restored_register = self.visitRestore_statement(ctx.restore_statement())
+        if restored_register is None: restored_register = saved_register
+        lines = self.visitCode_block(ctx.code_block())
+        return SaveRestoreStatement(saved_register, lines, restored_register)
+
+    def visitSave_statement(self, ctx: AsmParser.Save_statementContext):
+        return self.visitRegister(ctx.register())
+
+    def visitRestore_statement(self, ctx: AsmParser.Restore_statementContext):
+        return self.visitRegister(ctx.register()) if ctx.register() else None
+
+    def visitCode_block(self, ctx: AsmParser.Code_blockContext):
+        if ctx.children is None:
+            return []
+
         ret = []
         for c in ctx.children:
             if isinstance(c, AsmParser.StandaloneLabelContext):
                 ret.append(self.visitStandaloneLabel(c))
             elif isinstance(c, AsmParser.InstructionLineContext):
                 ret += self.visitInstructionLine(c)
+            elif isinstance(c, AsmParser.ConditionalContext):
+                ret.append(self.visitConditional(c))
+            elif isinstance(c, AsmParser.While_loopContext):
+                ret.append(self.visitWhile_loop(c))
+            elif isinstance(c, AsmParser.Until_loopContext):
+                ret.append(self.visitUntil_loop(c))
+            if isinstance(c, AsmParser.Save_restore_statementContext):
+                ret.append(self.visitSave_restore_statement(c))
+            elif isinstance(c, AsmParser.Break_statementContext):
+                ret.append(BreakStatementNode())
+            elif isinstance(c, AsmParser.Continue_statementContext):
+                ret.append(ContinueStatementNode())
         return ret
 
     def visitStandaloneLabel(self, ctx:AsmParser.StandaloneLabelContext) -> LabelNode:

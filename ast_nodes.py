@@ -27,6 +27,43 @@ class InstructionNode:
     arguments: list
 
 @dataclass
+class ConditionNode:
+    lines: list
+    branch_mnemonic: str
+    conjunction: str
+
+@dataclass
+class ConditionalStatementNode:
+    conditions: list
+    then_lines: list
+    else_lines: list
+
+@dataclass
+class WhileLoopNode:
+    condition_lines: list
+    branch_mnemonic: str
+    lines: list
+
+@dataclass
+class UntilLoopNode:
+    lines: list
+    branch_mnemonic: str
+
+@dataclass
+class BreakStatementNode:
+    pass
+
+@dataclass
+class ContinueStatementNode:
+    pass
+
+@dataclass
+class SaveRestoreStatement:
+    saved_register: RegisterNode
+    lines: list
+    restored_register: RegisterNode
+
+@dataclass
 class SectionNode:
     lines: list
 

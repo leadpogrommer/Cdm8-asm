@@ -36,26 +36,63 @@ instructions = {
     },
     'branch': {
         'jsr':  0xD6,
+
         'beq':  0xE0,
         'bz':   0xE0,
+        'bnne': 0xE0,
+        'bnnz': 0xE0,
+
         'bne':  0xE1,
         'bnz':  0xE1,
+        'bneq': 0xE1,
+
         'bhs':  0xE2,
         'bcs':  0xE2,
+        'bnlo': 0xE2,
+        'bncc': 0xE2,
+
         'blo':  0xE3,
         'bcc':  0xE3,
+        'bnhs': 0xE3,
+        'bncs': 0xE3,
+
         'bmi':  0xE4,
+        'bnpl': 0xE4,
+
         'bpl':  0xE5,
+        'bnmi': 0xE5,
+
         'bvs':  0xE6,
+        'bnvc': 0xE6,
+
         'bvc':  0xE7,
+        'bnvs': 0xE7,
+
         'bhi':  0xE8,
+        'bnlc': 0xE8,
+
         'bls':  0xE9,
+        'bnhi': 0xE9,
+
         'bge':  0xEA,
+        'bnlt': 0xEA,
+
         'blt':  0xEB,
+        'bnge': 0xEB,
+
         'bgt':  0xEC,
+        'bnle': 0xEC,
+
         'ble':  0xED,
+        'bngt': 0xED,
+
         'br':   0xEE,
+        'banything':  0xEE,
+        'bnfalse':    0xEE,
+
         'nop':  0xEF,
+        'bnanything': 0xEF,
+        'bntrue':     0xEF,
     },
     'ldsa': { 'ldsa': 0xC8 },
     'ldi':  { 'ldi' : 0xD0 },
