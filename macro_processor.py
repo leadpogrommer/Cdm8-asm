@@ -2,6 +2,12 @@ from antlr4.InputStream import InputStream
 from collections import deque
 import re
 
+__nonce = 0
+def get_nonce():
+    global __nonce
+    __nonce += 1
+    return __nonce
+
 
 def unique(params: list[str]):
     register_available = [True] * 4
@@ -61,15 +67,41 @@ def read_mlb(filename='standard.mlb'):
     return library_macros
 
 
+def expand_macro(macro_name, macro_params, macros):
+    if len(macro_params) not in macros[macro_name]:
+        raise Exception('Incorrect number of arguments')
+
+    nonce = get_nonce()
+    variables = dict()
+    expanded_lines = []
+    for macro_line in macros[macro_name][len(macro_params)]:
+        lps = macro_line.split('"')
+        for i in range(0, len(lps), 2):
+            lps[i] = re.sub(r'\$(\d)', lambda m: macro_params[int(m.group(1)) - 1], lps[i])
+            lps[i] = re.sub(r'\?([a-zA-Z_][a-zA-Z0-9_]*)', lambda m: variables[m.group(1)], lps[i]) #Exception?
+            lps[i] = re.sub(r'\'', str(nonce), lps[i])
+        substitute_line = '"'.join(lps)
+
+        command, line_remainder = partition_line(substitute_line)
+        params = split_params(line_remainder)
+        if command in macro_instructions:
+            var_name = params[-1]
+            variables[var_name] = macro_instructions[command](params[:-1])
+        elif command in macros:
+            expanded_lines.extend(expand_macro(command, params, macros))
+        else:
+            expanded_lines.append(substitute_line)
+
+    return expanded_lines
+
+
 def process_macros(input: InputStream, library_macros=dict()):
-    lines = deque(input.getText(0, input.size).split('\n'))
+    lines = input.getText(0, input.size).split('\n')
     output_lines = []
     macros = library_macros.copy()
     in_macro = False
-    nonce = 1
 
-    while len(lines) > 0:
-        line = lines.popleft()
+    for line in lines:
         command, line_remainder = partition_line(line)
         params = split_params(line_remainder)
 
@@ -94,34 +126,9 @@ def process_macros(input: InputStream, library_macros=dict()):
 
         elif in_macro:
             macros[macro_name][macro_arity].append(line)
-
+        elif command in macros:
+            output_lines.extend(expand_macro(command, params, macros))
         else:
-            if command in macros:
-                if len(params) not in macros[command]:
-                    raise Exception('Incorrect number of arguments')
-
-                variables = dict()
-                expanded_lines = []
-                for macro_line in macros[command][len(params)]:
-                    lps = macro_line.split('"')
-                    for i in range(0, len(lps), 2):
-                        lps[i] = re.sub(r'\$(\d)', lambda m: params[int(m.group(1)) - 1], lps[i])
-                        lps[i] = re.sub(r'\?([a-zA-Z_][a-zA-Z0-9_]*)', lambda m: variables[m.group(1)], lps[i]) #Exception?
-                        lps[i] = re.sub(r'\'', str(nonce), lps[i])
-                    substitute_line = '"'.join(lps)
-
-                    m_command, m_line_remainder = partition_line(substitute_line)
-                    m_params = split_params(m_line_remainder)
-                    if m_command in macro_instructions:
-                        var_name = m_params[-1]
-                        variables[var_name] = macro_instructions[m_command](m_params[:-1])
-                    else:
-                        expanded_lines.append(substitute_line)
-
-                lines.extendleft(expanded_lines[::-1])
-                nonce += 1
-
-            else:
-                output_lines.append(line)
+            output_lines.append(line)
 
     return InputStream('\n'.join(output_lines))
