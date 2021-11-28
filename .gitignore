@@ -251,3 +251,5 @@ pip-selfcheck.json
 
 test.*
 generated/
+
+logisim/backup

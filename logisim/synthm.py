@@ -4,10 +4,7 @@ __author__ = 'comqas'
 import argparse
 from functools import reduce
 
-parser = argparse.ArgumentParser(description='Secondary Decoder Synthesis Utility')
-parser.add_argument('-d', dest='debug', action='store_true', default=False, help="provide verbose output for debuggig")
-parser.add_argument('defs', type=str, help="secondary decoder definition file")
-args = parser.parse_args()
+
 
 
 ############################################
@@ -23,7 +20,7 @@ def log2(k):
     return res
 
 
-def synt(opcodes=[], seqwidth=3, phases=2, triggers=[], ROM=[0], inhibit=False):
+def synt(opcodes=[], seqwidth=3, phases=2, triggers=[], ROM=[0], xwest = 110, ywest = 90, inhibit=False):
     content = ROM
     body = []
 
@@ -73,8 +70,6 @@ def synt(opcodes=[], seqwidth=3, phases=2, triggers=[], ROM=[0], inhibit=False):
     def wire(x0, y0, x1, y1):
         return '<wire from="(%d,%d)" to="(%d,%d)"/>' % (x0, y0, x1, y1)
 
-    ywest = 110
-    xwest = 90
 
     Ninp = len(opcodes)
 
@@ -160,7 +155,7 @@ def synt(opcodes=[], seqwidth=3, phases=2, triggers=[], ROM=[0], inhibit=False):
     body.append(wire(ROMx + 10, yenc, ROMx + 20, yenc))
     outsplitx = ROMx + 20
     # place splitter
-    body.append(splitter(outsplitx, outsplity, triglen, appearance='right'))
+
 
     pin0x = outsplitx + 20
     pin0y = outsplity + 10
@@ -168,13 +163,24 @@ def synt(opcodes=[], seqwidth=3, phases=2, triggers=[], ROM=[0], inhibit=False):
 
     tun0x = pin0x + 10 * triglen
     tun0y = pinfy - 20 * (triglen - 1)
+
+    if tun0y < ywest:
+        diff = ywest - tun0y
+        pin0y += diff
+        tun0y += diff
+        body.append(wire(outsplitx, outsplity, outsplitx, outsplity+diff))
+        outsplity += diff
+
+    body.append(splitter(outsplitx, outsplity, triglen, appearance='right'))
+
+
     for k in range(triglen):
         body.append(tunnel(triggers[k], tun0x, tun0y + 20 * k, facing='west'))  # output tunnels
         body.append(wire(pin0x, pin0y + 10 * k, pin0x + 10 * (k + 1), pin0y + 10 * k))
         body.append(wire(pin0x + 10 * (k + 1), pin0y + 10 * k, pin0x + 10 * (k + 1), tun0y + 20 * k))
         body.append(wire(pin0x + 10 * (k + 1), tun0y + 20 * k, tun0x, tun0y + 20 * k))
 
-    return body
+    return body, tun0x
 
 
 def parse(spec):
@@ -345,11 +351,7 @@ epilog = \
     """  </circuit>
 </project>
 """
-fname = args.defs
-if fname.endswith('.def'): fname = fname[:-4]
 
-with open(fname + '.def') as fd:
-    rules, seqwidth, phases, triggers = parse(fd.read())
 
 
 def hasreps(x):
@@ -365,69 +367,92 @@ def err(msg):
     quit(-1)
 
 
-repeated = hasreps(triggers)
-if repeated:
-    err("Trigger '" + repeated + "' occurs more than once on trigger list")
 
-triggers.sort()
-triggers.append('CUT')
 
-opcodes = [op for (op, _) in rules]
 
-repeated = hasreps(opcodes)
-if repeated:
-    err("Opcode '" + repeated + "' occurs more than once on activation list")
+def generate_scheme(data: str, x = 110, y = 90):
+    rules, seqwidth, phases, triggers = parse(data)
 
-trval = {}
-v = 1
-for tr in triggers:
-    trval[tr] = v
-    v = 2 * v
+    repeated = hasreps(triggers)
+    if repeated:
+        err("Trigger '" + repeated + "' occurs more than once on trigger list")
 
-print("*** SECONDARY DECODER SYNTH ***")
+    triggers.sort()
+    triggers.append('CUT')
 
-print("\tSequencer width: ", seqwidth)
-print("\tMaximum phases per instruction: ", phases)
-print("\tTrigger list:")
-print('\t' + (', '.join(["%s(0x%X)" % (tr, trval[tr]) for tr in triggers])))
-print("Processing action lists")
+    opcodes = [op for (op, _) in rules]
 
-opc_bits = log2(len(opcodes))
+    repeated = hasreps(opcodes)
+    if repeated:
+        err("Opcode '" + repeated + "' occurs more than once on activation list")
 
-content = [[] for _ in range(phases)]  # can't use phases*[[]], idiotic Python will create refs to same obj.
+    trval = {}
+    v = 1
+    for tr in triggers:
+        trval[tr] = v
+        v = 2 * v
 
-for rule in rules:
-    opc, optrigs = rule
-    if len(optrigs) > phases:
-        err(str(len(optrigs)) + " phases specified for opcode '" + opc + "', greater than maximum declared")
-    for phno in range(phases):
-        if args.debug and phno == 0: print('\t' + opc + ':' + '; '.join([', '.join(p) for p in optrigs]))
-        val = 0
-        if phno < len(optrigs):
-            phtrigs = optrigs[phno]
-            repeated = hasreps(phtrigs)
-            if repeated: err(
-                "Trigger '" + repeated + "' occurs more than once for opcode '" + opc + "' in phase " + str(phno))
-            for trig in phtrigs:
-                if trig not in trval:
-                    err("Undeclared trigger '" + trig + "' for op-code '" + opc + "'")
-                val += trval[trig]
-        if phno == len(optrigs) - 1:  # last phase for op
-            val += trval['CUT']  # tell sequencer to cut the sequence
-        content[phno].append(val)
+    print("*** SECONDARY DECODER SYNTH ***")
 
-bitspp = log2(len(rules))
-reqlength = 2 ** bitspp
-aligned = [part + (reqlength - len(part)) * [0] for part in content]
-mmap = reduce(lambda x, y: x + y, aligned, [])
+    print("\tSequencer width: ", seqwidth)
+    print("\tMaximum phases per instruction: ", phases)
+    print("\tTrigger list:")
+    print('\t' + (', '.join(["%s(0x%X)" % (tr, trval[tr]) for tr in triggers])))
+    print("Processing action lists")
 
-body = synt(
-    opcodes=opcodes,
-    triggers=triggers,
-    seqwidth=seqwidth,
-    phases=phases,
-    ROM=mmap
-)
+    opc_bits = log2(len(opcodes))
 
-with open(fname + '.circ', 'w') as outfile:
-    outfile.write(preamble + '\n'.join(body) + epilog)
+    content = [[] for _ in range(phases)]  # can't use phases*[[]], idiotic Python will create refs to same obj.
+
+    for rule in rules:
+        opc, optrigs = rule
+        if len(optrigs) > phases:
+            err(str(len(optrigs)) + " phases specified for opcode '" + opc + "', greater than maximum declared")
+        for phno in range(phases):
+            # if args.debug and phno == 0: print('\t' + opc + ':' + '; '.join([', '.join(p) for p in optrigs]))
+            val = 0
+            if phno < len(optrigs):
+                phtrigs = optrigs[phno]
+                repeated = hasreps(phtrigs)
+                if repeated: err(
+                    "Trigger '" + repeated + "' occurs more than once for opcode '" + opc + "' in phase " + str(phno))
+                for trig in phtrigs:
+                    if trig not in trval:
+                        err("Undeclared trigger '" + trig + "' for op-code '" + opc + "'")
+                    val += trval[trig]
+            if phno == len(optrigs) - 1:  # last phase for op
+                val += trval['CUT']  # tell sequencer to cut the sequence
+            content[phno].append(val)
+
+    bitspp = log2(len(rules))
+    reqlength = 2 ** bitspp
+    aligned = [part + (reqlength - len(part)) * [0] for part in content]
+    mmap = reduce(lambda x, y: x + y, aligned, [])
+
+    body, next_x = synt(
+        opcodes=opcodes,
+        triggers=triggers,
+        seqwidth=seqwidth,
+        phases=phases,
+        ROM=mmap,
+        xwest=x,
+        ywest=y
+    )
+
+    return preamble + '\n'.join(body) + epilog, next_x
+
+if __name__ == '__main__':
+    parser = argparse.ArgumentParser(description='Secondary Decoder Synthesis Utility')
+    parser.add_argument('-d', dest='debug', action='store_true', default=False,
+                        help="provide verbose output for debuggig")
+    parser.add_argument('defs', type=str, help="secondary decoder definition file")
+    args = parser.parse_args()
+
+    fname = args.defs
+    if fname.endswith('.def'): fname = fname[:-4]
+
+    with open(fname + '.def') as fd:
+        body, _ = generate_scheme(fd.read())
+
+    with open(fname + '.circ', 'w') as outfile:
+        outfile.write(body)

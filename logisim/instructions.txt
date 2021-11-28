@@ -1,6 +1,14 @@
-rts
 ioi
 
+ldc - where to get address?
+setsp
+addsp
+pu
+po
+ldsa
+
+br_taken
 jsr
-b*
-br
+rts
+ctc
+rti

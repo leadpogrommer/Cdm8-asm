@@ -24,7 +24,7 @@ PCinc,		# PC:=PC+1 on falling clock
 SP2b0,          # Assert SP on bus 0
 SP2b1,          # Assert SP on bus 1
 latchSP,	# Latch SP from bus 1
-SPstep,		# SP:=SP-1 on falling clock, see next line
+SPstep,		# SP:=SP+-1 on falling clock, see next line
 up_down,	# +1 if up_down is high else –1
 SPoffset,	# SP:=SP + bus1 on falling clock
 SPoff2b1,	# Assert SP+bus0 on bus 1
