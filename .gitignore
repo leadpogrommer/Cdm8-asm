@@ -253,3 +253,5 @@ test.*
 generated/
 
 logisim/backup
+
+gen
