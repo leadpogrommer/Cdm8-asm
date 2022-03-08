@@ -96,7 +96,7 @@ def link(objects: list[ObjectModule]):
     rsect_bins = init_bins(asects)
     sect_addresses = place_sects(rsects, rsect_bins)
     ents = gather_ents(asects + rsects, sect_addresses)
-    image = bytearray(256)
+    image = bytearray(2**16)
 
     for asect in asects:
         image_begin = asect.address

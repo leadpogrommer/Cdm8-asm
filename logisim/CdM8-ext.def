@@ -19,6 +19,7 @@ latchRX,	# Latch RX from bus 1
 RX2PC,  	# Latch RX content in PC
 latchPC, 	# Latch PC from bus 1
 PCinc,		# PC:=PC+1 on falling clock
+PCuH,		# use higher half of PC and RX
  
 # SP controls
 SP2b0,          # Assert SP on bus 0
@@ -61,6 +62,17 @@ popall:	SP2b0, asrtD, mem, data, mem_ld, latch, SPstep, up_down;	# r0
  		SP2b0, asrtD, mem, data, mem_ld, latch, SPstep, up_down;	# r1
  		SP2b0, asrtD, mem, data, mem_ld, latch, SPstep, up_down;	# r2
  		SP2b0, asrtD, mem, data, mem_ld, latch, SPstep, up_down	# r3
+
+# control
+jsr: 	PC2b0, mem, mem_ld, latchRX, PCinc;					#load low byte of target into rx
+		PC2b0, mem, mem_ld, latchRX, PCuH, PCinc, SPstep;   #load hight byte of target into rx, prepare to push
+		PC2b1, PCuH, SP2b0, mem, data, SPstep;				#push hight byte of next instruction
+		PC2b1, SP2b0, mem, data, RX2PC						#push low byte of next instruction, mov RX to PC
+
+rts:	SP2b0, up_down, SPstep, mem, mem_ld, data, latchRX;
+		SP2b0, up_down, SPstep, mem, mem_ld, data, latchRX, PCuH;
+		RX2PC
+
 
 # INTERRUPTS
 

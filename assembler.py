@@ -260,7 +260,14 @@ def fill_labels(s: Section, local_labels: dict):
         elif label_name in s.exts:
             s.ext_uses[label_pos] = label_name
         elif label_name in local_labels:
-            s.data[label_pos - s.address] = local_labels[label_name]
+            value : int = local_labels[label_name]
+            if value > 255:
+                # TODO: rewrite this
+                bs = value.to_bytes(2, byteorder='little')
+                s.data[label_pos - s.address] = bs[0]
+                s.data[label_pos - s.address + 1] = bs[1]
+            else:
+                s.data[label_pos - s.address] = local_labels[label_name]
         else:
             raise Exception(f'Label "{label_name}" not found')
 

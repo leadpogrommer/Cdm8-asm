@@ -1,14 +1,20 @@
-ioi
+jsr  - WORKING
+rts  - WORKING
 
-ldc - where to get address?
-setsp
-addsp
-pu
-po
-ldsa
-
-br_taken
-jsr
-rts
-ctc
+ioi - вектора должны быть 16+8 битными
 rti
+
+crc - what the fuck is this ???
+
+ldc (load from code memory) - ??? how it works ???
+ldi (load from data memory) - ???              ??? but WORKING out of the box
+
+# pc2b0 нужно оставить как есть - выдавать 16 бит адреса на шину
+
+
+# regex для проблемных инструкций = (pc2b1|latchPC|latchRX)
+
+# latchPC убираем, все проводим через RX (rts, rti, ioi) 
+# br* просто меняем
+
+# everything 16-bit is LITTLE ENDIAN

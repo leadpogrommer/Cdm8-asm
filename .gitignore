@@ -255,3 +255,5 @@ generated/
 logisim/backup
 
 gen
+*.obj
+*.img

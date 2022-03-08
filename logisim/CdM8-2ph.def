@@ -19,6 +19,7 @@ latchRX,	# Latch RX from bus 1
 RX2PC,  	# Latch RX content in PC
 latchPC, 	# Latch PC from bus 1
 PCinc,		# PC:=PC+1 on falling clock
+PCuH,		# use higher half of PC and RX
  
 # SP controls
 SP2b0,          # Assert SP on bus 0
@@ -91,10 +92,7 @@ br_nop:	PCinc
 
 br_taken: PC2b0, mem, mem_ld, latchPC
 
-jsr: 	SPstep, PC2b0, mem, mem_ld, latchRX, PCinc;
-	PC2b1, SP2b0, mem, data, RX2PC, latchPC
 
-rts:	SP2b0, up_down, SPstep, mem, mem_ld, data, latchPC
 
 
 crc:	SP2b0, mem, mem_ld, data, latchRX;

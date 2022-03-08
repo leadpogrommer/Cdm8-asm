@@ -55,6 +55,15 @@ def branch_handler(opcode: int, arguments: list):
     elif isinstance(arguments[0], LabelNode):
         return CodeSegment(bytearray([opcode, 0]), {1: arguments[0]}, {})
 
+def long_handler(opcode: int, arguments: list):
+    assert_args(arguments, ArgAddress)
+
+    if isinstance(arguments[0], int):
+
+        return CodeSegment(bytearray([opcode])+ arguments[0].to_bytes(2, byteorder='little'), {}, {})
+    elif isinstance(arguments[0], LabelNode):
+        return CodeSegment(bytearray([opcode, 0, 0]), {1: arguments[0]}, {})
+
 def ldsa_handler(opcode: int, arguments: list):
     assert_args(arguments, RegisterNode, ArgLdsaOffset)
     reg, arg = arguments
@@ -152,6 +161,7 @@ command_handlers = {
 
     'dc': dc_handler,
     'ds': ds_handler,
+    'long': long_handler,
 }
 
 cpu_instructions = {}
