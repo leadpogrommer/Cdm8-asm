@@ -1,16 +1,34 @@
 asect 0x00
-jsr func
-inc r3
+
+ldi r0, 11
+jsr fib
 halt
 
 
 # some really far code
 asect 0xf123
-func:
-ldi r0, 0xde
-ldi r1, 0xad
-ldi r2, 0xbe
-ldi r3, 0xee
+fib:
+push r3
+ldi r3, 2
+cmp r0, r3
+blt fibend
+
+dec r0
+push r0
+jsr fib
+move r0, r3
+pop r0
+
+dec r0
+push r0
+jsr fib
+add r0, r3
+pop r0
+move r3, r0
+
+
+fibend:
+pop r3
 rts
 
 end

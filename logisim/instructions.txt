@@ -6,7 +6,7 @@ rti
 
 crc - what the fuck is this ???
 
-ldc (load from code memory) - ??? how it works ???
+ldc (load from code memory) 
 ldi (load from data memory) - ???              ??? but WORKING out of the box
 
 # pc2b0 нужно оставить как есть - выдавать 16 бит адреса на шину
@@ -15,6 +15,6 @@ ldi (load from data memory) - ???              ??? but WORKING out of the box
 # regex для проблемных инструкций = (pc2b1|latchPC|latchRX)
 
 # latchPC убираем, все проводим через RX (rts, rti, ioi) 
-# br* просто меняем
+# br* просто меняем WORKING
 
 # everything 16-bit is LITTLE ENDIAN

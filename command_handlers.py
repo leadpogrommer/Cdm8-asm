@@ -49,11 +49,12 @@ def zero_handler(opcode: int, arguments: list):
 
 def branch_handler(opcode: int, arguments: list):
     assert_args(arguments, ArgAddress)
-
+    print('handling branch')
     if isinstance(arguments[0], int):
         return CodeSegment(bytearray([opcode, arguments[0]]), {}, {})
     elif isinstance(arguments[0], LabelNode):
-        return CodeSegment(bytearray([opcode, 0]), {1: arguments[0]}, {})
+        print('putting ff')
+        return CodeSegment(bytearray([opcode, 0xff]), {1: arguments[0]}, {})
 
 def long_handler(opcode: int, arguments: list):
     assert_args(arguments, ArgAddress)
