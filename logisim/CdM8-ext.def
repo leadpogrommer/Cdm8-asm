@@ -1,7 +1,7 @@
 # Coco-de-Mer-8 (CdM-8) Processor Secondary Decoder EXTENSION Specification
 ####################### MARK 5, 28.12.2019 v1, *** REDUCED CORE ***
 #
-:4,10,   # 3-bit Sequencer, using 5 phases  
+:4,10,   # 4-bit Sequencer, using 10 phases  
 
 #
 #### Secondary Decoder Output Signal Definition
@@ -43,7 +43,8 @@ data,		# used when mem_ld=1 to indicate read-data, oherwise read-instr
 PSR2b1,		# Assert PSR on b1
 latchPSR,	# latch PSR from b1
 vec,		# Assert interrupt vector addr on b0
-odd,		# same as above, except vector addr+1
+vec_bit0,
+vec_bit1,
 
 
 stop		# stop the clock
@@ -77,12 +78,19 @@ rts:	SP2b0, up_down, SPstep, mem, mem_ld, data, latchRX;
 # INTERRUPTS
 
 ioi:	SPstep;								# prepare to push
-		SP2b0, mem, data, PC2b1, SPstep;	# push PC onto stack (data memory)
+		SP2b0, PCuH, mem, data, PC2b1, SPstep;	# push PC onto stack (data memory)
+		SP2b0, mem, data, PC2b1, SPstep;
 		SP2b0, mem, data, PSR2b1;			# push PS onto stack (data memory)
-		vec, mem, mem_ld, latchPC;				# assert vector address on b0 and load new PC (ins memory)
-		vec, odd, mem, mem_ld, latchPSR			# assert vector address +1 on b0 and loand new PS (ins memory)
+		vec, mem, mem_ld, latchRX;				# assert vector address on b0 and load new PC (ins memory)
+		vec, vec_bit0, PCuH, mem, mem_ld, latchRX;
+		vec, vec_bit1, mem, mem_ld, latchPSR, RX2PC			# assert vector address +1 on b0 and loand new PS (ins memory)
 	
-# rti is a 2-phase instruction, defined with core instructions
+rti: 	SP2b0, mem, data, mem_ld, latchPSR, SPstep, up_down; 	# pop PSR off the stack
+		SP2b0, mem, data, mem_ld, latchRX,  SPstep, up_down; 	# pop PC off the stack
+		SP2b0, mem, data, mem_ld, latchRX,  SPstep, up_down, PCuH; 	# pop PC off the stack
+		RX2PC
+
+
 fetch:	PC2b0, mem_ld, mem, PCinc	# instruction fetch, has to be  last entry for priority reasons in any synthesised part 
 
 

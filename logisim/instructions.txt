@@ -1,13 +1,14 @@
 jsr  - WORKING
 rts  - WORKING
 
-ioi - вектора должны быть 16+8 битными
-rti
+ioi - WORKING
+# interrupt vectors have following format: PCL, PCH, PSR, 0x00
+rti - WORKING
 
 crc - what the fuck is this ???
 
-ldc (load from code memory) 
-ldi (load from data memory) - ???              ??? but WORKING out of the box
+ldc (load from code memory)  - WORKING for first 256 bytes of memory
+ldi (load from data memory) - but WORKING out of the box
 
 # pc2b0 нужно оставить как есть - выдавать 16 бит адреса на шину
 

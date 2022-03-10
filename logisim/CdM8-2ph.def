@@ -1,7 +1,7 @@
 # Coco-de-Mer-8 (CdM-8) Processor Secondary Decoder Specification
 ####################### MARK 5, 28.12.2019 v1, *** REDUCED CORE ***
 #
-:4,2,   # 3-bit Sequencer for Interrupts and OS, only using 2 phases (1-bit) for reduced core 
+:4,2,   # 4-bit Sequencer for Interrupts and OS, only using 2 phases (1-bit) for reduced core 
 
 #
 #### Secondary Decoder Output Signal Definition
@@ -98,8 +98,7 @@ br_taken: PC2b0, mem, mem_ld, latchPC
 crc:	SP2b0, mem, mem_ld, data, latchRX;
 	SP2b0, mem, PC2b1, data, RX2PC, latchPC
 
-rti: 	SP2b0, mem, data, mem_ld, latchPSR, SPstep, up_down; 	# pop PSR off the stack
-	SP2b0, mem, data, mem_ld, latchPC,  SPstep, up_down 	# pop PC off the stack
+
 
 wait:	
 halt:	stop
