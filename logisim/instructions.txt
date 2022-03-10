@@ -5,7 +5,7 @@ ioi - WORKING
 # interrupt vectors have following format: PCL, PCH, PSR, 0x00
 rti - WORKING
 
-crc - what the fuck is this ???
+crc - WORKING
 
 ldc (load from code memory)  - WORKING for first 256 bytes of memory
 ldi (load from data memory) - but WORKING out of the box

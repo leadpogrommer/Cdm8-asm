@@ -93,13 +93,6 @@ br_nop:	PCinc
 br_taken: PC2b0, mem, mem_ld, latchPC
 
 
-
-
-crc:	SP2b0, mem, mem_ld, data, latchRX;
-	SP2b0, mem, PC2b1, data, RX2PC, latchPC
-
-
-
 wait:	
 halt:	stop
 

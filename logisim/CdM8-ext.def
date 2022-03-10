@@ -74,21 +74,26 @@ rts:	SP2b0, up_down, SPstep, mem, mem_ld, data, latchRX;
 		SP2b0, up_down, SPstep, mem, mem_ld, data, latchRX, PCuH;
 		RX2PC
 
+crc:	SP2b0, up_down, SPstep, mem, mem_ld, data, latchRX;
+		SP2b0, mem, mem_ld, data, latchRX, PCuH;
+		SP2b0, mem, PC2b1, PCuH, data, SPstep;
+		SP2b0, mem, PC2b1, data, RX2PC
+
 
 # INTERRUPTS
 
-ioi:	SPstep;								# prepare to push
-		SP2b0, PCuH, mem, data, PC2b1, SPstep;	# push PC onto stack (data memory)
-		SP2b0, mem, data, PC2b1, SPstep;
-		SP2b0, mem, data, PSR2b1;			# push PS onto stack (data memory)
-		vec, mem, mem_ld, latchRX;				# assert vector address on b0 and load new PC (ins memory)
-		vec, vec_bit0, PCuH, mem, mem_ld, latchRX;
-		vec, vec_bit1, mem, mem_ld, latchPSR, RX2PC			# assert vector address +1 on b0 and loand new PS (ins memory)
+ioi:	SPstep;										# prepare to push
+		SP2b0, PCuH, mem, data, PC2b1, SPstep;		# push PCH onto stack
+		SP2b0, mem, data, PC2b1, SPstep;			# push PCL onto stack
+		SP2b0, mem, data, PSR2b1;					# push PS onto stack (data memory)
+		vec, mem, mem_ld, latchRX;					# assert vector address on b0 and load RXL
+		vec, vec_bit0, PCuH, mem, mem_ld, latchRX;	# assert vector address + 1 on b0 and load RXH
+		vec, vec_bit1, mem, mem_ld, latchPSR, RX2PC	# assert vector address + 2 on b0 and load new PS, latch RX to PC
 	
-rti: 	SP2b0, mem, data, mem_ld, latchPSR, SPstep, up_down; 	# pop PSR off the stack
-		SP2b0, mem, data, mem_ld, latchRX,  SPstep, up_down; 	# pop PC off the stack
-		SP2b0, mem, data, mem_ld, latchRX,  SPstep, up_down, PCuH; 	# pop PC off the stack
-		RX2PC
+rti: 	SP2b0, mem, data, mem_ld, latchPSR, SPstep, up_down; 		# pop PSR off the stack
+		SP2b0, mem, data, mem_ld, latchRX,  SPstep, up_down; 		# pop RXL off the stack
+		SP2b0, mem, data, mem_ld, latchRX,  SPstep, up_down, PCuH; 	# pop RXH off the stack
+		RX2PC														# latch RX to PC
 
 
 fetch:	PC2b0, mem_ld, mem, PCinc	# instruction fetch, has to be  last entry for priority reasons in any synthesised part 
