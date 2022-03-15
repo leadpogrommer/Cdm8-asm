@@ -23,43 +23,50 @@ import argparse
 import random
 
 random.seed()
-import time
 import sys
+
+
+def hx(n):
+    return format((n + 256) % 256, "02x").upper()
+
+
+def convert(fmt, k):
+    if fmt == 0:
+        # hex
+        return hx(k)
+    if fmt == 1:
+        if k < 128:
+            # signed int
+            kk = 256 + k
+        else:
+            # signed decimal
+            kk = k
+        return "{0:+04d}".format(kk - 256)
+    if fmt == 2:
+        # print("**"+chr(k), k)
+        if k > 31 and k < 127:
+            return "'" + chr(k) + "'"
+        elif k == 0:
+            return "NUL"
+        else:
+            return ""
+    if fmt == 3:
+        return "0b{0:08b}".format(k)
 
 
 class CDM8Emu():
 
-    def __init__(self, memory=None, arch="vn", pages=8, parent=None):
-        self.parent = parent
-        self.VN = "vn"
-        self.HV = "hv"
-        self.arch = ["vn"] * pages
-
-        args.arch  # Default Von Neuman Architecture
-
-        # Class variables/ attributes
-        self.curPage = 0
-
-        self.memChanged = [[0]] * pages
-        self.datamem = [0] * pages
-        self.memory = [[0]] * pages  # default = 8
+    def __init__(self):
+        # self.memChanged = [[0]] * pages
+        self.datamem = [0] * 2 ** 8
+        self.memory = [0] * 2 ** 16  # default = 8
         # print("&",self.memory)
         # print("datamem", self.datamem)
         # print("memChanged", self.memChanged)
 
-        # Setup Memory
-        # print("Memory\n", self.memory[0])#debug
-        self.setArch(args.arch, page=0)
-        for n in range(1, pages):
-            self.setArch(self.arch, page=n)  # default is vn, page 0 to 8
-            # print("$", n)
-        if memory:  # load .img file if provided
-            self.memory[0][0] = memory
-        # print("%\n", self.memory[0])
-
         self.regs = [0, 0, 0, 0]
         self.PC = 0
-        self.SP = [0] * pages
+        self.SP = 0
         self.IR = 0
         self.IP = []
         self.CVZN = 0x0
@@ -70,63 +77,24 @@ class CDM8Emu():
         self.shadowSP = True
         # Trace vars
         self.traddrs = []
-        # self.traceprint=False
+        self.traceprint = False
         self.cntr = 0  # Trace control var
         self.pretend = True  # Pretend that standard.mlb macros are real machine instructions
 
-    def setArch(self, arch="vn", page=0):
-        if arch == "vn":
-            self.memory[page] = [[0] * 256, [0] * 256]  # clear memory
-            self.memChanged[page] = []
-            self.datamem[page] = 0
-
-        elif arch == "hv":
-            self.memory[page] = [[0] * 256, [0] * 256]  # clear memory
-            self.memChanged[page] = []
-            self.datamem[page] = 1
-            # print(arch, page, self.memory[page])
-        else:
-            return "Unrecognised Architecture"
-        self.arch[page] = arch
-        # print("^",self.memory[page])
-        return
 
     def changePC(self, n=0):
-        self.PC = (n + 256) % 256  # Wrap around to 0 if 255
+        self.PC = (n + 2 ** 16) % (2 ** 16)  # Wrap around to 0 if 255
         return
 
-    def hx(self, n):
-        return format((n + 256) % 256, "02x").upper()
-
-    def convert(self, fmt, k):
-        if fmt == 0:
-            # hex
-            return self.hx(k)
-        if fmt == 1:
-            if k < 128:
-                # signed int
-                kk = 256 + k
-            else:
-                # signed decimal
-                kk = k
-            return "{0:+04d}".format(kk - 256)
-        if fmt == 2:
-            # print("**"+chr(k), k)
-            if k > 31 and k < 127:
-                return "'" + chr(k) + "'"
-            elif k == 0:
-                return "NUL"
-            else:
-                return ""
-        if fmt == 3:
-            return "0b{0:08b}".format(k)
-
-    def loadImg(self):  # Not implemented yet
-        # Direct load image from file under CocoIDE
-        print("Load memory imag from file not implemented yet")
-
+    def loadImg(self, filename: str):  # Not implemented yet
+        with open(filename, 'r') as file:
+            lines = file.readlines()[1:]  # skip header line
+            data = list(map(lambda a: int(a, 16), "".join(lines).split()))
+            data += [0] * (2 ** 16 - len(data))
+            self.memory = data
+    # TODO: fix jsr and br*
     def disasm(self, adr):
-        self.IR = self.memory[self.curPage][0][adr]
+        self.IR = self.memory[adr]
         if self.IR & 0x80 == 0:
             fun = self.IR >> 4
             opcode = ["move", "add", "addc", "sub", "and", "or", "xor", "cmp"][fun]
@@ -160,14 +128,14 @@ class CDM8Emu():
             return opcode + ' r' + str(Rd)
         if self.IR >> 2 == 0b110100:
             Rd = self.IR & 3
-            return "ldi r" + str(Rd) + ",0x" + hx(self.memory[self.curPage][0][adr + 1])
+            return "ldi r" + str(Rd) + ",0x" + hx(self.memory[adr + 1])
         if self.IR >> 4 == 0b1101:
             fun = self.IR & 15
             opcode = ["", "", "", "", "halt", "wait", "jsr", "rts", "osi", "rti", "crc", "osix"] + ["<ext0>", "<ext1>",
                                                                                                     "<ext2>", "<ext3>"]
             opcode = opcode[fun]
             if fun == 6 or fun == 11:
-                return opcode + ' 0x' + hx(self.memory[self.curPage][0][adr + 1])
+                return opcode + ' 0x' + hx(self.memory[adr + 1])
             else:
                 return opcode
         if self.IR >> 4 == 0b1110:
@@ -176,7 +144,7 @@ class CDM8Emu():
             pref = "b"
             if fun == 15:
                 pref = ""
-            return pref + opcode[fun] + ' 0x' + hx(self.memory[self.curPage][0][adr + 1])
+            return pref + opcode[fun] + ' 0x' + hx(self.memory[adr + 1])
         if self.IR >> 4 == 0b1111:
             return "bbne 0x" + hx((adr - 1 - (self.IR & 15) + 256) % 256)
 
@@ -200,42 +168,44 @@ class CDM8Emu():
 
         ## If HW/IO interupt, generate Interrupt Instruction, ioi. Mick Aug 2018
         if interrupt:
-            self.IR = 0xD8  # Hardware interrupt "ioi"
+            raise NotImplementedError("Interrupts not supported now")
+            # self.IR = 0xD8  # Hardware interrupt "ioi"
         else:  # Fetch next instruction to IR
-            self.IR = self.memory[self.curPage][0][self.PC]
+            self.IR = self.memory[self.PC]
 
         # print("IR_1=", self.IR)
+        # TODO: who needs traces anyway?
         ##Trace
-        if args.trace:
-            if self.PC in self.IP or self.IR == 0xd4:
-                regstr = ""
-                for ind in [0, 1, 2, 3]:
-                    regstr += format(self.regs[ind], "02x") + " "
-                trace = format(self.cntr, "06d") + ": " + "PC=" + format(self.PC, "02x") + " Regs: " + regstr
-                memstr = ""
-                if self.traddrs != []:
-                    tra = ""
-                    for i in range(len(traddrs)):
-                        tr = traddrs[i]
-                        tra += format(tr, "02x") + "  "
-                        trfmt = trfmts[i]
-                        if trfmt == 'x':
-                            memstr += "  " + convert(0, self.memory[self.curPage][0][tr])
-                        elif trfmt == 'c':
-                            memstr += " " + convert(2, self.memory[self.curPage][0][tr])
-                        elif trfmt == "d":
-                            memstr += " " + convert(1, self.memory[self.curPage][0][tr])
-                        else:
-                            EP("Internal error")
-                        tr += 1
-                    trace += memstr
-                    if not self.traceprint:
-                        print(34 * " " + tra)
-                        self.traceprint = True
-                if (self.IR == 0xd4):
-                    trace = trace + " <<< halt >>>"
-                print(trace)
-        ## End Trace
+        # if args.trace:
+        #     if self.PC in self.IP or self.IR == 0xd4:
+        #         regstr = ""
+        #         for ind in [0, 1, 2, 3]:
+        #             regstr += format(self.regs[ind], "02x") + " "
+        #         trace = format(self.cntr, "06d") + ": " + "PC=" + format(self.PC, "02x") + " Regs: " + regstr
+        #         memstr = ""
+        #         if self.traddrs != []:
+        #             tra = ""
+        #             for i in range(len(traddrs)):
+        #                 tr = traddrs[i]
+        #                 tra += format(tr, "02x") + "  "
+        #                 trfmt = trfmts[i]
+        #                 if trfmt == 'x':
+        #                     memstr += "  " + convert(0, self.memory[self.curPage][0][tr])
+        #                 elif trfmt == 'c':
+        #                     memstr += " " + convert(2, self.memory[self.curPage][0][tr])
+        #                 elif trfmt == "d":
+        #                     memstr += " " + convert(1, self.memory[self.curPage][0][tr])
+        #                 else:
+        #                     EP("Internal error")
+        #                 tr += 1
+        #             trace += memstr
+        #             if not self.traceprint:
+        #                 print(34 * " " + tra)
+        #                 self.traceprint = True
+        #         if (self.IR == 0xd4):
+        #             trace = trace + " <<< halt >>>"
+        #         print(trace)
+        # ## End Trace
 
         if self.IR & 0x80 == 0:  # binary ALU
             fun = self.IR >> 4
@@ -366,17 +336,19 @@ class CDM8Emu():
                 # Generate interrupt in CocoIDE. If an Input address
                 # returns the Input port value in self.ipVal,
                 self.ipVal = None
-                if self.parent:  # Is running under CocoIDE?
-                    self.parent.event_generate("<<checkInPorts>>")
+                # TODO: who needs cocoide anyway?
+                # if self.parent:  # Is running under CocoIDE?
+                #     self.parent.event_generate("<<checkInPorts>>")
                 # print("*",self.ipVal)
-                if self.ipVal != None:
+                if self.ipVal is not None:
                     self.regs[Rd] = self.ipVal
                 else:
-                    self.regs[Rd] = self.memory[self.curPage][self.datamem[self.curPage]][self.regs[Rs]]
+                    self.regs[Rd] = self.datamem[self.regs[Rs]]
 
             else:  # st
-                self.memory[self.curPage][self.datamem[self.curPage]][self.regs[Rs]] = self.regs[Rd]
-                self.memChanged[self.curPage] += [self.regs[Rs]]
+                self.datamem[self.regs[Rs]] = self.regs[Rd]
+                # TODO: memchanged
+                # self.memChanged[self.curPage] += [self.regs[Rs]]
 
             self.changePC(self.PC + 1)
             return
@@ -384,7 +356,7 @@ class CDM8Emu():
         if ((self.IR & 0b11110000) >> 4) == 0b1111:  # ldc
             Rs = (self.IR & 12) >> 2
             Rd = self.IR & 3
-            self.regs[Rd] = self.memory[self.curPage][0][self.regs[Rs]]
+            self.regs[Rd] = self.memory[self.regs[Rs]]
             self.changePC(self.PC + 1)
             return
 
@@ -393,51 +365,51 @@ class CDM8Emu():
             Rd = self.IR & 3
             stsel = Rd  # selector for mark 4 architecture
             if ss == 0:  # push
-                self.SP[stackPage] = (self.SP[stackPage] + 255) % 256
-                self.memory[self.curPage][self.datamem[self.curPage]][self.SP[stackPage]] = self.regs[Rd]
-                self.memChanged[self.curPage] += [self.SP[stackPage]]
+                self.SP = (self.SP + 255) % 256
+                self.datamem[self.SP] = self.regs[Rd]
+                # self.memChanged[self.curPage] += [self.SP[stackPage]]
 
             if ss == 1:  # pop
-                self.regs[Rd] = self.memory[self.curPage][self.datamem[self.curPage]][self.SP[stackPage]]
-                self.SP[stackPage] = (self.SP[stackPage] + 1) % 256
+                self.regs[Rd] = self.datamem[self.SP]
+                self.SP = (self.SP + 1) % 256
 
             if ss == 2:  # stsp or ldsa
                 if args.v3:
-                    self.SP[stackPage] = self.regs[Rd]
+                    self.SP = self.regs[Rd]
                 else:  # mark 4 architecture, addsa
-                    imop = self.memory[self.curPage][0][(self.PC + 1 + 256) % 256]
-                    self.regs[Rd] = self.SP[stackPage] + imop
+                    imop = self.memory[(self.PC + 1 + 2 ** 16) % 2 ** 16]
+                    self.regs[Rd] = self.SP + imop
                     self.changePC(self.PC + 2)
                     return
 
             if ss == 3:
                 if args.v3:  # ldsp
-                    self.egs[Rd] = self.SP[stackPage]
+                    self.regs[Rd] = self.SP
                 else:
                     if stsel == 0 or stsel == 1:
-                        imop = self.memory[self.curPage][0][(self.PC + 1 + 256) % 256]
-                        self.SP[stackPage] = ((1 - stsel) * self.SP[stackPage] + imop + 256) % 256
+                        imop = self.memory[(self.PC + 1 + 2 ** 16) % 2 ** 16]
+                        self.SP = ((1 - stsel) * self.SP + imop + 256) % 256
                         self.changePC(self.PC + 2)
                         return
 
                     if stsel == 2:  # pushall
-                        chngMem = []
+                        # chngMem = []
                         for Rd in (3, 2, 1, 0):
-                            self.SP[stackPage] = (self.SP[stackPage] + 255) % 256
-                            self.memory[self.curPage][self.datamem[self.curPage]][self.SP[stackPage]] = self.regs[Rd]
-                            chngMem += [self.SP[stackPage]]
-                        self.memChanged[self.curPage] += chngMem
+                            self.SP = (self.SP + 255) % 256
+                            self.datamem[self.SP] = self.regs[Rd]
+                            # chngMem += [self.SP[stackPage]]
+                        # self.memChanged[self.curPage] += chngMem
 
                     if stsel == 3:  # popall
                         for Rd in (0, 1, 2, 3):
-                            self.regs[Rd] = self.memory[self.curPage][self.datamem[self.curPage]][self.SP[stackPage]]
-                            self.SP[stackPage] = (self.SP[stackPage] + 1) % 256
+                            self.regs[Rd] = self.datamem[self.SP]
+                            self.SP = (self.SP + 1) % 256
             self.changePC(self.PC + 1)
             return
 
         if self.IR >> 2 == 0b110100:  # ldi
             Rd = self.IR & 3
-            imop = self.memory[self.curPage][0][(self.PC + 1 + 256) % 256]
+            imop = self.memory[(self.PC + 1 + 2 ** 16) % 2 ** 16]
 
             self.regs[Rd] = imop
             self.changePC(self.PC + 2)
@@ -452,22 +424,28 @@ class CDM8Emu():
                 return
 
             if vvww == 6:  # jsr
-                self.SP[stackPage] = (self.SP[stackPage] + 255) % 256
-                self.memory[self.curPage][self.datamem[self.curPage]][self.SP[stackPage]] = (self.PC + 2 + 256) % 256
-                self.changePC(self.memory[self.curPage][0][(self.PC + 1 + 256) % 256])
-                self.memChanged[self.curPage] += [self.SP[stackPage]]
+                nextPC = (self.PC + 3 + 2 ** 16) % 2 ** 16
+                self.SP = (self.SP + 255) % 256
+                self.datamem[self.SP] = (nextPC & 0xff00) >> 8
+                self.SP = (self.SP + 255) % 256
+                self.datamem[self.SP] = (nextPC & 0xff)
+                newPC = self.memory[(self.PC + 1 + 2 ** 16) % 2 ** 16] | (
+                            self.memory[(self.PC + 2 + 2 ** 16) % 2 ** 16] << 8)
+                self.changePC(newPC)
+                # self.memChanged[self.curPage] += [self.SP[stackPage]]
                 return
 
             if vvww == 7:  # rts
-                self.changePC(self.memory[self.curPage][self.datamem[self.curPage]][self.SP[stackPage]])
-                self.SP[stackPage] = (self.SP[stackPage] + 1) % 256
+                self.changePC(self.datamem[self.SP] | (self.datamem[(self.SP + 1) % 256] << 8))
+                self.SP = (self.SP + 2) % 256
                 return
 
             if vvww == 10:  # crc
-                temp = (self.PC + 1 + 256) % 256
-                self.changePC(self.memory[self.curPage][self.datamem[self.curPage]][self.SP[stackPage]])
-                self.memory[self.curPage][self.datamem[self.curPage]][self.SP[stackPage]] = temp
-                return
+                raise NotImplementedError("CRC not imlemented yet")
+                # temp = (self.PC + 1 + 256) % 256
+                # self.changePC(self.memory[self.curPage][self.datamem[self.curPage]][self.SP[stackPage]])
+                # self.memory[self.curPage][self.datamem[self.curPage]][self.SP[stackPage]] = temp
+                # return
 
             if vvww == 15:
                 k = random.randint(0, 255)
@@ -476,61 +454,64 @@ class CDM8Emu():
                 return
 
             if vvww == 8:  # ioi = 0xD8
-                ien = self.CVZN & 0b10000000
-                if ien:
-                    # PC onto stack
-                    if not interrupt:  # If software ioi
-                        self.changePC(self.PC + 1)  # Update PC to point to next instruction
-                    self.SP[0] = (self.SP[0] + 255) % 256  # dec SP[0]
-                    self.memory[0][self.datamem[0]][self.SP[0]] = self.PC
-                    self.memChanged[0] += [self.SP[0]]
-                    self.changePC(self.memory[stackPage][0][0xf0 + intvector * 2])  ## int vector = 0 -> F0, F2, F4 etc
-
-                    # PS onto stack
-                    self.SP[0] = (self.SP[0] + 255) % 256
-                    self.memory[0][self.datamem[0]][self.SP[0]] = self.CVZN
-                    self.memChanged[0] += [self.SP[0]]
-                    self.CVZN = self.memory[stackPage][0][0xf1 + intvector * 2]  # intvector address +1
-                    self.curPage = 0  # ISR for ioi always on page 0
-                else:
-                    self.changePC(self.PC + 1)  # just ignore!
-                return
+                raise NotImplementedError("IOI not imlemented yet")
+                # ien = self.CVZN & 0b10000000
+                # if ien:
+                #     # PC onto stack
+                #     if not interrupt:  # If software ioi
+                #         self.changePC(self.PC + 1)  # Update PC to point to next instruction
+                #     self.SP[0] = (self.SP[0] + 255) % 256  # dec SP[0]
+                #     self.memory[0][self.datamem[0]][self.SP[0]] = self.PC
+                #     self.memChanged[0] += [self.SP[0]]
+                #     self.changePC(self.memory[stackPage][0][0xf0 + intvector * 2])  ## int vector = 0 -> F0, F2, F4 etc
+                #
+                #     # PS onto stack
+                #     self.SP[0] = (self.SP[0] + 255) % 256
+                #     self.memory[0][self.datamem[0]][self.SP[0]] = self.CVZN
+                #     self.memChanged[0] += [self.SP[0]]
+                #     self.CVZN = self.memory[stackPage][0][0xf1 + intvector * 2]  # intvector address +1
+                #     self.curPage = 0  # ISR for ioi always on page 0
+                # else:
+                #     self.changePC(self.PC + 1)  # just ignore!
+                # return
 
             if vvww == 11:  # osix = 0xDB
-                # Interrupts enabled?
-                ien = self.CVZN & 0b10000000
-                if ien:
-                    # Get new SR val from osix operand, and interupt enable from vector 0
-                    self.changePC(self.PC + 1)  # point PC to operand
-                    # store new PS value. Set Interrupt bit 7 from vector 0 (@ 0xf1)
-                    newPS = self.memory[self.curPage][0][self.PC] | (self.memory[0][0][0xf1] & 0b10000000)
-                    # print(format(newPS, "0b"))
-
-                    # PC onto stack
-                    self.changePC(self.PC + 1)  # Update PC to point to next instruction
-                    self.SP[stackPage] = (self.SP[stackPage] + 255) % 256  # dec current SP
-                    self.memory[stackPage][self.datamem[stackPage]][self.SP[stackPage]] = self.PC
-                    self.memChanged[stackPage] += [self.SP[stackPage]]
-                    self.changePC(self.memory[stackPage][0][0xf0])  ## int vector always 0 for osix
-
-                    # PS onto stack
-                    self.SP[stackPage] = (self.SP[stackPage] + 255) % 256
-                    intEnable = self.memory[stackPage][0][0xf1] & 0b10000000  # new SP with interrupt bit from vector
-                    self.memory[stackPage][self.datamem[stackPage]][self.SP[stackPage]] = self.CVZN
-                    self.memChanged[stackPage] += [self.SP[stackPage]]
-                    self.CVZN = newPS | intEnable  # set Int enable state
-                else:
-                    self.changePC(self.PC + 2)  # skip if not enabled
-                return
+                raise NotImplementedError("OSIX not imlemented yet")
+                # # Interrupts enabled?
+                # ien = self.CVZN & 0b10000000
+                # if ien:
+                #     # Get new SR val from osix operand, and interupt enable from vector 0
+                #     self.changePC(self.PC + 1)  # point PC to operand
+                #     # store new PS value. Set Interrupt bit 7 from vector 0 (@ 0xf1)
+                #     newPS = self.memory[self.curPage][0][self.PC] | (self.memory[0][0][0xf1] & 0b10000000)
+                #     # print(format(newPS, "0b"))
+                #
+                #     # PC onto stack
+                #     self.changePC(self.PC + 1)  # Update PC to point to next instruction
+                #     self.SP[stackPage] = (self.SP[stackPage] + 255) % 256  # dec current SP
+                #     self.memory[stackPage][self.datamem[stackPage]][self.SP[stackPage]] = self.PC
+                #     self.memChanged[stackPage] += [self.SP[stackPage]]
+                #     self.changePC(self.memory[stackPage][0][0xf0])  ## int vector always 0 for osix
+                #
+                #     # PS onto stack
+                #     self.SP[stackPage] = (self.SP[stackPage] + 255) % 256
+                #     intEnable = self.memory[stackPage][0][0xf1] & 0b10000000  # new SP with interrupt bit from vector
+                #     self.memory[stackPage][self.datamem[stackPage]][self.SP[stackPage]] = self.CVZN
+                #     self.memChanged[stackPage] += [self.SP[stackPage]]
+                #     self.CVZN = newPS | intEnable  # set Int enable state
+                # else:
+                #     self.changePC(self.PC + 2)  # skip if not enabled
+                # return
 
             if vvww == 9:  # rti = 0xD9
+                # raise NotImplementedError("RTI not imlemented yet")
                 # PS from stack
-                self.CVZN = self.memory[stackPage][self.datamem[stackPage]][self.SP[stackPage]]
-                self.SP[stackPage] = (self.SP[stackPage] + 1) % 256
+                self.CVZN = self.datamem[self.SP]
+                self.SP = (self.SP + 1) % 256
 
                 # PC from stack
-                self.PC = self.memory[stackPage][self.datamem[stackPage]][self.SP[stackPage]]
-                self.SP[stackPage] = (self.SP[stackPage] + 1) % 256
+                self.changePC(self.datamem[self.SP] | (self.datamem[(self.SP + 1) % 256] << 8))
+                self.SP = (self.SP + 2) % 256
 
                 return
 
@@ -566,53 +547,51 @@ class CDM8Emu():
 
             dcsn = reverse ^ dcsn
             if dcsn != 0:
-                self.changePC(self.memory[self.curPage][0][self.PC + 1])
+                delta = self.memory[self.PC + 1]
+                if delta > 127:
+                    delta = (256 - delta) * (-1)
+
+                self.changePC(self.PC + 1 + delta)
             else:
                 self.changePC(self.PC + 2)
             return
 
-        if ((self.IR >> 4) == 0b1111) and (self.arch == "vn"):
-            if args.save:  # not ldc, we are having a restore point
-                savepnt = self.IR & 0b1111
-                if savepnt > len(savestat) - 1:
-                    EP("Illegal opcode: " + str(self.IR), term=False)
-                    self.changePC(self.PC + 1)
-                    savepnt = 0
-                if savestat[savepnt] != []:
-                    (adr1, adr2, state) = savestat[savepnt]
-                    while adr1 <= adr2:
-                        self.memory[self.curPage][0][adr1] = state[0]
-                        self.memChanged[self.curPage] += [adr1]
-                        adr1 += 1
-                        state = state[1:]
-                self.changePC(self.PC + 1)
-                if self.traceprint:
-                    if self.PC not in self.IP:
-                        self.IP += [self.PC]
-            else:
-                self.changePC(self.PC + 1)
-                EP("Illegal opcode: " + str(self.IR), term=False)
+        # TODO: i don't know what it is
+        # if ((self.IR >> 4) == 0b1111) and (self.arch == "vn"):
+        #     if args.save:  # not ldc, we are having a restore point
+        #         savepnt = self.IR & 0b1111
+        #         if savepnt > len(savestat) - 1:
+        #             EP("Illegal opcode: " + str(self.IR), term=False)
+        #             self.changePC(self.PC + 1)
+        #             savepnt = 0
+        #         if savestat[savepnt] != []:
+        #             (adr1, adr2, state) = savestat[savepnt]
+        #             while adr1 <= adr2:
+        #                 self.memory[self.curPage][0][adr1] = state[0]
+        #                 self.memChanged[self.curPage] += [adr1]
+        #                 adr1 += 1
+        #                 state = state[1:]
+        #         self.changePC(self.PC + 1)
+        #         if self.traceprint:
+        #             if self.PC not in self.IP:
+        #                 self.IP += [self.PC]
+        #     else:
+        #         self.changePC(self.PC + 1)
+        #         EP("Illegal opcode: " + str(self.IR), term=False)
 
     def run(self):
-        self.regs = [0, 0, 0, 0]
-        self.PC = 0
-        self.SP = [0] * pages
-        self.IR = 0
-        self.IP = []
-        self.CVZN = 0x0
-        self.BP = []
-        self.HALT = False
-        self.running = False
-        self.traceprint = False
-        self.cntr = 0
-        self.pretend = True  # Pretend that standard.mlb macros are real machine instructions
-        self.changePC(0x00)
-        self.HALT = False
-        # self.cntr=0
         self.running = True
         # Run to
-        while (not self.PC in self.BP) and (not self.HALT) and self.PC < 255:  # Run to next Break point
+        tabs = 0
+        while (not self.PC in self.BP) and (not self.HALT):  # Run to next Break point
+            dasm = self.disasm(self.PC)
+            print('  '*tabs, self.disasm(self.PC), self.regs, self.SP, self.PC, self.CVZN)
+            if(dasm.startswith('jsr')):
+                tabs += 1
+            elif dasm.startswith('rts'):
+                tabs -= 1
             self.step()
+
         # print("PC= ", self.PC)
         # self.cntr += 1  # No of steps keep count?
         # print("Run Stopped")
@@ -638,7 +617,7 @@ parser.add_argument('-v3', dest='v3', action='store_const', const=True, default=
                     help="assume CdM-8 Mark 3 instruction set")
 parser.add_argument('-i', dest='ipoints', default="",
                     help="comma-separated list of program execution addresses xx (hex) at which to display trace snapshots: xx[,xx...]")
-parser.add_argument('-a', dest='arch', default="vn", help="Architecture: default vn (Von Neuman), hv (Harvard)")
+parser.add_argument('-a', dest='arch', default="hv", help="Architecture: default hv (Harvard), vn (Von Neuman)")
 if __name__ == "__main__":
     parser.add_argument('filename', type=str, const=None, default="", help='memory_image_file[.img]')
 args = parser.parse_args()
@@ -646,9 +625,10 @@ args = parser.parse_args()
 if __name__ == "__main__":
     try:
         filename = args.filename
-        if filename[-4:] == ".img":
-            filename = filename[:-4]
-        CDM8Emu().run()
-    except:
-        print("Bad filename or file")
-
+        emu = CDM8Emu()
+        emu.loadImg(filename)
+        emu.run()
+        print(emu.regs, emu.SP, emu.PC, emu.CVZN)
+        print(emu.datamem)
+    finally:
+        pass
