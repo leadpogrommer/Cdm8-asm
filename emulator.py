@@ -585,7 +585,7 @@ class CDM8Emu():
         tabs = 0
         while (not self.PC in self.BP) and (not self.HALT):  # Run to next Break point
             dasm = self.disasm(self.PC)
-            print('  '*tabs, self.disasm(self.PC), self.regs, self.SP, self.PC, self.CVZN)
+            print('  '*tabs, f'{self.disasm(self.PC)}; regs: {self.regs}, SP: {self.SP}, PC: {self.PC}, PS: {self.CVZN}')
             if(dasm.startswith('jsr')):
                 tabs += 1
             elif dasm.startswith('rts'):
@@ -607,17 +607,17 @@ def EP(s, term=True):
 
 ########## Command Line options
 parser = argparse.ArgumentParser(description='CdM-8 Emulator v1.0')
-parser.add_argument('-r', dest='run', action='store_const', const=True, default=False, help="run image and quit")
-parser.add_argument('-l', dest='lst', action='store_const', const=True, default=False,
-                    help="display assembler listing (FILE.lst)")
-parser.add_argument('-w', dest='trace', default="",
-                    help="comma-separated list of trace snapshots (format/location): [fmt:]addr[,[fmt:]addr...] with  fmt = x (hex) | d (decimal) | c (ASCII);  addr(hex) = xx (single address) | xx-xx (address range)")
-parser.add_argument('-s', dest='save', default="", help="save for restore points (chk): chk:xx[-xx],chk:xx[-xx] ...")
-parser.add_argument('-v3', dest='v3', action='store_const', const=True, default=False,
-                    help="assume CdM-8 Mark 3 instruction set")
-parser.add_argument('-i', dest='ipoints', default="",
-                    help="comma-separated list of program execution addresses xx (hex) at which to display trace snapshots: xx[,xx...]")
-parser.add_argument('-a', dest='arch', default="hv", help="Architecture: default hv (Harvard), vn (Von Neuman)")
+# parser.add_argument('-r', dest='run', action='store_const', const=True, default=False, help="run image and quit")
+# parser.add_argument('-l', dest='lst', action='store_const', const=True, default=False,
+                    # help="display assembler listing (FILE.lst)")
+# parser.add_argument('-w', dest='trace', default="",
+                    # help="comma-separated list of trace snapshots (format/location): [fmt:]addr[,[fmt:]addr...] with  fmt = x (hex) | d (decimal) | c (ASCII);  addr(hex) = xx (single address) | xx-xx (address range)")
+# parser.add_argument('-s', dest='save', default="", help="save for restore points (chk): chk:xx[-xx],chk:xx[-xx] ...")
+# parser.add_argument('-v3', dest='v3', action='store_const', const=True, default=False,
+                    # help="assume CdM-8 Mark 3 instruction set")
+# parser.add_argument('-i', dest='ipoints', default="",
+                    # help="comma-separated list of program execution addresses xx (hex) at which to display trace snapshots: xx[,xx...]")
+# parser.add_argument('-a', dest='arch', default="hv", help="Architecture: default hv (Harvard), vn (Von Neuman)")
 if __name__ == "__main__":
     parser.add_argument('filename', type=str, const=None, default="", help='memory_image_file[.img]')
 args = parser.parse_args()
@@ -628,7 +628,8 @@ if __name__ == "__main__":
         emu = CDM8Emu()
         emu.loadImg(filename)
         emu.run()
-        print(emu.regs, emu.SP, emu.PC, emu.CVZN)
+        # print(emu.regs, emu.SP, emu.PC, emu.CVZN)
+        print('cpu halted, RAM dump below:')
         print(emu.datamem)
     finally:
         pass
