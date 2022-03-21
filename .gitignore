@@ -251,3 +251,9 @@ pip-selfcheck.json
 
 test.*
 generated/
+
+logisim/backup
+
+gen
+*.obj
+*.img
