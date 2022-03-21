@@ -250,7 +250,8 @@ pip-selfcheck.json
 
 
 test.*
-generated/
+generated/*
+!generated/*.py
 
 logisim/backup
 
