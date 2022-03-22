@@ -1,6 +1,4 @@
 from antlr4 import *
-from generated.AsmLexer import AsmLexer
-from generated.AsmParser import AsmParser
 from macro_processor import process_macros, read_mlb
 from assembler import ObjectModule, assemble
 from ast_builder import build_ast
@@ -8,15 +6,6 @@ from linker import link
 import os.path
 import sys
 
-
-# def printAst(p: ProgramNode):
-#     for section in p.sections:
-#         print(section.kind.value, section.address)
-#         for line in section.lines:
-#             if isinstance(line, LabelNode):
-#                 print(f'\t{line.name}:')
-#             else:
-#                 print(f'\t{line.opcode}\t{", ".join(map(lambda a: str(a),line.arguments))}')
 
 def write_image(filename: str, arr: list):
     """
@@ -66,11 +55,7 @@ if __name__ == '__main__':
         root, ext = os.path.splitext(filepath)
         input_stream = FileStream(filepath)
         macro_expanded_input_stream = process_macros(input_stream, library_macros)
-        lexer = AsmLexer(macro_expanded_input_stream)
-        token_stream = CommonTokenStream(lexer)
-        parser = AsmParser(token_stream)
-        cst = parser.program()
-        r = build_ast(cst)
+        r = build_ast(macro_expanded_input_stream)
         obj = assemble(r)
         write_object_file(root + '.obj', obj)
         objects.append(obj)
