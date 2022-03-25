@@ -1,0 +1,137 @@
+*tst/1
+    move    $1,$1
+*clr/1
+    sub $1,$1
+*jmp/1
+    push    $1
+    rti $1
+*jsrr/1
+    push    $1
+    crc
+*shl/1
+    addc    $1,$1
+
+# STRUCTURED PROGRAMMING PACKAGE
+
+# more conditions
+*banything/1
+    br $1
+
+# regularise branch names w.r.t. negation
+*bnanything/2
+        #nop
+*bngt/2
+    ble $1:$2
+*bnge/2
+    blt $1:$2
+*bneq/2
+    bne $1:$2
+*bnne/2
+    beq $1:$2
+*bnlt/2
+    bge $1:$2
+*bnle/2
+    bgt $1:$2
+*bnhi/2
+        bls $1:$2
+*bnhs/2
+        blo $1:$2
+*bncs/2
+    bcc $1:$2
+*bnlo/2
+        bhs $1:$2
+*bnls/2
+        bhi $1:$2
+*bncc/2
+    bcs $1:$2
+*bnmi/2
+    bpl $1:$2
+*bnpl/2
+    bmi $1:$2
+*bnfalse/2
+        br      $1:$2
+*bntrue/2
+        # nop   $1, but is not worth allocating space for
+*bnvs/2
+        bvc $1:$2
+*bnvc/2
+    bvs $1:$2
+*bnz/2
+    bne $1:$2
+*bnnz/2
+    beq $1:$2
+*bnz/1
+    bne $1
+
+########################
+# RANDOM NUMBERS
+*rannum/0
+    dc  0xdf
+*rannum/1
+    rannum
+    push    r1
+    ldi r1,$1
+    and r1,r0
+    pop r1
+
+########################
+# launch a program
+*run/1
+    asect   0
+    br  $1
+
+########################
+# define constants
+*define/2
+    asect $2
+$1:
+
+#########################
+# Get/Put/ register value to/from memory address
+
+*ldv/2 # Gets a value from memory addr ($1) to rn ($2)
+      ldi $2, $1
+      ld $2, $2
+
+*stv/2 # Puts reg ($1) contents to memory addr ($2)
+    unique $1, temp
+    push ?temp
+    ldi ?temp, $2
+    st ?temp, $1
+    pop ?temp
+
+###########################
+# Simulate old V3 ldsp and stsp instructions (only VN Architecture)
+*ldsp/1
+    ldsa $1, 0x00
+
+*stsp/1
+    unique $1, addr
+    push ?addr
+    ldi ?addr, stspaddr'
+    st ?addr, $1
+    pop ?addr
+    dc 0xCD
+stspaddr': dc 0x00
+
+# Interrupt enable
+*ei/0
+    push r1
+    ldi r1, iefin'
+    push r1
+    ldi r1, 0b10000000
+    push r1
+    rti
+iefin':
+    pop r1
+    
+# Interrupt Disable
+*di/0
+    push r1
+    ldi r1, idfin'
+    push r1
+    ldi r1, 0b00000000
+    push r1
+    rti
+idfin':
+    pop r1

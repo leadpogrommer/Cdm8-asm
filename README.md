@@ -15,14 +15,14 @@
 
 
 ## Структура репозитория
-- `main.py` - ассемблер, использование - `python main.py filename.asm`, будут созданы файлы `filename.obj` и `filename.img`
-- `emulator.py` - эмулятор Cdm8e, использование - `python emulator.py filename.img`
+- `assembler/main.py` - ассемблер, использование - `python main.py filename.asm`, будут созданы файлы `filename.obj` и `filename.img`
+- `emulator/emulator.py` - эмулятор Cdm8e, использование - `python emulator.py filename.img`
 - `logisim/CdM-8-mark5-full.circ` - реализация Cdm8e в logisim. Пример подключения в схеме `test16`. `test16` Загружает прошивку из файла, перед использованием необходимо собрать `long_code_test.img` и указать путь к нему в атрибутах ROM
 - `long_code_test.asm` - прошивка для схемы test16 в `CdM-8-mark5-full.circ`, считает число Фибоначчи рекурсивно
-- `AsmLexer.g4` и `AsmParser.g4` - грамматика ассемблера в формате antlr4
+- `assembler/*.g4` - грамматика ассемблера в формате antlr4
 - `logisim/*.def` - исходники декодера
 - `logisim/generate-decoder.py` - генерирует декодер из .def файлов и вставляет его в `CdM-8-mark5-full.circ`
-
+- `tester/main.py` - тестер, сравнивает работу эмулятора и logisim'а, берёт тесты из папки `tests`
 ## Что НЕ работает
 - CocoIDE
 - Ассемблер плохо тестировался с расширенной архитектурой, поддержка нескольких файлов не тестировалась вообще

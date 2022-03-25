@@ -1,5 +1,5 @@
 asect 0x00
-jsr first:
+jsr first
 
 
 

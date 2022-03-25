@@ -1,7 +1,7 @@
 # this test calculates _n th fibonacci number and asserts it in r0
 
-_n = 9
-r0 = 34
+_n = 6
+r0 = 8
 
 code = """
 asect 0x00

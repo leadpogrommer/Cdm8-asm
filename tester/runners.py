@@ -1,13 +1,17 @@
+import sys
+import pathlib
+# TODO: i don't know how to do imports properly
+sys.path.append(str(pathlib.Path(__file__).parent.parent))
 from abc import ABC, abstractmethod, abstractproperty
 from enum import Enum
 from subprocess import run, PIPE
 import pathlib
 from tempfile import NamedTemporaryFile
 import json
-# TODO: it doe snot work when run not from IDEA
-import emulator
+import emulator.emulator as emulator
 import time
 from state import CdmState
+import os
 
 
 
