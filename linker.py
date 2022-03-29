@@ -5,22 +5,21 @@ import itertools
 def init_bins(asects: list[ObjectSectionRecord]):
     rsect_bins = []
     last_bin_begin = 0
-    for i in range(len(asects) - 1):
-        bin_begin = asects[i].address + len(asects[i].data)
-        bin_size = asects[i + 1].address - bin_begin
+    for i in range(len(asects)):
+        bin_size = asects[i].address - last_bin_begin
         if bin_size > 0:
-            rsect_bins.append((bin_begin, bin_size))
+            rsect_bins.append((last_bin_begin, bin_size))
         elif bin_size < 0:
-            addr1 = asects[i].address
-            addr2 = asects[i + 1].address
-            len1 = len(asects[i].data)
-            len2 = len(asects[i + 1].data)
+            addr1 = asects[i - 1].address
+            addr2 = asects[i].address
+            len1 = len(asects[i - 1].data)
+            len2 = len(asects[i].data)
             raise Exception(f'Overlapping sections at {addr1} (size {len1}) and {addr2} (size {len2})')
+        last_bin_begin = asects[i].address + len(asects[i].data)
 
-    if len(asects) > 0 and asects[0].address > 0:
-        rsect_bins = [(0, asects[0].address)] + rsect_bins
-        last_bin_begin = asects[-1].address + len(asects[-1].data)
-    rsect_bins.append((last_bin_begin, 256 - last_bin_begin))
+    if last_bin_begin < 256:
+        rsect_bins.append((last_bin_begin, 256 - last_bin_begin))
+
     return rsect_bins
 
 def place_sects(rsects: list[ObjectSectionRecord], rsect_bins: list):
