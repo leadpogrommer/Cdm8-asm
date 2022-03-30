@@ -257,3 +257,4 @@ logisim/backup
 gen
 *.obj
 *.img
+*.dbg.json

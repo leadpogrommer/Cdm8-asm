@@ -606,7 +606,7 @@ def EP(s, term=True):
 
 
 ########## Command Line options
-parser = argparse.ArgumentParser(description='CdM-8 Emulator v1.0')
+
 # parser.add_argument('-r', dest='run', action='store_const', const=True, default=False, help="run image and quit")
 # parser.add_argument('-l', dest='lst', action='store_const', const=True, default=False,
                     # help="display assembler listing (FILE.lst)")
@@ -618,18 +618,28 @@ parser = argparse.ArgumentParser(description='CdM-8 Emulator v1.0')
 # parser.add_argument('-i', dest='ipoints', default="",
                     # help="comma-separated list of program execution addresses xx (hex) at which to display trace snapshots: xx[,xx...]")
 # parser.add_argument('-a', dest='arch', default="hv", help="Architecture: default hv (Harvard), vn (Von Neuman)")
-if __name__ == "__main__":
-    parser.add_argument('filename', type=str, const=None, default="", help='memory_image_file[.img]')
-args = parser.parse_args()
+
+
+
+
 
 if __name__ == "__main__":
+    import server
+    parser = argparse.ArgumentParser(description='CdM-8 Emulator v1.0')
+    parser.add_argument('filename', type=str, const=None, default="", help='memory_image_file[.img]')
+    parser.add_argument('--serve', action='store_true', help='Serve as debug server on random port')
+    args = parser.parse_args()
     try:
         filename = args.filename
         emu = CDM8Emu()
         emu.loadImg(filename)
-        emu.run()
-        # print(emu.regs, emu.SP, emu.PC, emu.CVZN)
-        print('cpu halted, RAM dump below:')
-        print(emu.datamem)
+        if args.serve:
+            port = args.serve
+            server.serve(emu, 0)
+        else:
+            emu.run()
+            # print(emu.regs, emu.SP, emu.PC, emu.CVZN)
+            print('cpu halted, RAM dump below:')
+            print(emu.datamem)
     finally:
         pass

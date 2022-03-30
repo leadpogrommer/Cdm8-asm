@@ -20,6 +20,7 @@ class CodeBlock:
         self.labels: dict[str, int] = dict()
         self.ents: dict[str, int] = dict()
         self.exts: set[str] = set()
+        self.code_locations: dict[int, CodeLocation] = dict()
 
     def append_block(self, other):
         self.data += other.data
@@ -29,6 +30,7 @@ class CodeBlock:
         self.labels.update(other.labels)
         self.ents.update(other.ents)
         self.exts.update(other.exts)
+        self.code_locations.update(other.code_locations)
 
     def append_branch(self, branch, addr):
         self.data += bytearray([insset['branch'][branch], addr])
@@ -49,6 +51,7 @@ class ObjectSectionRecord:
         self.data: bytearray = s.data
         self.rel: set[int] = set(filter(lambda k: k not in s.ext_uses, s.label_uses))
         self.ents: dict[str, int] = s.ents
+        self.code_locations = s.code_locations
 
 @dataclass
 class ObjectModule:
@@ -225,7 +228,9 @@ def assemble_code_block(lines: list, start_addr: int, loop_stack: list):
         if   isinstance(line, LabelDeclarationNode):
             block.append_block(assemble_label_declaration(line, start_addr + len(block.data)))
         elif isinstance(line, InstructionNode):
-            block.append_block(assemble_instruction(line, start_addr + len(block.data)))
+            new_block = assemble_instruction(line, start_addr + len(block.data))
+            new_block.code_locations[len(block.data)] = line.location
+            block.append_block(new_block)
         elif isinstance(line, ConditionalStatementNode):
             block.append_block(assemble_conditional_statement(line, start_addr + len(block.data), loop_stack))
         elif isinstance(line, WhileLoopNode):

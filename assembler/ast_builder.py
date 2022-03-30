@@ -147,7 +147,7 @@ class BuildAstVisitor(AsmParserVisitor):
             ret.append(self.visitLabel_declaration(ctx.label_declaration()))
         op = ctx.instruction().getText()
         args = self.visitArguments(ctx.arguments()) if ctx.arguments() is not None else []
-        ret.append(InstructionNode(op, args))
+        ret.append(InstructionNode(op, args, CodeLocation(None, ctx.start.line, ctx.start.column)))
         return ret
 
     def visitArguments(self, ctx:AsmParser.ArgumentsContext):

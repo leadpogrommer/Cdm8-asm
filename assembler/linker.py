@@ -2,6 +2,9 @@ from assembler import ObjectSectionRecord, ObjectModule
 import itertools
 
 
+from location import CodeLocation
+
+
 def init_bins(asects: list[ObjectSectionRecord]):
     rsect_bins = []
     last_bin_begin = 0
@@ -97,11 +100,14 @@ def link(objects: list[ObjectModule]):
     sect_addresses = place_sects(rsects, rsect_bins)
     ents = gather_ents(asects + rsects, sect_addresses)
     image = bytearray(2**16)
+    code_locations: dict[int, CodeLocation] = {}
 
     for asect in asects:
         image_begin = asect.address
         image_end = image_begin + len(asect.data)
         image[image_begin:image_end] = asect.data
+        for loc_offset, location in asect.code_locations.items():
+            code_locations[loc_offset + image_begin] = location
 
     for rsect in rsects:
         image_begin = sect_addresses[rsect.name]
@@ -109,6 +115,8 @@ def link(objects: list[ObjectModule]):
         image[image_begin:image_end] = rsect.data
         for offset in rsect.rel:
             image[image_begin + offset] += image_begin
+        for loc_offset, location in rsect.code_locations.items():
+            code_locations[loc_offset + image_begin] = location
 
     for sect in asects + rsects:
         if sect.name in exts_by_sect:
@@ -116,4 +124,6 @@ def link(objects: list[ObjectModule]):
                 for offset in exts_by_sect[sect.name][ext_name]:
                     image[sect_addresses[sect.name] + offset] = ents[ext_name]
 
-    return image
+
+
+    return image, code_locations

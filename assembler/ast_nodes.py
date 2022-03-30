@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-
+from location import CodeLocation
 
 @dataclass
 class RegisterNode:
@@ -25,6 +25,7 @@ class LabelDeclarationNode:
 class InstructionNode:
     mnemonic: str
     arguments: list
+    location: CodeLocation
 
 @dataclass
 class ConditionNode:

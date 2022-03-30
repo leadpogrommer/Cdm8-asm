@@ -1,3 +1,5 @@
+import json
+
 from antlr4 import *
 from generated.AsmLexer import AsmLexer
 from generated.AsmParser import AsmParser
@@ -8,6 +10,7 @@ from linker import link
 import os.path
 import sys
 import pathlib
+from dataclasses import asdict
 
 
 # def printAst(p: ProgramNode):
@@ -33,6 +36,7 @@ def write_image(filename: str, arr: list):
     f.close()
 
 def write_object_file(filename: str, obj: ObjectModule):
+    # TODO: write code locations
     f = open(filename, 'w')
 
     for asect in obj.asects:
@@ -73,9 +77,21 @@ if __name__ == '__main__':
         cst = parser.program()
         r = build_ast(cst)
         obj = assemble(r)
+
+        for section_arr in (obj.asects, obj.rsects):
+            for section in section_arr:
+                for location in section.code_locations.values():
+                    location.file = filepath
+
         write_object_file(root + '.obj', obj)
         objects.append(obj)
 
-    data = link(objects)
+    data, code_locations = link(objects)
     image_root, _ = os.path.splitext(source_files[0])
     write_image(image_root + '.img', data)
+
+    # write code locations(debug info)
+    code_locations = {key: asdict(loc) for key, loc in code_locations.items()}
+    json_locations = json.dumps(code_locations)
+    with open(image_root + '.dbg.json', 'w') as f:
+        f.write(json_locations)

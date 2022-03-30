@@ -17,12 +17,16 @@ done:
 dc "Done, your answer in r0", 0x0a, 0x00
 first_vec:
 dc "You activated first vector", 0x0a, 0x00
+lorem_ipsum:
+dc "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut in vulputate metus. Suspendisse potenti. Nunc eu dictum diam pharetra.", 0x0a, 0x00
 
 
 
 # assemnle should be able to push to bytes label onto stack
 # or at least define macro to enable interrupts
 asect 0x0100
+ldi r0, lorem_ipsum
+jsr print
 ldi r0, calculating
 jsr print
 
