@@ -19,20 +19,53 @@ class EmulatorThread(threading.Thread):
         self.receive_queue = recvq
         self.send_message = send_message
         self.daemon = True
+        self.running = False
+        self.breakpoints: list[int] = []
+
 
     def run(self) -> None:
         self.send_state()
         while running:
-            msg = self.receive_queue.get(block=True)
-            if 'action' in msg.keys():
-                action = msg['action']
-                if action == 'step':
-                    self.command_step()
+            self.handle_message()
         print('emulator thread stopped')
+
+    def handle_message(self, block=True):
+        if not block and self.receive_queue.empty():
+            return
+        msg: dict = self.receive_queue.get(block=True)
+        if 'action' in msg.keys():
+            action = msg['action']
+            if action == 'step':
+                self.command_step()
+            if action == 'pause':
+                self.running = False
+            if action == 'continue':
+                if not self.running:
+                    self.command_run()
+            if action == 'breakpoints':
+                self.breakpoints = msg['data']
+
+    def command_run(self):
+        self.running = True
+        stop_reason = 'pause'
+        while self.running:
+            self.emu.step()
+            if self.emu.PC in self.breakpoints:
+                stop_reason = 'breakpoint'
+                break
+            if self.emu.HALT:
+                stop_reason = 'halt'
+                break
+            self.handle_message(block=False)
+        self.running = False
+        self.send_state()
+        self.send_stop(stop_reason)
+
 
     def command_step(self):
         self.emu.step()
         self.send_state()
+        self.send_stop('step')
 
     def send_state(self):
         state = {
@@ -48,6 +81,9 @@ class EmulatorThread(threading.Thread):
             'memory': self.emu.datamem
         }
         self.send_message({'action': 'state', 'data': state})
+
+    def send_stop(self, reason: str):
+        self.send_message({'action': 'stop', 'reason': reason})
 
 
 def serve(emu: CDM8Emu, port: int):
