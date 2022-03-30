@@ -9,7 +9,7 @@ from websocket_server import WebsocketServer
 from emulator import CDM8Emu
 
 ws_client = None
-running = True
+exited = False
 
 
 class EmulatorThread(threading.Thread):
@@ -24,9 +24,14 @@ class EmulatorThread(threading.Thread):
 
 
     def run(self) -> None:
-        self.send_state()
-        while running:
-            self.handle_message()
+        try:
+            self.send_state()
+            while not exited:
+                self.handle_message()
+        except NotImplementedError as e:
+            self.send_message({'action': 'error', 'data': e.args[0]})
+        except Exception as e:
+            self.send_message({'action': 'error', 'data': str(type(e))})
         print('emulator thread stopped')
 
     def handle_message(self, block=True):
@@ -102,10 +107,10 @@ def serve(emu: CDM8Emu, port: int):
             emu_thread.start()
 
     def on_client_left(client, server):
-        global ws_client, running
-        if client == ws_client and running:
+        global ws_client, exited
+        if client == ws_client and not exited:
             print('client disconnected')
-            running = False
+            exited = True
             ws_server.shutdown_abruptly()
 
     def on_message(client, server, message):
