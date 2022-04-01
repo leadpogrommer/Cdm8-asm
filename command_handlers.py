@@ -1,6 +1,6 @@
 from asm_commands import instructions as insset, assembly_directives as dirset
 from ast_nodes import *
-from dataclasses import dataclass
+from code_segments import *
 from typing import Union, get_origin, get_args
 import bitstruct
 
@@ -10,13 +10,6 @@ ArgDcConstant = Union[int, str, LabelNode]
 ArgLdiConstant = Union[int, str, LabelNode, TemplateFieldNode]
 ArgStackOffset = Union[int, TemplateFieldNode]
 ArgLdsaOffset = Union[int, LabelNode, TemplateFieldNode]
-
-
-@dataclass
-class CodeSegment:
-    data: bytearray
-    label_uses: dict[int, LabelNode]
-    tfield_uses: dict[int, TemplateFieldNode]
 
 
 def assert_args(args, *types, single_type=False):
@@ -33,67 +26,71 @@ def assert_args(args, *types, single_type=False):
             raise Exception(f'Incompatible argument type {type(args[i])}')
 
 
-def binary_handler(opcode: int, arguments: list) -> list[CodeSegment]:
+def binary_handler(opcode: int, arguments: list):
     assert_args(arguments, RegisterNode, RegisterNode)
     data = bitstruct.pack("u4u2u2", opcode // 16, arguments[0].number, arguments[1].number)
-    return CodeSegment(bytearray(data), {}, {})
+    return [BytesSegment(bytearray(data))]
 
 def unary_handler(opcode: int, arguments: list):
     assert_args(arguments, RegisterNode)
     data = bitstruct.pack('u6u2', opcode // 4, arguments[0].number)
-    return CodeSegment(bytearray(data), {}, {})
+    return [BytesSegment(bytearray(data))]
 
 def zero_handler(opcode: int, arguments: list):
     assert_args(arguments)
-    return CodeSegment(bytearray([opcode]), {}, {})
+    return [BytesSegment(bytearray([opcode]))]
 
 def branch_handler(opcode: int, arguments: list):
     assert_args(arguments, ArgAddress)
 
     if isinstance(arguments[0], int):
-        return CodeSegment(bytearray([opcode, arguments[0]]), {}, {})
+        return [OffsetBranchSegment(opcode, arguments[0])]
     elif isinstance(arguments[0], LabelNode):
-        return CodeSegment(bytearray([opcode, 0]), {1: arguments[0]}, {})
+        return [LabelBranchSegment(opcode, arguments[0])]
+
+def long_handler(opcode: int, arguments: list):
+    assert_args(arguments, ArgAddress)
+
+    if isinstance(arguments[0], int):
+        return [BytesSegment(bytearray([opcode, arguments[0]]))]
+    elif isinstance(arguments[0], LabelNode):
+        return [BytesSegment(bytearray([opcode])), LongAddressSegment(arguments[0])]
 
 def ldsa_handler(opcode: int, arguments: list):
     assert_args(arguments, RegisterNode, ArgLdsaOffset)
     reg, arg = arguments
-    cmd_piece = unary_handler(opcode, [reg])
+    cmd_piece = unary_handler(opcode, [reg])[0]
 
     if isinstance(arg, int):
         cmd_piece.data.append(arg)
-        return CodeSegment(cmd_piece.data, {}, {})
+        return [BytesSegment(cmd_piece.data)]
     elif isinstance(arg, LabelNode):
-        cmd_piece.data.append(0)
-        return CodeSegment(cmd_piece.data, {1: arg}, {})
+        return [BytesSegment(cmd_piece.data), ShortAddressSegment(arg)]
     elif isinstance(arg, TemplateFieldNode):
         if arg.negative:
             raise Exception('Cannot use negative template fields in "ldsa" (at least cocas.py doesn\'t allow it)')
-        cmd_piece.data.append(0)
-        return CodeSegment(cmd_piece.data, {}, {1: arg})
+        return [BytesSegment(cmd_piece.data), TemplateFieldSegment(arg)]
 
 def ldi_handler(opcode: int, arguments: list):
     assert_args(arguments, RegisterNode, ArgLdiConstant)
     reg, arg = arguments
-    cmd_piece = unary_handler(opcode, [reg])
+    cmd_piece = unary_handler(opcode, [reg])[0]
 
     if isinstance(arg, int):
         cmd_piece.data.append(arg)
-        return CodeSegment(cmd_piece.data, {}, {})
+        return [BytesSegment(cmd_piece.data)]
     elif isinstance(arg, str):
         arg_data = bytearray(arg, 'utf8')
         if len(arg_data) != 1:
             raise Exception('Argument must be a string of length 1')
         cmd_piece.data.extend(arg_data)
-        return CodeSegment(cmd_piece.data, {}, {})
+        return [BytesSegment(cmd_piece.data)]
     elif isinstance(arg, LabelNode):
-        cmd_piece.data.append(0)
-        return CodeSegment(cmd_piece.data, {1: arg}, {})
+        return [BytesSegment(cmd_piece.data), ShortAddressSegment(arg)]
     elif isinstance(arg, TemplateFieldNode):
         if arg.negative:
             raise Exception('Cannot use negative template fields in "ldi" (at least cocas.py doesn\'t allow it)')
-        cmd_piece.data.append(0)
-        return CodeSegment(cmd_piece.data, {}, {1: arg})
+        return [BytesSegment(cmd_piece.data), TemplateFieldSegment(arg)]
 
 def osix_handler(opcode: int, arguments: list):
     assert_args(arguments, int)
@@ -101,7 +98,7 @@ def osix_handler(opcode: int, arguments: list):
 
     if arg < 0:
         raise Exception('Cannot use negative numbers in "osix"')
-    return CodeSegment(bytearray([opcode, arg]), {}, {})
+    return [BytesSegment(bytearray([opcode, arg]))]
 
 def spmove_handler(opcode: int, arguments: list):
     assert_args(arguments, ArgStackOffset)
@@ -109,9 +106,9 @@ def spmove_handler(opcode: int, arguments: list):
 
     if isinstance(arg, int):
         if arg < 0: arg += 256
-        return CodeSegment(bytearray([opcode, arg]), {}, {})
+        return [BytesSegment(bytearray([opcode, arg]))]
     elif isinstance(arg, TemplateFieldNode):
-        return CodeSegment(bytearray([opcode, 0]), {}, {1: arg})
+        return [BytesSegment(bytearray([opcode, 0])), TemplateFieldSegment(arg)]
 
 
 def dc_handler(arguments: list):
@@ -119,25 +116,22 @@ def dc_handler(arguments: list):
     if len(arguments) == 0:
         raise Exception('At least one argument must be provided')
 
-    data = bytearray()
-    label_uses = dict()
-
+    segments = []
     for arg in arguments:
         if isinstance(arg, int):
-            data.append(arg)
+            segments.append(BytesSegment(bytearray([arg])))
         elif isinstance(arg, str):
-            data.extend(bytearray(arg, 'utf8'))
+            segments.append(BytesSegment(bytearray(arg, 'utf8')))
         elif isinstance(arg, LabelNode):
-            label_uses[len(data)] = arg
-            data.append(0)
-    return CodeSegment(data, label_uses, {})
+            segments.append(ShortAddressSegment(arg))
+    return segments
 
 def ds_handler(arguments: list):
     assert_args(arguments, int)
     space_size = arguments[0]
     if space_size < 0:
         raise Exception('Cannot specify negative size in "ds"')
-    return CodeSegment(bytearray(space_size), {}, {})
+    return [BytesSegment(bytearray(space_size))]
 
 
 command_handlers = {
@@ -145,6 +139,7 @@ command_handlers = {
     'unary':  unary_handler,
     'binary': binary_handler,
     'branch': branch_handler,
+    'long':   long_handler,
     'ldsa':   ldsa_handler,
     'ldi':    ldi_handler,
     'osix':   osix_handler,
@@ -163,7 +158,7 @@ assembler_directives = {}
 for directive in dirset:
     assembler_directives[directive] = command_handlers[directive]
 
-def assemble_command(line: InstructionNode) -> CodeSegment:
+def assemble_command(line: InstructionNode) -> list[CodeSegment]:
     if line.mnemonic in dirset:
         handler = assembler_directives[line.mnemonic]
         return handler(line.arguments)

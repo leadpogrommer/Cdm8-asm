@@ -38,10 +38,17 @@ def write_object_file(filename: str, obj: ObjectModule):
         for ent in rsect.ents:
             f.write(f'NTRY {ent} {rsect.ents[ent]:02x}\n')
 
-    for ext_name in obj.exts:
+    exts = dict()
+    for sect in obj.asects + obj.rsects:
+        for ext_name in sect.ext_uses:
+            sections_using_ext = obj.exts.setdefault(ext_name, dict())
+            ext_uses = sections_using_ext.setdefault(sect.name, [])
+            ext_uses.extend(sect.ext_uses[ext_name])
+
+    for ext_name in exts:
         f.write(f'XTRN {ext_name}:')
-        for sect_name in obj.exts[ext_name]:
-            f.write(' ' + ' '.join([f'{sect_name} {offset:02x}' for offset in obj.exts[ext_name][sect_name]]))
+        for sect_name in exts[ext_name]:
+            f.write(' ' + ' '.join([f'{sect_name} {offset:02x}' for offset in exts[ext_name][sect_name]]))
         f.write('\n')
 
     f.close()
