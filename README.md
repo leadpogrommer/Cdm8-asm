@@ -13,6 +13,10 @@
 Вектора прерываний занимают 4 байта и имеют следующий формат: `<PCL> <PCH> <PS> 0x00`, PCL и PCH - адрес обработчика, PS - слово состояния процессора.
 Нулевой вектор расположен по адресу `0xffe0`
 
+## Зависимости
+- python 3.10
+- пакеты antlr4-python3-runtime websocket_server (``pip3 install --user antlr4-python3-runtime websocket_server``)
+- java (для тестов)
 
 ## Структура репозитория
 - `assembler/main.py` - ассемблер, использование - `python main.py filename.asm`, будут созданы файлы `filename.obj` и `filename.img`
