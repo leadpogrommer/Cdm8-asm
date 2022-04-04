@@ -1,8 +1,6 @@
 import json
 
 from antlr4 import *
-from generated.AsmLexer import AsmLexer
-from generated.AsmParser import AsmParser
 from macro_processor import process_macros, read_mlb
 from assembler import ObjectModule, assemble
 from ast_builder import build_ast
@@ -12,15 +10,6 @@ import sys
 import pathlib
 from dataclasses import asdict
 
-
-# def printAst(p: ProgramNode):
-#     for section in p.sections:
-#         print(section.kind.value, section.address)
-#         for line in section.lines:
-#             if isinstance(line, LabelNode):
-#                 print(f'\t{line.name}:')
-#             else:
-#                 print(f'\t{line.opcode}\t{", ".join(map(lambda a: str(a),line.arguments))}')
 
 def write_image(filename: str, arr: list):
     """
@@ -54,10 +43,17 @@ def write_object_file(filename: str, obj: ObjectModule):
         for ent in rsect.ents:
             f.write(f'NTRY {ent} {rsect.ents[ent]:02x}\n')
 
-    for ext_name in obj.exts:
+    exts = dict()
+    for sect in obj.asects + obj.rsects:
+        for ext_name in sect.ext_uses:
+            sections_using_ext = obj.exts.setdefault(ext_name, dict())
+            ext_uses = sections_using_ext.setdefault(sect.name, [])
+            ext_uses.extend(sect.ext_uses[ext_name])
+
+    for ext_name in exts:
         f.write(f'XTRN {ext_name}:')
-        for sect_name in obj.exts[ext_name]:
-            f.write(' ' + ' '.join([f'{sect_name} {offset:02x}' for offset in obj.exts[ext_name][sect_name]]))
+        for sect_name in exts[ext_name]:
+            f.write(' ' + ' '.join([f'{sect_name} {offset:02x}' for offset in exts[ext_name][sect_name]]))
         f.write('\n')
 
     f.close()
@@ -71,11 +67,7 @@ if __name__ == '__main__':
         root, ext = os.path.splitext(filepath)
         input_stream = FileStream(filepath)
         macro_expanded_input_stream = process_macros(input_stream, library_macros)
-        lexer = AsmLexer(macro_expanded_input_stream)
-        token_stream = CommonTokenStream(lexer)
-        parser = AsmParser(token_stream)
-        cst = parser.program()
-        r = build_ast(cst)
+        r = build_ast(macro_expanded_input_stream)
         obj = assemble(r)
 
         for section_arr in (obj.asects, obj.rsects):

@@ -1,4 +1,4 @@
-# Generated from /home/ilya/work/ORiGinalASM/AsmParser.g4 by ANTLR 4.9.3
+# Generated from /home/ilya/work/cdm8e/ORiGinalASM/assembler/AsmParser.g4 by ANTLR 4.9.3
 from antlr4 import *
 if __name__ is not None and "." in __name__:
     from .AsmParser import AsmParser
@@ -107,12 +107,165 @@ class AsmParserListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by AsmParser#name.
-    def enterName(self, ctx:AsmParser.NameContext):
+    # Enter a parse tree produced by AsmParser#standaloneLabel.
+    def enterStandaloneLabel(self, ctx:AsmParser.StandaloneLabelContext):
         pass
 
-    # Exit a parse tree produced by AsmParser#name.
-    def exitName(self, ctx:AsmParser.NameContext):
+    # Exit a parse tree produced by AsmParser#standaloneLabel.
+    def exitStandaloneLabel(self, ctx:AsmParser.StandaloneLabelContext):
+        pass
+
+
+    # Enter a parse tree produced by AsmParser#instructionLine.
+    def enterInstructionLine(self, ctx:AsmParser.InstructionLineContext):
+        pass
+
+    # Exit a parse tree produced by AsmParser#instructionLine.
+    def exitInstructionLine(self, ctx:AsmParser.InstructionLineContext):
+        pass
+
+
+    # Enter a parse tree produced by AsmParser#label_declaration.
+    def enterLabel_declaration(self, ctx:AsmParser.Label_declarationContext):
+        pass
+
+    # Exit a parse tree produced by AsmParser#label_declaration.
+    def exitLabel_declaration(self, ctx:AsmParser.Label_declarationContext):
+        pass
+
+
+    # Enter a parse tree produced by AsmParser#arguments.
+    def enterArguments(self, ctx:AsmParser.ArgumentsContext):
+        pass
+
+    # Exit a parse tree produced by AsmParser#arguments.
+    def exitArguments(self, ctx:AsmParser.ArgumentsContext):
+        pass
+
+
+    # Enter a parse tree produced by AsmParser#conditional.
+    def enterConditional(self, ctx:AsmParser.ConditionalContext):
+        pass
+
+    # Exit a parse tree produced by AsmParser#conditional.
+    def exitConditional(self, ctx:AsmParser.ConditionalContext):
+        pass
+
+
+    # Enter a parse tree produced by AsmParser#conditions.
+    def enterConditions(self, ctx:AsmParser.ConditionsContext):
+        pass
+
+    # Exit a parse tree produced by AsmParser#conditions.
+    def exitConditions(self, ctx:AsmParser.ConditionsContext):
+        pass
+
+
+    # Enter a parse tree produced by AsmParser#connective_condition.
+    def enterConnective_condition(self, ctx:AsmParser.Connective_conditionContext):
+        pass
+
+    # Exit a parse tree produced by AsmParser#connective_condition.
+    def exitConnective_condition(self, ctx:AsmParser.Connective_conditionContext):
+        pass
+
+
+    # Enter a parse tree produced by AsmParser#condition.
+    def enterCondition(self, ctx:AsmParser.ConditionContext):
+        pass
+
+    # Exit a parse tree produced by AsmParser#condition.
+    def exitCondition(self, ctx:AsmParser.ConditionContext):
+        pass
+
+
+    # Enter a parse tree produced by AsmParser#else_clause.
+    def enterElse_clause(self, ctx:AsmParser.Else_clauseContext):
+        pass
+
+    # Exit a parse tree produced by AsmParser#else_clause.
+    def exitElse_clause(self, ctx:AsmParser.Else_clauseContext):
+        pass
+
+
+    # Enter a parse tree produced by AsmParser#branch_mnemonic.
+    def enterBranch_mnemonic(self, ctx:AsmParser.Branch_mnemonicContext):
+        pass
+
+    # Exit a parse tree produced by AsmParser#branch_mnemonic.
+    def exitBranch_mnemonic(self, ctx:AsmParser.Branch_mnemonicContext):
+        pass
+
+
+    # Enter a parse tree produced by AsmParser#conjunction.
+    def enterConjunction(self, ctx:AsmParser.ConjunctionContext):
+        pass
+
+    # Exit a parse tree produced by AsmParser#conjunction.
+    def exitConjunction(self, ctx:AsmParser.ConjunctionContext):
+        pass
+
+
+    # Enter a parse tree produced by AsmParser#while_loop.
+    def enterWhile_loop(self, ctx:AsmParser.While_loopContext):
+        pass
+
+    # Exit a parse tree produced by AsmParser#while_loop.
+    def exitWhile_loop(self, ctx:AsmParser.While_loopContext):
+        pass
+
+
+    # Enter a parse tree produced by AsmParser#while_condition.
+    def enterWhile_condition(self, ctx:AsmParser.While_conditionContext):
+        pass
+
+    # Exit a parse tree produced by AsmParser#while_condition.
+    def exitWhile_condition(self, ctx:AsmParser.While_conditionContext):
+        pass
+
+
+    # Enter a parse tree produced by AsmParser#until_loop.
+    def enterUntil_loop(self, ctx:AsmParser.Until_loopContext):
+        pass
+
+    # Exit a parse tree produced by AsmParser#until_loop.
+    def exitUntil_loop(self, ctx:AsmParser.Until_loopContext):
+        pass
+
+
+    # Enter a parse tree produced by AsmParser#save_restore_statement.
+    def enterSave_restore_statement(self, ctx:AsmParser.Save_restore_statementContext):
+        pass
+
+    # Exit a parse tree produced by AsmParser#save_restore_statement.
+    def exitSave_restore_statement(self, ctx:AsmParser.Save_restore_statementContext):
+        pass
+
+
+    # Enter a parse tree produced by AsmParser#save_statement.
+    def enterSave_statement(self, ctx:AsmParser.Save_statementContext):
+        pass
+
+    # Exit a parse tree produced by AsmParser#save_statement.
+    def exitSave_statement(self, ctx:AsmParser.Save_statementContext):
+        pass
+
+
+    # Enter a parse tree produced by AsmParser#restore_statement.
+    def enterRestore_statement(self, ctx:AsmParser.Restore_statementContext):
+        pass
+
+    # Exit a parse tree produced by AsmParser#restore_statement.
+    def exitRestore_statement(self, ctx:AsmParser.Restore_statementContext):
+        pass
+
+
+    # Enter a parse tree produced by AsmParser#argument.
+    def enterArgument(self, ctx:AsmParser.ArgumentContext):
+        pass
+
+    # Exit a parse tree produced by AsmParser#argument.
+    def exitArgument(self, ctx:AsmParser.ArgumentContext):
         pass
 
 
@@ -161,6 +314,15 @@ class AsmParserListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by AsmParser#character.
+    def enterCharacter(self, ctx:AsmParser.CharacterContext):
+        pass
+
+    # Exit a parse tree produced by AsmParser#character.
+    def exitCharacter(self, ctx:AsmParser.CharacterContext):
+        pass
+
+
     # Enter a parse tree produced by AsmParser#number.
     def enterNumber(self, ctx:AsmParser.NumberContext):
         pass
@@ -170,165 +332,12 @@ class AsmParserListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by AsmParser#argument.
-    def enterArgument(self, ctx:AsmParser.ArgumentContext):
+    # Enter a parse tree produced by AsmParser#name.
+    def enterName(self, ctx:AsmParser.NameContext):
         pass
 
-    # Exit a parse tree produced by AsmParser#argument.
-    def exitArgument(self, ctx:AsmParser.ArgumentContext):
-        pass
-
-
-    # Enter a parse tree produced by AsmParser#arguments.
-    def enterArguments(self, ctx:AsmParser.ArgumentsContext):
-        pass
-
-    # Exit a parse tree produced by AsmParser#arguments.
-    def exitArguments(self, ctx:AsmParser.ArgumentsContext):
-        pass
-
-
-    # Enter a parse tree produced by AsmParser#label_declaration.
-    def enterLabel_declaration(self, ctx:AsmParser.Label_declarationContext):
-        pass
-
-    # Exit a parse tree produced by AsmParser#label_declaration.
-    def exitLabel_declaration(self, ctx:AsmParser.Label_declarationContext):
-        pass
-
-
-    # Enter a parse tree produced by AsmParser#standaloneLabel.
-    def enterStandaloneLabel(self, ctx:AsmParser.StandaloneLabelContext):
-        pass
-
-    # Exit a parse tree produced by AsmParser#standaloneLabel.
-    def exitStandaloneLabel(self, ctx:AsmParser.StandaloneLabelContext):
-        pass
-
-
-    # Enter a parse tree produced by AsmParser#instructionLine.
-    def enterInstructionLine(self, ctx:AsmParser.InstructionLineContext):
-        pass
-
-    # Exit a parse tree produced by AsmParser#instructionLine.
-    def exitInstructionLine(self, ctx:AsmParser.InstructionLineContext):
-        pass
-
-
-    # Enter a parse tree produced by AsmParser#conjunction.
-    def enterConjunction(self, ctx:AsmParser.ConjunctionContext):
-        pass
-
-    # Exit a parse tree produced by AsmParser#conjunction.
-    def exitConjunction(self, ctx:AsmParser.ConjunctionContext):
-        pass
-
-
-    # Enter a parse tree produced by AsmParser#branch_mnemonic.
-    def enterBranch_mnemonic(self, ctx:AsmParser.Branch_mnemonicContext):
-        pass
-
-    # Exit a parse tree produced by AsmParser#branch_mnemonic.
-    def exitBranch_mnemonic(self, ctx:AsmParser.Branch_mnemonicContext):
-        pass
-
-
-    # Enter a parse tree produced by AsmParser#else_clause.
-    def enterElse_clause(self, ctx:AsmParser.Else_clauseContext):
-        pass
-
-    # Exit a parse tree produced by AsmParser#else_clause.
-    def exitElse_clause(self, ctx:AsmParser.Else_clauseContext):
-        pass
-
-
-    # Enter a parse tree produced by AsmParser#condition.
-    def enterCondition(self, ctx:AsmParser.ConditionContext):
-        pass
-
-    # Exit a parse tree produced by AsmParser#condition.
-    def exitCondition(self, ctx:AsmParser.ConditionContext):
-        pass
-
-
-    # Enter a parse tree produced by AsmParser#connective_condition.
-    def enterConnective_condition(self, ctx:AsmParser.Connective_conditionContext):
-        pass
-
-    # Exit a parse tree produced by AsmParser#connective_condition.
-    def exitConnective_condition(self, ctx:AsmParser.Connective_conditionContext):
-        pass
-
-
-    # Enter a parse tree produced by AsmParser#conditions.
-    def enterConditions(self, ctx:AsmParser.ConditionsContext):
-        pass
-
-    # Exit a parse tree produced by AsmParser#conditions.
-    def exitConditions(self, ctx:AsmParser.ConditionsContext):
-        pass
-
-
-    # Enter a parse tree produced by AsmParser#conditional.
-    def enterConditional(self, ctx:AsmParser.ConditionalContext):
-        pass
-
-    # Exit a parse tree produced by AsmParser#conditional.
-    def exitConditional(self, ctx:AsmParser.ConditionalContext):
-        pass
-
-
-    # Enter a parse tree produced by AsmParser#while_condition.
-    def enterWhile_condition(self, ctx:AsmParser.While_conditionContext):
-        pass
-
-    # Exit a parse tree produced by AsmParser#while_condition.
-    def exitWhile_condition(self, ctx:AsmParser.While_conditionContext):
-        pass
-
-
-    # Enter a parse tree produced by AsmParser#while_loop.
-    def enterWhile_loop(self, ctx:AsmParser.While_loopContext):
-        pass
-
-    # Exit a parse tree produced by AsmParser#while_loop.
-    def exitWhile_loop(self, ctx:AsmParser.While_loopContext):
-        pass
-
-
-    # Enter a parse tree produced by AsmParser#until_loop.
-    def enterUntil_loop(self, ctx:AsmParser.Until_loopContext):
-        pass
-
-    # Exit a parse tree produced by AsmParser#until_loop.
-    def exitUntil_loop(self, ctx:AsmParser.Until_loopContext):
-        pass
-
-
-    # Enter a parse tree produced by AsmParser#save_statement.
-    def enterSave_statement(self, ctx:AsmParser.Save_statementContext):
-        pass
-
-    # Exit a parse tree produced by AsmParser#save_statement.
-    def exitSave_statement(self, ctx:AsmParser.Save_statementContext):
-        pass
-
-
-    # Enter a parse tree produced by AsmParser#restore_statement.
-    def enterRestore_statement(self, ctx:AsmParser.Restore_statementContext):
-        pass
-
-    # Exit a parse tree produced by AsmParser#restore_statement.
-    def exitRestore_statement(self, ctx:AsmParser.Restore_statementContext):
-        pass
-
-
-    # Enter a parse tree produced by AsmParser#save_restore_statement.
-    def enterSave_restore_statement(self, ctx:AsmParser.Save_restore_statementContext):
-        pass
-
-    # Exit a parse tree produced by AsmParser#save_restore_statement.
-    def exitSave_restore_statement(self, ctx:AsmParser.Save_restore_statementContext):
+    # Exit a parse tree produced by AsmParser#name.
+    def exitName(self, ctx:AsmParser.NameContext):
         pass
 
 

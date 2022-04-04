@@ -35,8 +35,6 @@ instructions = {
         'ldc':  0xF0,
     },
     'branch': {
-        'jsr':  0xD6,
-
         'beq':  0xE0,
         'bz':   0xE0,
         'bnne': 0xE0,
@@ -94,6 +92,7 @@ instructions = {
         'bnanything': 0xEF,
         'bntrue':     0xEF,
     },
+    'long': { 'jsr' : 0xD6 },
     'ldsa': { 'ldsa': 0xC8 },
     'ldi':  { 'ldi' : 0xD0 },
     'osix': { 'osix': 0xDB },

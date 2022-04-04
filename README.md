@@ -15,7 +15,7 @@
 
 ## Зависимости
 - python 3.10
-- пакеты antlr4-python3-runtime websocket_server (``pip3 install --user antlr4-python3-runtime websocket_server``)
+- пакеты antlr4-python3-runtime websocket_server bitstruct (``pip3 install --user antlr4-python3-runtime websocket_server bitstruct``)
 - java (для тестов)
 
 ## Структура репозитория

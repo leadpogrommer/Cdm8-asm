@@ -1,5 +1,6 @@
 from antlr4 import *
 from ast_nodes import *
+from generated.AsmLexer import AsmLexer
 from generated.AsmParser import AsmParser
 from generated.AsmParserVisitor import AsmParserVisitor
 
@@ -7,7 +8,7 @@ from generated.AsmParserVisitor import AsmParserVisitor
 class BuildAstVisitor(AsmParserVisitor):
     def visitProgram(self, ctx:AsmParser.ProgramContext) -> ProgramNode:
         ret = ProgramNode([], [], [])
-        for child in filter(lambda a: isinstance(a, AsmParser.SectionContext), ctx.children):
+        for child in ctx.children:
             if isinstance(child, AsmParser.AbsoluteSectionContext):
                 ret.absolute_sections.append(self.visitAbsoluteSection(child))
             elif isinstance(child, AsmParser.RelocatableSectionContext):
@@ -36,6 +37,12 @@ class BuildAstVisitor(AsmParserVisitor):
 
     def visitNumber(self, ctx:AsmParser.NumberContext) -> int:
         return int(ctx.getText(), base=0)
+
+    def visitCharacter(self, ctx: AsmParser.CharacterContext) -> int:
+        if ctx.getText()[1] == '\\':
+            return ord(ctx.getText()[2])
+        else:
+            return ord(ctx.getText()[1])
 
     def visitSection_body(self, ctx:AsmParser.Section_bodyContext) -> list:
         return self.visitCode_block(ctx.code_block())
@@ -108,7 +115,7 @@ class BuildAstVisitor(AsmParserVisitor):
                 ret.append(self.visitWhile_loop(c))
             elif isinstance(c, AsmParser.Until_loopContext):
                 ret.append(self.visitUntil_loop(c))
-            if isinstance(c, AsmParser.Save_restore_statementContext):
+            elif isinstance(c, AsmParser.Save_restore_statementContext):
                 ret.append(self.visitSave_restore_statement(c))
             elif isinstance(c, AsmParser.Break_statementContext):
                 ret.append(BreakStatementNode())
@@ -118,7 +125,7 @@ class BuildAstVisitor(AsmParserVisitor):
 
     def visitStandaloneLabel(self, ctx:AsmParser.StandaloneLabelContext) -> LabelNode:
         label_decl = self.visitLabel_declaration(ctx.label_declaration())
-        label_decl.external = ctx.EXT() is not None
+        label_decl.external = ctx.Ext() is not None
         if label_decl.entry and label_decl.external:
             raise Exception(f'Label {label_decl.label.name} cannot be both external and entry')
         return label_decl
@@ -153,5 +160,9 @@ class BuildAstVisitor(AsmParserVisitor):
     def visitArguments(self, ctx:AsmParser.ArgumentsContext):
         return [self.visitArgument(i) for i in ctx.children if isinstance(i, AsmParser.ArgumentContext)]
 
-def build_ast(cst: AsmParser.ProgramContext):
+def build_ast(input_stream: InputStream):
+    lexer = AsmLexer(input_stream)
+    token_stream = CommonTokenStream(lexer)
+    parser = AsmParser(token_stream)
+    cst = parser.program()
     return BuildAstVisitor().visit(cst)

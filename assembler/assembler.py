@@ -1,5 +1,6 @@
 from asm_commands import instructions as insset, assembly_directives as dirset
 from ast_nodes import *
+from code_segments import *
 from command_handlers import assemble_command
 from dataclasses import dataclass
 
@@ -13,45 +14,140 @@ class Template:
 @dataclass
 class CodeBlock:
     def __init__(self):
-        self.data: bytearray = bytearray()
-        self.label_uses: dict[int, str] = dict()
-        self.tfield_uses: dict[int, TemplateFieldNode] = dict()
-        self.ext_uses: dict[int, str] = dict()
+        self.size: int = 0
+        self.segments: list[CodeSegment] = []
         self.labels: dict[str, int] = dict()
-        self.ents: dict[str, int] = dict()
+        self.ents: set[str] = set()
         self.exts: set[str] = set()
         self.code_locations: dict[int, CodeLocation] = dict()
 
     def append_block(self, other):
-        self.data += other.data
-        self.label_uses.update(other.label_uses)
-        self.tfield_uses.update(other.tfield_uses)
-        self.ext_uses.update(other.ext_uses)
+        self.size += other.size
+        self.segments += other.segments
         self.labels.update(other.labels)
         self.ents.update(other.ents)
         self.exts.update(other.exts)
         self.code_locations.update(other.code_locations)
 
-    def append_branch(self, branch, addr):
-        self.data += bytearray([insset['branch'][branch], addr])
+    def append_bytes(self, data):
+        self.segments.append(BytesSegment(bytearray(data)))
+        self.size += len(data)
 
+    def append_label(self, label_name):
+        self.labels[label_name] = self.size
+
+    def append_branch(self, mnemonic, label_name):
+        self.segments.append(LabelBranchSegment(insset['branch'][mnemonic], LabelNode(label_name)))
+        self.size += 2
 
 @dataclass
 class Section(CodeBlock):
-    def __init__(self):
-        self.address: int = 0
-        self.name: str = ''
+    def __init__(self, address: int, name: str):
+        self.address = address
+        self.name = name
         super().__init__()
 
 @dataclass
 class ObjectSectionRecord:
-    def __init__(self, s: Section = Section()):
+    def __init__(self, s: Section, local_labels: dict[str, int], template_fields: dict[str, dict[str, int]]):
         self.address: int = s.address
         self.name: str = s.name
-        self.data: bytearray = s.data
-        self.rel: set[int] = set(filter(lambda k: k not in s.ext_uses, s.label_uses))
-        self.ents: dict[str, int] = s.ents
+        self.data = bytearray()
+        self.rel: set[int] = set()
+        self.ents: dict[str, int] = dict(filter(lambda p: p[0] in s.ents, s.labels.items()))
+        self.ext_uses: dict[str, list[int]] = dict()
         self.code_locations = s.code_locations
+
+        for seg in s.segments:
+            if isinstance(seg, BytesSegment):
+                self.data += seg.data
+            elif isinstance(seg, ShortAddressSegment):
+                self.fill_short_address(seg, s, local_labels)
+            elif isinstance(seg, LongAddressSegment):
+                self.fill_long_address(seg, s, local_labels)
+            elif isinstance(seg, LongBranchSegment):
+                self.fill_long_branch(seg, s, local_labels)
+            elif isinstance(seg, LabelBranchSegment):
+                self.fill_branch(seg, s, local_labels)
+            elif isinstance(seg, OffsetBranchSegment):
+                self.fill_offset_branch(seg)
+            elif isinstance(seg, TemplateFieldSegment):
+                self.fill_tfield(seg, template_fields)
+
+    def fill_short_address(self, seg: ShortAddressSegment, s: Section, local_labels: dict[str, int]):
+        label_name = seg.label.name
+        if label_name in local_labels:
+            self.data += bytearray([local_labels[label_name]])
+        elif label_name in s.labels:
+            self.rel.add(s.address + len(self.data))
+            self.data += bytearray([s.labels[label_name]])
+        elif label_name in s.exts:
+            self.data += bytearray([0])
+            self.ext_uses.setdefault(label_name, []).append(s.address + len(self.data))
+        else:
+            raise Exception(f'Label "{label_name}" not found')
+
+    def fill_long_address(self, seg: LongAddressSegment, s: Section, local_labels: dict[str, int]):
+        label_name = seg.label.name
+        if label_name in local_labels:
+            self.data += local_labels[label_name].to_bytes(2, 'little')
+        elif label_name in s.labels:
+            # Add rel (2 bytes long)
+            self.data += s.labels[label_name].to_bytes(2, 'little')
+        elif label_name in s.exts:
+            # Add external label use (2 bytes long)
+            self.data += bytearray([0, 0])
+        else:
+            raise Exception(f'Label "{label_name}" not found')
+
+    def fill_branch(self, seg: LabelBranchSegment, s: Section, local_labels: dict[str, int]):
+        label_name = seg.label.name
+        if label_name in local_labels:
+            addr = local_labels[label_name]
+        elif label_name in s.labels:
+            addr = s.labels[label_name]
+        elif label_name in s.exts:
+            raise Exception(f'Cannot branch to an external label "{label_name}"')
+        else:
+            raise Exception(f'Label "{label_name}" not found')
+
+        offset = addr - s.address - len(self.data) - 1
+        if not -128 <= offset < 128:
+            raise Exception('Branch offset too far')
+
+        self.data += seg.opcode.to_bytes(1, 'little')
+        self.data += offset.to_bytes(1, 'little', signed=True)
+
+    def fill_offset_branch(self, seg: OffsetBranchSegment):
+        if not -128 <= seg.offset < 128:
+            raise Exception('Branch offset too far')
+        self.data += seg.opcode.to_bytes(1, 'little')
+        self.data += seg.offset.to_bytes(1, 'little', signed=True)
+
+    def fill_long_branch(self, seg: LabelBranchSegment, s: Section, local_labels: dict[str, int]):
+        label_name = seg.label.name
+        if label_name in local_labels:
+            addr = local_labels[label_name]
+        elif label_name in s.labels:
+            # Add rel (2 bytes are apart)
+            addr = s.labels[label_name]
+        elif label_name in s.exts:
+            # Add external label use (2 bytes are apart)
+            addr = 0
+        self.data += LongBranchSegment.expand_long_jump(seg.opcode, addr)
+
+    def fill_tfield(self, seg: TemplateFieldSegment, template_fields: dict[str, dict[str, int]]):
+        tf = seg.tfield
+        if tf.template_name in template_fields:
+            if tf.field_name in template_fields[tf.template_name]:
+                value = template_fields[tf.template_name][tf.field_name]
+                self.data += value.to_bytes(1, 'little')
+                if tf.negative:
+                    self.data += (-value).to_bytes(1, 'little', signed=True)
+            else:
+                raise Exception(f'Template field "{tf.template_name}.{tf.field_name}" not found')
+        else:
+            raise Exception(f'Template "{tf.template_name}" not found')
 
 @dataclass
 class ObjectModule:
@@ -81,8 +177,8 @@ def assemble_template(sn: TemplateSectionNode):
         elif isinstance(line, InstructionNode):
             if line.mnemonic not in dirset:
                 raise Exception('Only "dc" and "ds" allowed in templates')
-            cmd_piece = assemble_command(line)
-            size += len(cmd_piece.data)
+            cmd_piece = assemble_instruction(line)
+            size += cmd_piece.segments[0].size
     template.labels['_'] = size
     return template
 
@@ -99,187 +195,192 @@ def assemble_label_declaration(line: LabelDeclarationNode, start_addr: int):
     else:
         block.labels[label_name] = start_addr
         if line.entry:
-            block.ents[label_name] = start_addr
+            block.ents.add(label_name)
     return block
 
-def assemble_instruction(line: InstructionNode, start_addr: int):
+def assemble_instruction(line: InstructionNode):
     block = CodeBlock()
-    cmd_piece = assemble_command(line)
-    for offset, label in cmd_piece.label_uses.items():
-        block.label_uses[start_addr + offset] = label.name
-    for offset, tfield in cmd_piece.tfield_uses.items():
-        block.tfield_uses[start_addr + offset] = tfield
-    block.data += cmd_piece.data
+    block.segments += assemble_command(line)
+    for seg in block.segments:
+        block.size += seg.size
     return block
 
 def assemble_conditional_statement(line: ConditionalStatementNode, start_addr: int, loop_stack: list):
     block = CodeBlock()
-    else_block_present = len(line.else_lines) > 0
-    cond_count = len(line.conditions)
-    cond_addr = start_addr
-    next_or_addr = [-1] * cond_count
-    last_or = 0
 
-    cond_blocks = []
-    for i in range(cond_count):
-        cond_blocks.append(assemble_code_block(line.conditions[i].lines, cond_addr, loop_stack))
-        cond_addr += len(cond_blocks[i].data) + 2
-        if line.conditions[i].conjunction != 'and':
-            for j in range(last_or, i):
-                next_or_addr[j] = cond_addr
-            last_or = i
+    or_label = f'${start_addr}_or'
+    then_label = f'${start_addr}_then'
+    else_label = f'${start_addr}_else'
+    finally_label = f'${start_addr}_finally'
 
-    then_addr = cond_addr
-    then_block = assemble_code_block(line.then_lines, then_addr, loop_stack)
-    else_addr = cond_addr + len(then_block.data)
-    if else_block_present:
-        else_addr += 2
-        else_block = assemble_code_block(line.else_lines, else_addr, loop_stack)
+    next_or = 0
+    for cond in line.conditions:
+        block.append_block(assemble_code_block(cond.lines, start_addr + block.size, loop_stack))
+        next_or_label = f'{or_label}{next_or}'
+        if cond.conjunction is None:
+            block.append_branch(f'bn{cond.branch_mnemonic}', else_label)
+        elif cond.conjunction == 'or':
+            block.append_label(next_or_label)
+            next_or += 1
+            block.append_branch(f'b{cond.branch_mnemonic}', then_label)
+        elif cond.conjunction == 'and':
+            block.append_branch(f'bn{cond.branch_mnemonic}', next_or_label)
 
-    for i in range(cond_count):
-        block.append_block(cond_blocks[i])
-        if line.conditions[i].conjunction is None:
-            branch = f'bn{line.conditions[i].branch_mnemonic}'
-            branch_addr = else_addr
-        elif line.conditions[i].conjunction == 'or':
-            branch = f'b{line.conditions[i].branch_mnemonic}'
-            branch_addr = then_addr
-        elif line.conditions[i].conjunction == 'and':
-            branch = f'bn{line.conditions[i].branch_mnemonic}'
-            branch_addr = next_or_addr[i]
-        block.append_branch(branch, branch_addr)
+    block.append_label(then_label)
+    block.append_block(assemble_code_block(line.then_lines, start_addr + block.size, loop_stack))
 
-    block.append_block(then_block)
-    if else_block_present:
-        finally_addr = else_addr + len(else_block.data)
-        block.append_branch('br', finally_addr)
-        block.append_block(else_block)
+    if len(line.else_lines) > 0:
+        block.append_branch('br', finally_label)
+        block.append_label(else_label)
+        block.append_block(assemble_code_block(line.else_lines, start_addr + block.size, loop_stack))
+        block.append_label(finally_label)
+
     return block
 
 def assemble_while_loop(line: WhileLoopNode, start_addr: int, loop_stack: list):
-    loop_stack.append([[], []]) # Objects?
     block = CodeBlock()
-    cond_addr = start_addr
-    cond_block = assemble_code_block(line.condition_lines, cond_addr, loop_stack)
-    loop_body_addr = cond_addr + len(cond_block.data) + 2
-    loop_body_block = assemble_code_block(line.lines, loop_body_addr, loop_stack)
-    finally_addr = loop_body_addr + len(loop_body_block.data) + 2
 
-    block.append_block(cond_block)
-    branch = f'bn{line.branch_mnemonic}'
-    block.append_branch(branch, finally_addr)
-    block.append_block(loop_body_block)
-    block.append_branch('br', cond_addr)
+    cond_label = f'${start_addr}_cond'
+    finally_label = f'${start_addr}_finally'
 
-    for break_pos in loop_stack[-1][0]:
-        block.data[break_pos - start_addr] = finally_addr
-    for continue_pos in loop_stack[-1][1]:
-        block.data[continue_pos - start_addr] = cond_addr
+    loop_stack.append((cond_label, finally_label))
+    block.append_label(cond_label)
+    block.append_block(assemble_code_block(line.condition_lines, start_addr + block.size, loop_stack))
+    block.append_branch(f'bn{line.branch_mnemonic}', finally_label)
+    block.append_block(assemble_code_block(line.lines, start_addr + block.size, loop_stack))
+    block.append_branch('br', cond_label)
+    block.append_label(finally_label)
     loop_stack.pop()
 
     return block
 
 def assemble_until_loop(line: UntilLoopNode, start_addr: int, loop_stack: list):
-    loop_stack.append([[], []]) # Objects?
     block = CodeBlock()
-    loop_body_addr = start_addr
-    loop_body_block = assemble_code_block(line.lines, loop_body_addr, loop_stack)
-    cond_addr = loop_body_addr + len(loop_body_block.data)
-    finally_addr = cond_addr + 2
 
-    block.append_block(loop_body_block)
-    branch = f'bn{line.branch_mnemonic}'
-    block.append_branch(branch, loop_body_addr)
+    loop_body_label = f'${start_addr}_loop_body'
+    cond_label = f'${start_addr}_cond'
+    finally_label = f'${start_addr}_finally'
 
-    for break_pos in loop_stack[-1][0]:
-        block.data[break_pos - start_addr] = finally_addr
-    for continue_pos in loop_stack[-1][1]:
-        block.data[continue_pos - start_addr] = cond_addr
+    loop_stack.append((cond_label, finally_label))
+    block.append_label(loop_body_label)
+    block.append_block(assemble_code_block(line.lines, start_addr + block.size, loop_stack))
+    block.append_label(cond_label)
+    block.append_branch(f'bn{line.branch_mnemonic}', loop_body_label)
+    block.append_label(finally_label)
     loop_stack.pop()
 
     return block
 
 def assemble_save_restore_statement(line: SaveRestoreStatement, start_addr: int, loop_stack: list):
     block = CodeBlock()
-    block.data.append(insset['unary']['push'] + line.saved_register.number)
-    block.append_block(assemble_code_block(line.lines, start_addr + 1, loop_stack))
-    block.data.append(insset['unary']['pop'] + line.restored_register.number)
+    block.append_bytes([insset['unary']['push'] + line.saved_register.number])
+    block.append_block(assemble_code_block(line.lines, start_addr + block.size, loop_stack))
+    block.append_bytes([insset['unary']['pop'] + line.restored_register.number])
     return block
 
-def assemble_break_statement(start_addr: int, loop_stack: list):
+def assemble_break_statement(loop_stack: list):
     block = CodeBlock()
-    block.append_branch('br', 0)
     if len(loop_stack) == 0:
         raise Exception('"break" not allowed outside of a loop')
-    loop_stack[-1][0].append(start_addr + 1)
+    _, finally_label = loop_stack[-1]
+    block.append_branch('br', finally_label)
     return block
 
-def assemble_continue_statement(start_addr: int, loop_stack: list):
+def assemble_continue_statement(loop_stack: list):
     block = CodeBlock()
-    block.append_branch('br', 0)
     if len(loop_stack) == 0:
         raise Exception('"continue" not allowed outside of a loop')
-    loop_stack[-1][1].append(start_addr + 1)
+    cond_label, _ = loop_stack[-1]
+    block.append_branch('br', cond_label)
     return block
 
 def assemble_code_block(lines: list, start_addr: int, loop_stack: list):
     block = CodeBlock()
     for line in lines:
-        if   isinstance(line, LabelDeclarationNode):
-            block.append_block(assemble_label_declaration(line, start_addr + len(block.data)))
+        if isinstance(line, LabelDeclarationNode):
+            block.append_block(assemble_label_declaration(line, start_addr + block.size))
         elif isinstance(line, InstructionNode):
-            new_block = assemble_instruction(line, start_addr + len(block.data))
-            new_block.code_locations[len(block.data)] = line.location
+            new_block = assemble_instruction(line)
+            new_block.code_locations[block.size] = line.location
             block.append_block(new_block)
         elif isinstance(line, ConditionalStatementNode):
-            block.append_block(assemble_conditional_statement(line, start_addr + len(block.data), loop_stack))
+            block.append_block(assemble_conditional_statement(line, start_addr + block.size, loop_stack))
         elif isinstance(line, WhileLoopNode):
-            block.append_block(assemble_while_loop(line, start_addr + len(block.data), loop_stack))
+            block.append_block(assemble_while_loop(line, start_addr + block.size, loop_stack))
         elif isinstance(line, UntilLoopNode):
-            block.append_block(assemble_until_loop(line, start_addr + len(block.data), loop_stack))
+            block.append_block(assemble_until_loop(line, start_addr + block.size, loop_stack))
         elif isinstance(line, SaveRestoreStatement):
-            block.append_block(assemble_save_restore_statement(line, start_addr + len(block.data), loop_stack))
+            block.append_block(assemble_save_restore_statement(line, start_addr + block.size, loop_stack))
         elif isinstance(line, BreakStatementNode):
-            block.append_block(assemble_break_statement(start_addr + len(block.data), loop_stack))
+            block.append_block(assemble_break_statement(loop_stack))
         elif isinstance(line, ContinueStatementNode):
-            block.append_block(assemble_continue_statement(start_addr + len(block.data), loop_stack))
+            block.append_block(assemble_continue_statement(loop_stack))
     return block
 
 def assemble_section(sn: SectionNode):
-    section = Section()
     if isinstance(sn, AbsoluteSectionNode):
-        section.address = sn.address
-        section.name = '$abs'
+        section = Section(sn.address, '$abs')
     else:
-        section.address = 0
-        section.name = sn.name
-
+        section = Section(0, sn.name)
     section.append_block(assemble_code_block(sn.lines, section.address, []))
-
     return section
 
-def fill_labels(s: Section, local_labels: dict):
-    for label_pos, label_name in s.label_uses.items():
-        if label_name in s.labels:
-            s.data[label_pos - s.address] = s.labels[label_name]
-        elif label_name in s.exts:
-            s.ext_uses[label_pos] = label_name
-        elif label_name in local_labels:
-            s.data[label_pos - s.address] = local_labels[label_name]
-        else:
-            raise Exception(f'Label "{label_name}" not found')
+def gather_local_labels(sects: list[Section]):
+    local_labels = dict()
+    for sect in sects:
+        local_labels |= dict(filter(lambda p: not p[0].startswith('$') and p[0] not in sect.ents, sect.labels.items()))
+    return local_labels
 
-def fill_tfields(s: Section, template_fields: dict):
-    for tfield_pos, tfield in s.tfield_uses.items():
-        if tfield.template_name in template_fields:
-            if tfield.field_name in template_fields[tfield.template_name]:
-                s.data[tfield_pos] = template_fields[tfield.template_name][tfield.field_name]
-                if tfield.negative:
-                    s.data[tfield_pos] = 256 - s.data[tfield_pos]
-            else:
-                raise Exception(f'Template field "{tfield.template_name}.{tfield.field_name}" not found')
+def expand_long_branches(sects: list[Section]):
+    branch_pos: list[int] = []
+    branch_ind: list[int] = []
+    branch_sect: list[Section] = []
+    branch_label: list[str] = []
+
+    local_labels = gather_local_labels(sects)
+
+    for s in sects:
+        pos = s.address
+        for i in range(len(s.segments)):
+            if isinstance(s.segments[i], OffsetBranchSegment):
+                label_name = f'$offset{i}'
+                s.labels[label_name] = pos + s.segments[i].offset + 1
+                s.segments[i] = LabelBranchSegment(s.segments[i].opcode, LabelNode(label_name))
+            if isinstance(s.segments[i], LabelBranchSegment):
+                branch_pos.append(pos + 1)
+                branch_ind.append(i)
+                branch_sect.append(s)
+                branch_label.append(s.segments[i].label.name)
+            pos += s.segments[i].size
+
+    all_expanded = False
+    while not all_expanded:
+        for i in range(len(branch_label)):
+            seg = branch_sect[i].segments[branch_ind[i]]
+            if isinstance(seg, LongBranchSegment):
+                continue
+            if branch_label[i] in branch_sect[i].labels:
+                offset = branch_sect[i].labels[branch_label[i]] - branch_pos[i]
+                if -128 <= offset < 128:
+                    continue
+            if branch_label[i] in local_labels:
+                offset = local_labels[branch_label[i]] - branch_pos[i]
+                if -128 <= offset < 128:
+                    continue
+            branch_sect[i].segments[branch_ind[i]] = LongBranchSegment(seg.opcode, seg.label)
+            break
         else:
-            raise Exception(f'Template "{tfield.template_name}" not found')
+            all_expanded = True
+            break
+
+        shift_length = LongBranchSegment.size - LabelBranchSegment.size
+        for label_name in branch_sect[i].labels:
+            if branch_sect[i].labels[label_name] > branch_pos[i]:
+                branch_sect[i].labels[label_name] += shift_length
+        for j in range(len(branch_label)):
+            if branch_sect[j] is branch_sect[i] and branch_pos[j] > branch_pos[i]:
+                branch_pos[j] += shift_length
+
 
 def assemble(pn: ProgramNode):
     templates = [assemble_template(t) for t in pn.template_sections]
@@ -287,27 +388,15 @@ def assemble(pn: ProgramNode):
 
     asects = [assemble_section(asect) for asect in pn.absolute_sections]
     rsects = [assemble_section(rsect) for rsect in pn.relocatable_sections]
+    asects.sort(key=lambda s: s.address)
 
-    local_labels = dict()
-    for sect in asects + templates:
-        local_labels |= sect.labels
+    # expand_long_branches(asects)
+    # for rsect in rsects:
+    #     expand_long_branches([rsect])
+
+    local_labels = gather_local_labels(asects)
 
     obj = ObjectModule()
-
-    for asect in asects:
-        fill_labels(asect, local_labels)
-        fill_tfields(asect, template_fields)
-        obj.asects.append(ObjectSectionRecord(asect))
-
-    for rsect in rsects:
-        fill_labels(rsect, local_labels)
-        fill_tfields(rsect, template_fields)
-        obj.rsects.append(ObjectSectionRecord(rsect))
-
-    for sect in rsects + asects:
-        for ext_pos, ext_name in sect.ext_uses.items():
-            sections_using_ext = obj.exts.setdefault(ext_name, dict())
-            ext_uses = sections_using_ext.setdefault(sect.name, [])
-            ext_uses.append(ext_pos)
-
+    obj.asects = [ObjectSectionRecord(asect, local_labels, template_fields) for asect in asects]
+    obj.rsects = [ObjectSectionRecord(rsect, local_labels, template_fields) for rsect in rsects]
     return obj
