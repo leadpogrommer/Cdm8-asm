@@ -35,6 +35,8 @@ instructions = {
         'ldc':  0xF0,
     },
     'branch': {
+        'jsr':  0xD6,
+
         'beq':  0xE0,
         'bz':   0xE0,
         'bnne': 0xE0,
@@ -99,9 +101,6 @@ instructions = {
         'addsp': 0xCC,
         'setsp': 0xCD,
     },
-    'long': {
-        'jsr':  0xD6,
-    }
 }
 
 assembly_directives = { 'ds', 'dc' }

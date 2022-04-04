@@ -259,33 +259,13 @@ def assemble_section(sn: SectionNode):
     return section
 
 def fill_labels(s: Section, local_labels: dict):
-    print('labels')
     for label_pos, label_name in s.label_uses.items():
-        if label_name in s.exts:
-            print('nope')
+        if label_name in s.labels:
+            s.data[label_pos - s.address] = s.labels[label_name]
+        elif label_name in s.exts:
             s.ext_uses[label_pos] = label_name
-        elif label_name in s.labels or label_name in local_labels:
-            if label_name in s.labels:
-                value: int = s.labels[label_name]
-            else:
-                value: int = local_labels[label_name]
-
-            print(value)
-            if value > 255 and s.data[label_pos - s.address] != 0xff:
-                # TODO: rewrite this
-                bs = value.to_bytes(2, byteorder='little')
-                s.data[label_pos - s.address] = bs[0]
-                s.data[label_pos - s.address + 1] = bs[1]
-            else:
-                # not jsr
-                print(s.data)
-                if s.data[label_pos - s.address] == 0xff:
-                    # branch
-                    print(value, label_pos)
-                    s.data[label_pos - s.address] = (value - label_pos).to_bytes(1, signed=True, byteorder='little')[0]
-                else:
-                    s.data[label_pos - s.address] = value
-        
+        elif label_name in local_labels:
+            s.data[label_pos - s.address] = local_labels[label_name]
         else:
             raise Exception(f'Label "{label_name}" not found')
 
@@ -314,7 +294,6 @@ def assemble(pn: ProgramNode):
 
     obj = ObjectModule()
 
-    # TODO: why assembler handles label resolution?
     for asect in asects:
         fill_labels(asect, local_labels)
         fill_tfields(asect, template_fields)
