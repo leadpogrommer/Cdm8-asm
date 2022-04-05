@@ -92,7 +92,10 @@ instructions = {
         'bnanything': 0xEF,
         'bntrue':     0xEF,
     },
-    'long': { 'jsr' : 0xD6 },
+    'long': {
+        'jsr' : 0xD6,
+        'jmp': 0xDD,
+    },
     'ldsa': { 'ldsa': 0xC8 },
     'ldi':  { 'ldi' : 0xD0 },
     'osix': { 'osix': 0xDB },

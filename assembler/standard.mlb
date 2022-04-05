@@ -4,9 +4,6 @@
 *clr/1
     sub     $1, $1
 
-*jmp/1
-    push    $1
-    rti     $1
 
 *jsrr/1
     push    $1

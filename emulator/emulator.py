@@ -440,6 +440,12 @@ class CDM8Emu():
                 self.SP = (self.SP + 2) % 256
                 return
 
+            if vvww == 13: # jmp
+                newPC = self.memory[(self.PC + 1 + 2 ** 16) % 2 ** 16] | (
+                        self.memory[(self.PC + 2 + 2 ** 16) % 2 ** 16] << 8)
+                self.changePC(newPC)
+                return
+
             if vvww == 10:  # crc
                 raise NotImplementedError("CRC not imlemented yet")
                 # temp = (self.PC + 1 + 256) % 256
