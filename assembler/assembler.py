@@ -13,7 +13,8 @@ class Template:
 
 @dataclass
 class CodeBlock:
-    def __init__(self):
+    def __init__(self, address: int):
+        self.address = address
         self.size: int = 0
         self.segments: list[CodeSegment] = []
         self.labels: dict[str, int] = dict()
@@ -34,7 +35,7 @@ class CodeBlock:
         self.size += len(data)
 
     def append_label(self, label_name):
-        self.labels[label_name] = self.size
+        self.labels[label_name] = self.address + self.size
 
     def append_branch(self, mnemonic, label_name):
         self.segments.append(LabelBranchSegment(insset['branch'][mnemonic], LabelNode(label_name)))
@@ -43,9 +44,8 @@ class CodeBlock:
 @dataclass
 class Section(CodeBlock):
     def __init__(self, address: int, name: str):
-        self.address = address
         self.name = name
-        super().__init__()
+        super().__init__(address)
 
 @dataclass
 class ObjectSectionRecord:
@@ -183,7 +183,7 @@ def assemble_template(sn: TemplateSectionNode):
     return template
 
 def assemble_label_declaration(line: LabelDeclarationNode, start_addr: int):
-    block = CodeBlock()
+    block = CodeBlock(start_addr)
     label_name = line.label.name
     if (label_name in block.labels or
         label_name in block.ents or
@@ -199,14 +199,14 @@ def assemble_label_declaration(line: LabelDeclarationNode, start_addr: int):
     return block
 
 def assemble_instruction(line: InstructionNode):
-    block = CodeBlock()
+    block = CodeBlock(0)
     block.segments += assemble_command(line)
     for seg in block.segments:
         block.size += seg.size
     return block
 
 def assemble_conditional_statement(line: ConditionalStatementNode, start_addr: int, loop_stack: list):
-    block = CodeBlock()
+    block = CodeBlock(start_addr)
 
     or_label = f'${start_addr}_or'
     then_label = f'${start_addr}_then'
@@ -220,9 +220,9 @@ def assemble_conditional_statement(line: ConditionalStatementNode, start_addr: i
         if cond.conjunction is None:
             block.append_branch(f'bn{cond.branch_mnemonic}', else_label)
         elif cond.conjunction == 'or':
+            block.append_branch(f'b{cond.branch_mnemonic}', then_label)
             block.append_label(next_or_label)
             next_or += 1
-            block.append_branch(f'b{cond.branch_mnemonic}', then_label)
         elif cond.conjunction == 'and':
             block.append_branch(f'bn{cond.branch_mnemonic}', next_or_label)
 
@@ -234,11 +234,13 @@ def assemble_conditional_statement(line: ConditionalStatementNode, start_addr: i
         block.append_label(else_label)
         block.append_block(assemble_code_block(line.else_lines, start_addr + block.size, loop_stack))
         block.append_label(finally_label)
+    else:
+        block.append_label(else_label)
 
     return block
 
 def assemble_while_loop(line: WhileLoopNode, start_addr: int, loop_stack: list):
-    block = CodeBlock()
+    block = CodeBlock(start_addr)
 
     cond_label = f'${start_addr}_cond'
     finally_label = f'${start_addr}_finally'
@@ -255,7 +257,7 @@ def assemble_while_loop(line: WhileLoopNode, start_addr: int, loop_stack: list):
     return block
 
 def assemble_until_loop(line: UntilLoopNode, start_addr: int, loop_stack: list):
-    block = CodeBlock()
+    block = CodeBlock(start_addr)
 
     loop_body_label = f'${start_addr}_loop_body'
     cond_label = f'${start_addr}_cond'
@@ -272,14 +274,14 @@ def assemble_until_loop(line: UntilLoopNode, start_addr: int, loop_stack: list):
     return block
 
 def assemble_save_restore_statement(line: SaveRestoreStatement, start_addr: int, loop_stack: list):
-    block = CodeBlock()
+    block = CodeBlock(start_addr)
     block.append_bytes([insset['unary']['push'] + line.saved_register.number])
     block.append_block(assemble_code_block(line.lines, start_addr + block.size, loop_stack))
     block.append_bytes([insset['unary']['pop'] + line.restored_register.number])
     return block
 
 def assemble_break_statement(loop_stack: list):
-    block = CodeBlock()
+    block = CodeBlock(0)
     if len(loop_stack) == 0:
         raise Exception('"break" not allowed outside of a loop')
     _, finally_label = loop_stack[-1]
@@ -287,7 +289,7 @@ def assemble_break_statement(loop_stack: list):
     return block
 
 def assemble_continue_statement(loop_stack: list):
-    block = CodeBlock()
+    block = CodeBlock(0)
     if len(loop_stack) == 0:
         raise Exception('"continue" not allowed outside of a loop')
     cond_label, _ = loop_stack[-1]
@@ -295,7 +297,7 @@ def assemble_continue_statement(loop_stack: list):
     return block
 
 def assemble_code_block(lines: list, start_addr: int, loop_stack: list):
-    block = CodeBlock()
+    block = CodeBlock(start_addr)
     for line in lines:
         if isinstance(line, LabelDeclarationNode):
             block.append_block(assemble_label_declaration(line, start_addr + block.size))
