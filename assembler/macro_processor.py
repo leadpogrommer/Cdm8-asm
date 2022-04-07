@@ -1,10 +1,15 @@
 from antlr4 import *
 from antlr4.TokenStreamRewriter import TokenStreamRewriter
+from antlr4.error.Errors import CancellationException, ParseCancellationException
+from antlr4.error.ErrorListener import ErrorListener
 from dataclasses import dataclass
+
+from location import CodeLocation
 from generated.MacroLexer import MacroLexer
 from generated.MacroParser import MacroParser
 from generated.MacroVisitor import MacroVisitor
 from typing import Union
+from base64 import b64encode
 import re
 
 
@@ -59,6 +64,7 @@ class MacroDefinition:
     name: str
     arity: int
     lines: list[MacroLine]
+    location: CodeLocation
 
 
 def substitute_piece(piece, params: list[str], nonce: str, variables: dict[str, str]):
@@ -82,10 +88,14 @@ def substitute_pieces_in_line(line: MacroLine, params: list[str], nonce: str, va
     return (label_part, instruction_part, parameter_parts)
 
 class ExpandMacrosVisitor(MacroVisitor):
-    def __init__(self, rewriter=None, mlb_macros=dict()):
+    def __init__(self, rewriter: TokenStreamRewriter, mlb_macros, filepath: str):
         self.nonce = 0
         self.macros = {name: mlb_macros[name].copy() for name in mlb_macros}
         self.rewriter = rewriter
+        self.filepath = filepath
+
+    def _generate_location_line(self, filepath: str, line: int) -> str:
+        return f'-| {line} fp-{b64encode(filepath.encode()).decode()}\n'
 
     def add_macro(self, macro: MacroDefinition):
         if macro.name not in self.macros:
@@ -100,8 +110,13 @@ class ExpandMacrosVisitor(MacroVisitor):
             ret_parts = []
             self.nonce += 1
             macro_nonce = str(self.nonce)
-            macro = self.macros[macro_name][arity]
+            macro: MacroDefinition = self.macros[macro_name][arity]
+
             variables = {}
+
+            ret_parts.append(self._generate_location_line(macro.location.file, macro.location.line))
+
+            line_number = 0
             for line in macro.lines:
                 label_part, instruction_part, parameter_parts \
                     = substitute_pieces_in_line(line, macro_params, macro_nonce, variables)
@@ -111,18 +126,28 @@ class ExpandMacrosVisitor(MacroVisitor):
                 if parameters == ['']:
                     parameters = []
 
+                # IMPORTANT:
+                # to correctly generate location information
+                # each line that does not contain another macro
+                # MUST add exactly ONE line to ret_parts
                 if instruction in macro_instructions:
                     variables.update(macro_instructions[instruction](parameters))
                     if label != '':
                         ret_parts.append(f'{label}\n')
+                    else:
+                        ret_parts.append('\n')
                 else:
                     expanded_text = self.expand_macro(instruction, parameters)
                     if expanded_text is not None:
                         if label != '':
                             ret_parts.append(f'{label}\n')
+                        else:
+                            ret_parts.append('\n')
                         ret_parts.append(expanded_text)
+                        ret_parts.append(f'\n{self._generate_location_line(macro.location.file, macro.location.line + line_number+1)}')
                     else:
                         ret_parts.append(f'{label_part}{instruction_part}{",".join(parameter_parts)}\n')
+                line_number += 1
             return ''.join(ret_parts)
         return None
 
@@ -133,6 +158,8 @@ class ExpandMacrosVisitor(MacroVisitor):
         return self.macros
 
     def visitProgram(self, ctx: MacroParser.ProgramContext):
+        if len(ctx.children) > 0:
+            self.rewriter.insertBeforeToken(ctx.children[0].start, self._generate_location_line(self.filepath, 1))
         for child in ctx.children:
             if isinstance(child, MacroParser.MacroContext):
                 self.add_macro(self.visitMacro(child))
@@ -142,6 +169,7 @@ class ExpandMacrosVisitor(MacroVisitor):
                 if expanded_text is not None:
                     if label != '':
                         expanded_text = f'{label}\n{expanded_text}'
+                    expanded_text = f'{expanded_text}\n{self._generate_location_line(self.filepath, child.stop.line+1)}'
                     self.rewriter.insertBeforeToken(child.start, expanded_text)
                     self.rewriter.delete(self.rewriter.DEFAULT_PROGRAM_NAME, child.start, child.stop)
 
@@ -151,14 +179,15 @@ class ExpandMacrosVisitor(MacroVisitor):
         arity = int(header.DIGIT().getText())
         lines = self.visitMacro_body(ctx.macro_body())
         self.rewriter.delete(self.rewriter.DEFAULT_PROGRAM_NAME, ctx.start, ctx.stop)
-        return MacroDefinition(name, arity, lines)
+        self.rewriter.insertAfterToken(ctx.stop, self._generate_location_line(self.filepath, ctx.stop.line+1))
+        return MacroDefinition(name, arity, lines, CodeLocation(self.filepath, ctx.macro_body().start.line, 0))
 
     def visitMlb_macro(self, ctx: MacroParser.Mlb_macroContext):
         header = ctx.mlb_header()
         name = header.NAME().getText()
         arity = int(header.DIGIT().getText())
         lines = self.visitMacro_body(ctx.macro_body())
-        return MacroDefinition(name, arity, lines)
+        return MacroDefinition(name, arity, lines, CodeLocation(self.filepath, ctx.macro_body().start.line, 0))
 
     def visitMacro_body(self, ctx: MacroParser.Macro_bodyContext):
         lines = []
@@ -223,19 +252,29 @@ class ExpandMacrosVisitor(MacroVisitor):
         elif ctx.macro_nonce() is not None:
             return MacroNonce()
 
-def read_mlb(filepath='standard.mlb'):
+
+# filepath should be absolute
+def read_mlb(filepath):
     input_stream = FileStream(filepath)
     lexer = MacroLexer(input_stream)
     token_stream = CommonTokenStream(lexer)
     parser = MacroParser(token_stream)
     cst = parser.mlb()
-    return ExpandMacrosVisitor().visit(cst)
+    return ExpandMacrosVisitor(None, dict(), filepath).visit(cst)
 
-def process_macros(input_stream: InputStream, library_macros=dict()):
+
+class FailErrorListener(ErrorListener):
+    def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
+        raise CancellationException("Lexer cancelled")
+
+
+# filepath should be absolute
+def process_macros(input_stream: InputStream, library_macros, filepath: str):
     lexer = MacroLexer(input_stream)
+    lexer.addErrorListener(FailErrorListener())
     token_stream = CommonTokenStream(lexer)
     parser = MacroParser(token_stream)
     cst = parser.program()
     rewriter = TokenStreamRewriter(token_stream)
-    ExpandMacrosVisitor(rewriter, library_macros).visit(cst)
+    ExpandMacrosVisitor(rewriter, library_macros, filepath).visit(cst)
     return InputStream(rewriter.getDefaultText())

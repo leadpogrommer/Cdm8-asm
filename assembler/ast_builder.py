@@ -3,9 +3,18 @@ from ast_nodes import *
 from generated.AsmLexer import AsmLexer
 from generated.AsmParser import AsmParser
 from generated.AsmParserVisitor import AsmParserVisitor
+from base64 import b64decode
 
 
 class BuildAstVisitor(AsmParserVisitor):
+    def __init__(self, filepath: str):
+        super().__init__()
+        self.line_offset = 0
+        # self.line_offset = 0
+        self.source_path = filepath
+        self.line_offset = 0
+
+
     def visitProgram(self, ctx:AsmParser.ProgramContext) -> ProgramNode:
         ret = ProgramNode([], [], [])
         for child in ctx.children:
@@ -15,6 +24,8 @@ class BuildAstVisitor(AsmParserVisitor):
                 ret.relocatable_sections.append(self.visitRelocatableSection(child))
             elif isinstance(child, AsmParser.TemplateSectionContext):
                 ret.template_sections.append(self.visitTemplateSection(child))
+            elif isinstance(child, AsmParser.Line_markContext):
+                self.visitLine_mark(child)
         return ret
 
     def visitAbsoluteSection(self, ctx:AsmParser.AbsoluteSectionContext) -> AbsoluteSectionNode:
@@ -34,6 +45,13 @@ class BuildAstVisitor(AsmParserVisitor):
         lines = self.visitSection_body(ctx.section_body())
         name = header.name().getText()
         return TemplateSectionNode(lines, name)
+
+    def visitLine_mark(self, ctx:AsmParser.Line_markContext):
+        value = int(ctx.line_number().getText())
+        filepath = b64decode(ctx.filepath().getText()[3:]).decode()
+        self.source_path = filepath
+        self.line_offset = ctx.start.line - value + 1
+
 
     def visitNumber(self, ctx:AsmParser.NumberContext) -> int:
         return int(ctx.getText(), base=0)
@@ -121,6 +139,8 @@ class BuildAstVisitor(AsmParserVisitor):
                 ret.append(BreakStatementNode())
             elif isinstance(c, AsmParser.Continue_statementContext):
                 ret.append(ContinueStatementNode())
+            elif isinstance(c, AsmParser.Line_markContext):
+                self.visit(c)
         return ret
 
     def visitStandaloneLabel(self, ctx:AsmParser.StandaloneLabelContext) -> LabelNode:
@@ -154,15 +174,15 @@ class BuildAstVisitor(AsmParserVisitor):
             ret.append(self.visitLabel_declaration(ctx.label_declaration()))
         op = ctx.instruction().getText()
         args = self.visitArguments(ctx.arguments()) if ctx.arguments() is not None else []
-        ret.append(InstructionNode(op, args, CodeLocation(None, ctx.start.line, ctx.start.column)))
+        ret.append(InstructionNode(op, args, CodeLocation(self.source_path, ctx.start.line - self.line_offset, ctx.start.column)))
         return ret
 
     def visitArguments(self, ctx:AsmParser.ArgumentsContext):
         return [self.visitArgument(i) for i in ctx.children if isinstance(i, AsmParser.ArgumentContext)]
 
-def build_ast(input_stream: InputStream):
+def build_ast(input_stream: InputStream, filepath: str):
     lexer = AsmLexer(input_stream)
     token_stream = CommonTokenStream(lexer)
     parser = AsmParser(token_stream)
     cst = parser.program()
-    return BuildAstVisitor().visit(cst)
+    return BuildAstVisitor(filepath).visit(cst)

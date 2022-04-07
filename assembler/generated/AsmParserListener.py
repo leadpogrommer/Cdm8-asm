@@ -89,6 +89,33 @@ class AsmParserListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by AsmParser#line_mark.
+    def enterLine_mark(self, ctx:AsmParser.Line_markContext):
+        pass
+
+    # Exit a parse tree produced by AsmParser#line_mark.
+    def exitLine_mark(self, ctx:AsmParser.Line_markContext):
+        pass
+
+
+    # Enter a parse tree produced by AsmParser#line_number.
+    def enterLine_number(self, ctx:AsmParser.Line_numberContext):
+        pass
+
+    # Exit a parse tree produced by AsmParser#line_number.
+    def exitLine_number(self, ctx:AsmParser.Line_numberContext):
+        pass
+
+
+    # Enter a parse tree produced by AsmParser#filepath.
+    def enterFilepath(self, ctx:AsmParser.FilepathContext):
+        pass
+
+    # Exit a parse tree produced by AsmParser#filepath.
+    def exitFilepath(self, ctx:AsmParser.FilepathContext):
+        pass
+
+
     # Enter a parse tree produced by AsmParser#break_statement.
     def enterBreak_statement(self, ctx:AsmParser.Break_statementContext):
         pass

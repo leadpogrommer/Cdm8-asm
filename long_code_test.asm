@@ -22,7 +22,7 @@ dc "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut in vulputate met
 
 
 
-# assemnle should be able to push to bytes label onto stack
+# assemnler should be able to push to bytes label onto stack
 # or at least define macro to enable interrupts
 asect 0x0100
 ldi r0, lorem_ipsum

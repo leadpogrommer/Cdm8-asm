@@ -54,6 +54,21 @@ class AsmParserVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by AsmParser#line_mark.
+    def visitLine_mark(self, ctx:AsmParser.Line_markContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AsmParser#line_number.
+    def visitLine_number(self, ctx:AsmParser.Line_numberContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AsmParser#filepath.
+    def visitFilepath(self, ctx:AsmParser.FilepathContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by AsmParser#break_statement.
     def visitBreak_statement(self, ctx:AsmParser.Break_statementContext):
         return self.visitChildren(ctx)

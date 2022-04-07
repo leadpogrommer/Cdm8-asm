@@ -60,20 +60,16 @@ def write_object_file(filename: str, obj: ObjectModule):
 
 
 if __name__ == '__main__':
-    library_macros = read_mlb(pathlib.Path(__file__).parent.joinpath('standard.mlb'))
+    library_macros = read_mlb(str(pathlib.Path(__file__).parent.joinpath('standard.mlb').absolute()))
     source_files = sys.argv[1:]
     objects = []
     for filepath in source_files:
         root, ext = os.path.splitext(filepath)
         input_stream = FileStream(filepath)
-        macro_expanded_input_stream = process_macros(input_stream, library_macros)
-        r = build_ast(macro_expanded_input_stream)
+        macro_expanded_input_stream = process_macros(input_stream, library_macros, str(pathlib.Path(filepath).absolute()))
+        print(macro_expanded_input_stream)
+        r = build_ast(macro_expanded_input_stream, str(pathlib.Path(filepath).absolute()))
         obj = assemble(r)
-
-        for section_arr in (obj.asects, obj.rsects):
-            for section in section_arr:
-                for location in section.code_locations.values():
-                    location.file = filepath
 
         write_object_file(root + '.obj', obj)
         objects.append(obj)
@@ -84,6 +80,6 @@ if __name__ == '__main__':
 
     # write code locations(debug info)
     code_locations = {key: asdict(loc) for key, loc in code_locations.items()}
-    json_locations = json.dumps(code_locations)
+    json_locations = json.dumps(code_locations, indent=4, sort_keys=True)
     with open(image_root + '.dbg.json', 'w') as f:
         f.write(json_locations)

@@ -2,7 +2,7 @@ parser grammar AsmParser;
 
 options { tokenVocab=AsmLexer; }
 
-program : NEWLINE* section* End ;
+program : line_mark NEWLINE* section* End ;
 
 section
     :  asect_header section_body # absoluteSection
@@ -24,8 +24,14 @@ code_block
     | while_loop
     | until_loop
     | save_restore_statement
+    | line_mark
     )*
     ;
+
+line_mark : LINE_MARK_MARKER  line_number filepath  NEWLINE+;
+
+line_number: DECIMAL_NUMBER;
+filepath: BASE64;
 
 break_statement : Break NEWLINE+ ;
 continue_statement : Continue NEWLINE+ ;

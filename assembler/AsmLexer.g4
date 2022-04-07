@@ -27,6 +27,7 @@ MINUS : '-' ;
 COLON : ':' ;
 ASTERISK : '*' ;
 ANGLE_BRACKET : '>' ;
+LINE_MARK_MARKER: '-|';
 
 REGISTER : 'r'[0-3] ;
 WORD : [a-zA-Z_][a-zA-Z_0-9]* ;
@@ -39,3 +40,7 @@ CHAR : '\'' ('\\'. | ~[\\'\n]) '\'' ;
 NEWLINE : '\r'? '\n' ;
 COMMENT : '#'~[\n]* -> skip ;
 WS : (' ' | '\t') -> skip ;
+
+
+BASE64 : 'fp-' [a-zA-Z0-9/+=]+;
+
