@@ -1,7 +1,5 @@
 from antlr4 import *
 from antlr4.TokenStreamRewriter import TokenStreamRewriter
-from antlr4.error.Errors import CancellationException, ParseCancellationException
-from antlr4.error.ErrorListener import ErrorListener
 from dataclasses import dataclass
 
 from location import CodeLocation
@@ -11,6 +9,7 @@ from generated.MacroVisitor import MacroVisitor
 from typing import Union
 from base64 import b64encode
 import re
+from error import LexerErrorListener
 
 
 def unique(params: list[str]):
@@ -263,15 +262,10 @@ def read_mlb(filepath):
     return ExpandMacrosVisitor(None, dict(), filepath).visit(cst)
 
 
-class FailErrorListener(ErrorListener):
-    def syntaxError(self, recognizer, offendingSymbol, line, column, msg, e):
-        raise CancellationException("Lexer cancelled")
-
-
 # filepath should be absolute
 def process_macros(input_stream: InputStream, library_macros, filepath: str):
     lexer = MacroLexer(input_stream)
-    lexer.addErrorListener(FailErrorListener())
+    lexer.addErrorListener(LexerErrorListener())
     token_stream = CommonTokenStream(lexer)
     parser = MacroParser(token_stream)
     cst = parser.program()

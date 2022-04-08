@@ -4,6 +4,7 @@ from generated.AsmLexer import AsmLexer
 from generated.AsmParser import AsmParser
 from generated.AsmParserVisitor import AsmParserVisitor
 from base64 import b64decode
+from error import LexerErrorListener, ParserErrorListener
 
 
 class BuildAstVisitor(AsmParserVisitor):
@@ -182,7 +183,10 @@ class BuildAstVisitor(AsmParserVisitor):
 
 def build_ast(input_stream: InputStream, filepath: str):
     lexer = AsmLexer(input_stream)
+    lexer.addErrorListener(LexerErrorListener())
     token_stream = CommonTokenStream(lexer)
+    token_stream.fill()
     parser = AsmParser(token_stream)
+    parser.addErrorListener(ParserErrorListener())
     cst = parser.program()
     return BuildAstVisitor(filepath).visit(cst)
