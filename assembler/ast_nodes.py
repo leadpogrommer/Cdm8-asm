@@ -59,10 +59,15 @@ class ContinueStatementNode:
     pass
 
 @dataclass
-class SaveRestoreStatement:
+class SaveRestoreStatementNode:
     saved_register: RegisterNode
     lines: list
     restored_register: RegisterNode
+
+@dataclass
+class GotoStatementNode:
+    branch_mnemonic: str
+    label: LabelNode
 
 @dataclass
 class SectionNode:

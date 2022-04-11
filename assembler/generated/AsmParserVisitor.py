@@ -1,4 +1,4 @@
-# Generated from /home/ilya/work/cdm8e/ORiGinalASM/assembler/AsmParser.g4 by ANTLR 4.9.3
+# Generated from AsmParser.g4 by ANTLR 4.9.2
 from antlr4 import *
 if __name__ is not None and "." in __name__:
     from .AsmParser import AsmParser
@@ -146,6 +146,11 @@ class AsmParserVisitor(ParseTreeVisitor):
 
     # Visit a parse tree produced by AsmParser#restore_statement.
     def visitRestore_statement(self, ctx:AsmParser.Restore_statementContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AsmParser#goto_statement.
+    def visitGoto_statement(self, ctx:AsmParser.Goto_statementContext):
         return self.visitChildren(ctx)
 
 

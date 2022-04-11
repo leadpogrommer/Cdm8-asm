@@ -24,6 +24,7 @@ code_block
     | while_loop
     | until_loop
     | save_restore_statement
+    | goto_statement
     )*
     ;
 
@@ -55,6 +56,8 @@ until_loop : Do NEWLINE+ code_block Until branch_mnemonic NEWLINE+ ;
 save_restore_statement : save_statement code_block restore_statement ;
 save_statement : Save register NEWLINE+ ;
 restore_statement : Restore register? NEWLINE+ ;
+
+goto_statement : Goto branch_mnemonic COMMA label NEWLINE+ ;
 
 argument
     : number

@@ -91,13 +91,16 @@ class BuildAstVisitor(AsmParserVisitor):
         restored_register = self.visitRestore_statement(ctx.restore_statement())
         if restored_register is None: restored_register = saved_register
         lines = self.visitCode_block(ctx.code_block())
-        return SaveRestoreStatement(saved_register, lines, restored_register)
+        return SaveRestoreStatementNode(saved_register, lines, restored_register)
 
     def visitSave_statement(self, ctx: AsmParser.Save_statementContext):
         return self.visitRegister(ctx.register())
 
     def visitRestore_statement(self, ctx: AsmParser.Restore_statementContext):
         return self.visitRegister(ctx.register()) if ctx.register() else None
+
+    def visitGoto_statement(self, ctx: AsmParser.Goto_statementContext):
+        return GotoStatementNode(ctx.branch_mnemonic().getText(), self.visitLabel(ctx.label()))
 
     def visitCode_block(self, ctx: AsmParser.Code_blockContext):
         if ctx.children is None:
@@ -121,6 +124,8 @@ class BuildAstVisitor(AsmParserVisitor):
                 ret.append(BreakStatementNode())
             elif isinstance(c, AsmParser.Continue_statementContext):
                 ret.append(ContinueStatementNode())
+            elif isinstance(c, AsmParser.Goto_statementContext):
+                ret.append(self.visitGoto_statement(c))
         return ret
 
     def visitStandaloneLabel(self, ctx:AsmParser.StandaloneLabelContext) -> LabelNode:

@@ -1,4 +1,4 @@
-# Generated from /home/ilya/work/cdm8e/ORiGinalASM/assembler/AsmParser.g4 by ANTLR 4.9.3
+# Generated from AsmParser.g4 by ANTLR 4.9.2
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -11,155 +11,163 @@ else:
 
 def serializedATN():
     with StringIO() as buf:
-        buf.write("\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3&")
-        buf.write("\u014a\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7")
+        buf.write("\3\u608b\ua72a\u8133\ub9ed\u417c\u3be7\u7786\u5964\3\'")
+        buf.write("\u0156\4\2\t\2\4\3\t\3\4\4\t\4\4\5\t\5\4\6\t\6\4\7\t\7")
         buf.write("\4\b\t\b\4\t\t\t\4\n\t\n\4\13\t\13\4\f\t\f\4\r\t\r\4\16")
         buf.write("\t\16\4\17\t\17\4\20\t\20\4\21\t\21\4\22\t\22\4\23\t\23")
         buf.write("\4\24\t\24\4\25\t\25\4\26\t\26\4\27\t\27\4\30\t\30\4\31")
         buf.write("\t\31\4\32\t\32\4\33\t\33\4\34\t\34\4\35\t\35\4\36\t\36")
-        buf.write("\4\37\t\37\4 \t \4!\t!\4\"\t\"\4#\t#\3\2\7\2H\n\2\f\2")
-        buf.write("\16\2K\13\2\3\2\7\2N\n\2\f\2\16\2Q\13\2\3\2\3\2\3\3\3")
-        buf.write("\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\5\3^\n\3\3\4\3\4\3\4\6")
-        buf.write("\4c\n\4\r\4\16\4d\3\5\3\5\3\5\6\5j\n\5\r\5\16\5k\3\6\3")
-        buf.write("\6\3\6\6\6q\n\6\r\6\16\6r\3\7\3\7\3\b\3\b\3\b\3\b\3\b")
-        buf.write("\3\b\3\b\7\b~\n\b\f\b\16\b\u0081\13\b\3\t\3\t\6\t\u0085")
-        buf.write("\n\t\r\t\16\t\u0086\3\n\3\n\6\n\u008b\n\n\r\n\16\n\u008c")
-        buf.write("\3\13\3\13\5\13\u0091\n\13\3\13\6\13\u0094\n\13\r\13\16")
-        buf.write("\13\u0095\3\13\5\13\u0099\n\13\3\13\3\13\5\13\u009d\n")
-        buf.write("\13\3\13\6\13\u00a0\n\13\r\13\16\13\u00a1\5\13\u00a4\n")
-        buf.write("\13\3\f\3\f\3\f\3\r\3\r\3\r\7\r\u00ac\n\r\f\r\16\r\u00af")
-        buf.write("\13\r\3\16\3\16\6\16\u00b3\n\16\r\16\16\16\u00b4\3\16")
-        buf.write("\3\16\3\16\5\16\u00ba\n\16\3\16\3\16\6\16\u00be\n\16\r")
-        buf.write("\16\16\16\u00bf\3\17\7\17\u00c3\n\17\f\17\16\17\u00c6")
-        buf.write("\13\17\3\17\3\17\6\17\u00ca\n\17\r\17\16\17\u00cb\3\17")
-        buf.write("\3\17\6\17\u00d0\n\17\r\17\16\17\u00d1\5\17\u00d4\n\17")
-        buf.write("\3\20\3\20\3\20\3\20\6\20\u00da\n\20\r\20\16\20\u00db")
-        buf.write("\3\21\3\21\3\21\3\21\3\22\3\22\6\22\u00e4\n\22\r\22\16")
-        buf.write("\22\u00e5\3\22\3\22\3\23\3\23\3\24\3\24\3\25\3\25\6\25")
-        buf.write("\u00f0\n\25\r\25\16\25\u00f1\3\25\3\25\3\25\3\25\6\25")
-        buf.write("\u00f8\n\25\r\25\16\25\u00f9\3\25\3\25\3\25\6\25\u00ff")
-        buf.write("\n\25\r\25\16\25\u0100\3\26\3\26\3\27\3\27\6\27\u0107")
-        buf.write("\n\27\r\27\16\27\u0108\3\27\3\27\3\27\3\27\6\27\u010f")
-        buf.write("\n\27\r\27\16\27\u0110\3\30\3\30\3\30\3\30\3\31\3\31\3")
-        buf.write("\31\6\31\u011a\n\31\r\31\16\31\u011b\3\32\3\32\5\32\u0120")
-        buf.write("\n\32\3\32\6\32\u0123\n\32\r\32\16\32\u0124\3\33\3\33")
-        buf.write("\3\33\3\33\3\33\3\33\5\33\u012d\n\33\3\34\5\34\u0130\n")
-        buf.write("\34\3\34\3\34\3\34\3\34\3\35\3\35\3\36\3\36\3\37\3\37")
-        buf.write("\3 \3 \3!\3!\3\"\5\"\u0141\n\"\3\"\3\"\3\"\5\"\u0146\n")
-        buf.write("\"\3#\3#\3#\2\2$\2\4\6\b\n\f\16\20\22\24\26\30\32\34\36")
-        buf.write(" \"$&(*,.\60\62\64\668:<>@BD\2\4\4\2\32\32\34\34\4\2\3")
-        buf.write("\26\36\36\2\u0158\2I\3\2\2\2\4]\3\2\2\2\6_\3\2\2\2\bf")
-        buf.write("\3\2\2\2\nm\3\2\2\2\ft\3\2\2\2\16\177\3\2\2\2\20\u0082")
-        buf.write("\3\2\2\2\22\u0088\3\2\2\2\24\u00a3\3\2\2\2\26\u00a5\3")
-        buf.write("\2\2\2\30\u00a8\3\2\2\2\32\u00b0\3\2\2\2\34\u00c4\3\2")
-        buf.write("\2\2\36\u00d5\3\2\2\2 \u00dd\3\2\2\2\"\u00e1\3\2\2\2$")
-        buf.write("\u00e9\3\2\2\2&\u00eb\3\2\2\2(\u00ed\3\2\2\2*\u0102\3")
-        buf.write("\2\2\2,\u0104\3\2\2\2.\u0112\3\2\2\2\60\u0116\3\2\2\2")
-        buf.write("\62\u011d\3\2\2\2\64\u012c\3\2\2\2\66\u012f\3\2\2\28\u0135")
-        buf.write("\3\2\2\2:\u0137\3\2\2\2<\u0139\3\2\2\2>\u013b\3\2\2\2")
-        buf.write("@\u013d\3\2\2\2B\u0145\3\2\2\2D\u0147\3\2\2\2FH\7$\2\2")
-        buf.write("GF\3\2\2\2HK\3\2\2\2IG\3\2\2\2IJ\3\2\2\2JO\3\2\2\2KI\3")
-        buf.write("\2\2\2LN\5\4\3\2ML\3\2\2\2NQ\3\2\2\2OM\3\2\2\2OP\3\2\2")
-        buf.write("\2PR\3\2\2\2QO\3\2\2\2RS\7\b\2\2S\3\3\2\2\2TU\5\6\4\2")
-        buf.write("UV\5\f\7\2V^\3\2\2\2WX\5\b\5\2XY\5\f\7\2Y^\3\2\2\2Z[\5")
-        buf.write("\n\6\2[\\\5\f\7\2\\^\3\2\2\2]T\3\2\2\2]W\3\2\2\2]Z\3\2")
-        buf.write("\2\2^\5\3\2\2\2_`\7\3\2\2`b\5B\"\2ac\7$\2\2ba\3\2\2\2")
-        buf.write("cd\3\2\2\2db\3\2\2\2de\3\2\2\2e\7\3\2\2\2fg\7\17\2\2g")
-        buf.write("i\5D#\2hj\7$\2\2ih\3\2\2\2jk\3\2\2\2ki\3\2\2\2kl\3\2\2")
-        buf.write("\2l\t\3\2\2\2mn\7\23\2\2np\5D#\2oq\7$\2\2po\3\2\2\2qr")
-        buf.write("\3\2\2\2rp\3\2\2\2rs\3\2\2\2s\13\3\2\2\2tu\5\16\b\2u\r")
-        buf.write("\3\2\2\2v~\5\20\t\2w~\5\22\n\2x~\5\24\13\2y~\5\32\16\2")
-        buf.write("z~\5(\25\2{~\5,\27\2|~\5.\30\2}v\3\2\2\2}w\3\2\2\2}x\3")
-        buf.write("\2\2\2}y\3\2\2\2}z\3\2\2\2}{\3\2\2\2}|\3\2\2\2~\u0081")
-        buf.write("\3\2\2\2\177}\3\2\2\2\177\u0080\3\2\2\2\u0080\17\3\2\2")
-        buf.write("\2\u0081\177\3\2\2\2\u0082\u0084\7\4\2\2\u0083\u0085\7")
-        buf.write("$\2\2\u0084\u0083\3\2\2\2\u0085\u0086\3\2\2\2\u0086\u0084")
-        buf.write("\3\2\2\2\u0086\u0087\3\2\2\2\u0087\21\3\2\2\2\u0088\u008a")
-        buf.write("\7\5\2\2\u0089\u008b\7$\2\2\u008a\u0089\3\2\2\2\u008b")
-        buf.write("\u008c\3\2\2\2\u008c\u008a\3\2\2\2\u008c\u008d\3\2\2\2")
-        buf.write("\u008d\23\3\2\2\2\u008e\u0090\5\26\f\2\u008f\u0091\7\t")
-        buf.write("\2\2\u0090\u008f\3\2\2\2\u0090\u0091\3\2\2\2\u0091\u0093")
-        buf.write("\3\2\2\2\u0092\u0094\7$\2\2\u0093\u0092\3\2\2\2\u0094")
-        buf.write("\u0095\3\2\2\2\u0095\u0093\3\2\2\2\u0095\u0096\3\2\2\2")
-        buf.write("\u0096\u00a4\3\2\2\2\u0097\u0099\5\26\f\2\u0098\u0097")
-        buf.write("\3\2\2\2\u0098\u0099\3\2\2\2\u0099\u009a\3\2\2\2\u009a")
-        buf.write("\u009c\5:\36\2\u009b\u009d\5\30\r\2\u009c\u009b\3\2\2")
-        buf.write("\2\u009c\u009d\3\2\2\2\u009d\u009f\3\2\2\2\u009e\u00a0")
-        buf.write("\7$\2\2\u009f\u009e\3\2\2\2\u00a0\u00a1\3\2\2\2\u00a1")
-        buf.write("\u009f\3\2\2\2\u00a1\u00a2\3\2\2\2\u00a2\u00a4\3\2\2\2")
-        buf.write("\u00a3\u008e\3\2\2\2\u00a3\u0098\3\2\2\2\u00a4\25\3\2")
-        buf.write("\2\2\u00a5\u00a6\58\35\2\u00a6\u00a7\t\2\2\2\u00a7\27")
-        buf.write("\3\2\2\2\u00a8\u00ad\5\64\33\2\u00a9\u00aa\7\30\2\2\u00aa")
-        buf.write("\u00ac\5\64\33\2\u00ab\u00a9\3\2\2\2\u00ac\u00af\3\2\2")
-        buf.write("\2\u00ad\u00ab\3\2\2\2\u00ad\u00ae\3\2\2\2\u00ae\31\3")
-        buf.write("\2\2\2\u00af\u00ad\3\2\2\2\u00b0\u00b2\7\13\2\2\u00b1")
-        buf.write("\u00b3\7$\2\2\u00b2\u00b1\3\2\2\2\u00b3\u00b4\3\2\2\2")
-        buf.write("\u00b4\u00b2\3\2\2\2\u00b4\u00b5\3\2\2\2\u00b5\u00b6\3")
-        buf.write("\2\2\2\u00b6\u00b7\5\34\17\2\u00b7\u00b9\5\16\b\2\u00b8")
-        buf.write("\u00ba\5\"\22\2\u00b9\u00b8\3\2\2\2\u00b9\u00ba\3\2\2")
-        buf.write("\2\u00ba\u00bb\3\2\2\2\u00bb\u00bd\7\n\2\2\u00bc\u00be")
-        buf.write("\7$\2\2\u00bd\u00bc\3\2\2\2\u00be\u00bf\3\2\2\2\u00bf")
-        buf.write("\u00bd\3\2\2\2\u00bf\u00c0\3\2\2\2\u00c0\33\3\2\2\2\u00c1")
-        buf.write("\u00c3\5\36\20\2\u00c2\u00c1\3\2\2\2\u00c3\u00c6\3\2\2")
-        buf.write("\2\u00c4\u00c2\3\2\2\2\u00c4\u00c5\3\2\2\2\u00c5\u00c7")
-        buf.write("\3\2\2\2\u00c6\u00c4\3\2\2\2\u00c7\u00c9\5 \21\2\u00c8")
-        buf.write("\u00ca\7$\2\2\u00c9\u00c8\3\2\2\2\u00ca\u00cb\3\2\2\2")
-        buf.write("\u00cb\u00c9\3\2\2\2\u00cb\u00cc\3\2\2\2\u00cc\u00d3\3")
-        buf.write("\2\2\2\u00cd\u00cf\7\22\2\2\u00ce\u00d0\7$\2\2\u00cf\u00ce")
-        buf.write("\3\2\2\2\u00d0\u00d1\3\2\2\2\u00d1\u00cf\3\2\2\2\u00d1")
-        buf.write("\u00d2\3\2\2\2\u00d2\u00d4\3\2\2\2\u00d3\u00cd\3\2\2\2")
-        buf.write("\u00d3\u00d4\3\2\2\2\u00d4\35\3\2\2\2\u00d5\u00d6\5 \21")
-        buf.write("\2\u00d6\u00d7\7\30\2\2\u00d7\u00d9\5&\24\2\u00d8\u00da")
-        buf.write("\7$\2\2\u00d9\u00d8\3\2\2\2\u00da\u00db\3\2\2\2\u00db")
-        buf.write("\u00d9\3\2\2\2\u00db\u00dc\3\2\2\2\u00dc\37\3\2\2\2\u00dd")
-        buf.write("\u00de\5\16\b\2\u00de\u00df\7\f\2\2\u00df\u00e0\5$\23")
-        buf.write("\2\u00e0!\3\2\2\2\u00e1\u00e3\7\7\2\2\u00e2\u00e4\7$\2")
-        buf.write("\2\u00e3\u00e2\3\2\2\2\u00e4\u00e5\3\2\2\2\u00e5\u00e3")
-        buf.write("\3\2\2\2\u00e5\u00e6\3\2\2\2\u00e6\u00e7\3\2\2\2\u00e7")
-        buf.write("\u00e8\5\16\b\2\u00e8#\3\2\2\2\u00e9\u00ea\7\36\2\2\u00ea")
-        buf.write("%\3\2\2\2\u00eb\u00ec\7\36\2\2\u00ec\'\3\2\2\2\u00ed\u00ef")
-        buf.write("\7\26\2\2\u00ee\u00f0\7$\2\2\u00ef\u00ee\3\2\2\2\u00f0")
-        buf.write("\u00f1\3\2\2\2\u00f1\u00ef\3\2\2\2\u00f1\u00f2\3\2\2\2")
-        buf.write("\u00f2\u00f3\3\2\2\2\u00f3\u00f4\5*\26\2\u00f4\u00f5\7")
-        buf.write("\21\2\2\u00f5\u00f7\5$\23\2\u00f6\u00f8\7$\2\2\u00f7\u00f6")
-        buf.write("\3\2\2\2\u00f8\u00f9\3\2\2\2\u00f9\u00f7\3\2\2\2\u00f9")
-        buf.write("\u00fa\3\2\2\2\u00fa\u00fb\3\2\2\2\u00fb\u00fc\5\16\b")
-        buf.write("\2\u00fc\u00fe\7\25\2\2\u00fd\u00ff\7$\2\2\u00fe\u00fd")
-        buf.write("\3\2\2\2\u00ff\u0100\3\2\2\2\u0100\u00fe\3\2\2\2\u0100")
-        buf.write("\u0101\3\2\2\2\u0101)\3\2\2\2\u0102\u0103\5\16\b\2\u0103")
-        buf.write("+\3\2\2\2\u0104\u0106\7\6\2\2\u0105\u0107\7$\2\2\u0106")
-        buf.write("\u0105\3\2\2\2\u0107\u0108\3\2\2\2\u0108\u0106\3\2\2\2")
-        buf.write("\u0108\u0109\3\2\2\2\u0109\u010a\3\2\2\2\u010a\u010b\5")
-        buf.write("\16\b\2\u010b\u010c\7\24\2\2\u010c\u010e\5$\23\2\u010d")
-        buf.write("\u010f\7$\2\2\u010e\u010d\3\2\2\2\u010f\u0110\3\2\2\2")
-        buf.write("\u0110\u010e\3\2\2\2\u0110\u0111\3\2\2\2\u0111-\3\2\2")
-        buf.write("\2\u0112\u0113\5\60\31\2\u0113\u0114\5\16\b\2\u0114\u0115")
-        buf.write("\5\62\32\2\u0115/\3\2\2\2\u0116\u0117\7\20\2\2\u0117\u0119")
-        buf.write("\5> \2\u0118\u011a\7$\2\2\u0119\u0118\3\2\2\2\u011a\u011b")
-        buf.write("\3\2\2\2\u011b\u0119\3\2\2\2\u011b\u011c\3\2\2\2\u011c")
-        buf.write("\61\3\2\2\2\u011d\u011f\7\16\2\2\u011e\u0120\5> \2\u011f")
-        buf.write("\u011e\3\2\2\2\u011f\u0120\3\2\2\2\u0120\u0122\3\2\2\2")
-        buf.write("\u0121\u0123\7$\2\2\u0122\u0121\3\2\2\2\u0123\u0124\3")
-        buf.write("\2\2\2\u0124\u0122\3\2\2\2\u0124\u0125\3\2\2\2\u0125\63")
-        buf.write("\3\2\2\2\u0126\u012d\5B\"\2\u0127\u012d\5@!\2\u0128\u012d")
-        buf.write("\5<\37\2\u0129\u012d\5> \2\u012a\u012d\58\35\2\u012b\u012d")
-        buf.write("\5\66\34\2\u012c\u0126\3\2\2\2\u012c\u0127\3\2\2\2\u012c")
-        buf.write("\u0128\3\2\2\2\u012c\u0129\3\2\2\2\u012c\u012a\3\2\2\2")
-        buf.write("\u012c\u012b\3\2\2\2\u012d\65\3\2\2\2\u012e\u0130\7\31")
-        buf.write("\2\2\u012f\u012e\3\2\2\2\u012f\u0130\3\2\2\2\u0130\u0131")
-        buf.write("\3\2\2\2\u0131\u0132\5D#\2\u0132\u0133\7\27\2\2\u0133")
-        buf.write("\u0134\5D#\2\u0134\67\3\2\2\2\u0135\u0136\5D#\2\u0136")
-        buf.write("9\3\2\2\2\u0137\u0138\7\36\2\2\u0138;\3\2\2\2\u0139\u013a")
-        buf.write("\7\"\2\2\u013a=\3\2\2\2\u013b\u013c\7\35\2\2\u013c?\3")
-        buf.write("\2\2\2\u013d\u013e\7#\2\2\u013eA\3\2\2\2\u013f\u0141\7")
-        buf.write("\31\2\2\u0140\u013f\3\2\2\2\u0140\u0141\3\2\2\2\u0141")
-        buf.write("\u0142\3\2\2\2\u0142\u0146\7\37\2\2\u0143\u0146\7!\2\2")
-        buf.write("\u0144\u0146\7 \2\2\u0145\u0140\3\2\2\2\u0145\u0143\3")
-        buf.write("\2\2\2\u0145\u0144\3\2\2\2\u0146C\3\2\2\2\u0147\u0148")
-        buf.write("\t\3\2\2\u0148E\3\2\2\2(IO]dkr}\177\u0086\u008c\u0090")
-        buf.write("\u0095\u0098\u009c\u00a1\u00a3\u00ad\u00b4\u00b9\u00bf")
-        buf.write("\u00c4\u00cb\u00d1\u00d3\u00db\u00e5\u00f1\u00f9\u0100")
-        buf.write("\u0108\u0110\u011b\u011f\u0124\u012c\u012f\u0140\u0145")
+        buf.write("\4\37\t\37\4 \t \4!\t!\4\"\t\"\4#\t#\4$\t$\3\2\7\2J\n")
+        buf.write("\2\f\2\16\2M\13\2\3\2\7\2P\n\2\f\2\16\2S\13\2\3\2\3\2")
+        buf.write("\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\3\5\3`\n\3\3\4\3\4")
+        buf.write("\3\4\6\4e\n\4\r\4\16\4f\3\5\3\5\3\5\6\5l\n\5\r\5\16\5")
+        buf.write("m\3\6\3\6\3\6\6\6s\n\6\r\6\16\6t\3\7\3\7\3\b\3\b\3\b\3")
+        buf.write("\b\3\b\3\b\3\b\3\b\7\b\u0081\n\b\f\b\16\b\u0084\13\b\3")
+        buf.write("\t\3\t\6\t\u0088\n\t\r\t\16\t\u0089\3\n\3\n\6\n\u008e")
+        buf.write("\n\n\r\n\16\n\u008f\3\13\3\13\5\13\u0094\n\13\3\13\6\13")
+        buf.write("\u0097\n\13\r\13\16\13\u0098\3\13\5\13\u009c\n\13\3\13")
+        buf.write("\3\13\5\13\u00a0\n\13\3\13\6\13\u00a3\n\13\r\13\16\13")
+        buf.write("\u00a4\5\13\u00a7\n\13\3\f\3\f\3\f\3\r\3\r\3\r\7\r\u00af")
+        buf.write("\n\r\f\r\16\r\u00b2\13\r\3\16\3\16\6\16\u00b6\n\16\r\16")
+        buf.write("\16\16\u00b7\3\16\3\16\3\16\5\16\u00bd\n\16\3\16\3\16")
+        buf.write("\6\16\u00c1\n\16\r\16\16\16\u00c2\3\17\7\17\u00c6\n\17")
+        buf.write("\f\17\16\17\u00c9\13\17\3\17\3\17\6\17\u00cd\n\17\r\17")
+        buf.write("\16\17\u00ce\3\17\3\17\6\17\u00d3\n\17\r\17\16\17\u00d4")
+        buf.write("\5\17\u00d7\n\17\3\20\3\20\3\20\3\20\6\20\u00dd\n\20\r")
+        buf.write("\20\16\20\u00de\3\21\3\21\3\21\3\21\3\22\3\22\6\22\u00e7")
+        buf.write("\n\22\r\22\16\22\u00e8\3\22\3\22\3\23\3\23\3\24\3\24\3")
+        buf.write("\25\3\25\6\25\u00f3\n\25\r\25\16\25\u00f4\3\25\3\25\3")
+        buf.write("\25\3\25\6\25\u00fb\n\25\r\25\16\25\u00fc\3\25\3\25\3")
+        buf.write("\25\6\25\u0102\n\25\r\25\16\25\u0103\3\26\3\26\3\27\3")
+        buf.write("\27\6\27\u010a\n\27\r\27\16\27\u010b\3\27\3\27\3\27\3")
+        buf.write("\27\6\27\u0112\n\27\r\27\16\27\u0113\3\30\3\30\3\30\3")
+        buf.write("\30\3\31\3\31\3\31\6\31\u011d\n\31\r\31\16\31\u011e\3")
+        buf.write("\32\3\32\5\32\u0123\n\32\3\32\6\32\u0126\n\32\r\32\16")
+        buf.write("\32\u0127\3\33\3\33\3\33\3\33\3\33\6\33\u012f\n\33\r\33")
+        buf.write("\16\33\u0130\3\34\3\34\3\34\3\34\3\34\3\34\5\34\u0139")
+        buf.write("\n\34\3\35\5\35\u013c\n\35\3\35\3\35\3\35\3\35\3\36\3")
+        buf.write("\36\3\37\3\37\3 \3 \3!\3!\3\"\3\"\3#\5#\u014d\n#\3#\3")
+        buf.write("#\3#\5#\u0152\n#\3$\3$\3$\2\2%\2\4\6\b\n\f\16\20\22\24")
+        buf.write("\26\30\32\34\36 \"$&(*,.\60\62\64\668:<>@BDF\2\4\4\2\33")
+        buf.write("\33\35\35\5\2\3\n\f\27\37\37\2\u0165\2K\3\2\2\2\4_\3\2")
+        buf.write("\2\2\6a\3\2\2\2\bh\3\2\2\2\no\3\2\2\2\fv\3\2\2\2\16\u0082")
+        buf.write("\3\2\2\2\20\u0085\3\2\2\2\22\u008b\3\2\2\2\24\u00a6\3")
+        buf.write("\2\2\2\26\u00a8\3\2\2\2\30\u00ab\3\2\2\2\32\u00b3\3\2")
+        buf.write("\2\2\34\u00c7\3\2\2\2\36\u00d8\3\2\2\2 \u00e0\3\2\2\2")
+        buf.write("\"\u00e4\3\2\2\2$\u00ec\3\2\2\2&\u00ee\3\2\2\2(\u00f0")
+        buf.write("\3\2\2\2*\u0105\3\2\2\2,\u0107\3\2\2\2.\u0115\3\2\2\2")
+        buf.write("\60\u0119\3\2\2\2\62\u0120\3\2\2\2\64\u0129\3\2\2\2\66")
+        buf.write("\u0138\3\2\2\28\u013b\3\2\2\2:\u0141\3\2\2\2<\u0143\3")
+        buf.write("\2\2\2>\u0145\3\2\2\2@\u0147\3\2\2\2B\u0149\3\2\2\2D\u0151")
+        buf.write("\3\2\2\2F\u0153\3\2\2\2HJ\7%\2\2IH\3\2\2\2JM\3\2\2\2K")
+        buf.write("I\3\2\2\2KL\3\2\2\2LQ\3\2\2\2MK\3\2\2\2NP\5\4\3\2ON\3")
+        buf.write("\2\2\2PS\3\2\2\2QO\3\2\2\2QR\3\2\2\2RT\3\2\2\2SQ\3\2\2")
+        buf.write("\2TU\7\b\2\2U\3\3\2\2\2VW\5\6\4\2WX\5\f\7\2X`\3\2\2\2")
+        buf.write("YZ\5\b\5\2Z[\5\f\7\2[`\3\2\2\2\\]\5\n\6\2]^\5\f\7\2^`")
+        buf.write("\3\2\2\2_V\3\2\2\2_Y\3\2\2\2_\\\3\2\2\2`\5\3\2\2\2ab\7")
+        buf.write("\3\2\2bd\5D#\2ce\7%\2\2dc\3\2\2\2ef\3\2\2\2fd\3\2\2\2")
+        buf.write("fg\3\2\2\2g\7\3\2\2\2hi\7\20\2\2ik\5F$\2jl\7%\2\2kj\3")
+        buf.write("\2\2\2lm\3\2\2\2mk\3\2\2\2mn\3\2\2\2n\t\3\2\2\2op\7\24")
+        buf.write("\2\2pr\5F$\2qs\7%\2\2rq\3\2\2\2st\3\2\2\2tr\3\2\2\2tu")
+        buf.write("\3\2\2\2u\13\3\2\2\2vw\5\16\b\2w\r\3\2\2\2x\u0081\5\20")
+        buf.write("\t\2y\u0081\5\22\n\2z\u0081\5\24\13\2{\u0081\5\32\16\2")
+        buf.write("|\u0081\5(\25\2}\u0081\5,\27\2~\u0081\5.\30\2\177\u0081")
+        buf.write("\5\64\33\2\u0080x\3\2\2\2\u0080y\3\2\2\2\u0080z\3\2\2")
+        buf.write("\2\u0080{\3\2\2\2\u0080|\3\2\2\2\u0080}\3\2\2\2\u0080")
+        buf.write("~\3\2\2\2\u0080\177\3\2\2\2\u0081\u0084\3\2\2\2\u0082")
+        buf.write("\u0080\3\2\2\2\u0082\u0083\3\2\2\2\u0083\17\3\2\2\2\u0084")
+        buf.write("\u0082\3\2\2\2\u0085\u0087\7\4\2\2\u0086\u0088\7%\2\2")
+        buf.write("\u0087\u0086\3\2\2\2\u0088\u0089\3\2\2\2\u0089\u0087\3")
+        buf.write("\2\2\2\u0089\u008a\3\2\2\2\u008a\21\3\2\2\2\u008b\u008d")
+        buf.write("\7\5\2\2\u008c\u008e\7%\2\2\u008d\u008c\3\2\2\2\u008e")
+        buf.write("\u008f\3\2\2\2\u008f\u008d\3\2\2\2\u008f\u0090\3\2\2\2")
+        buf.write("\u0090\23\3\2\2\2\u0091\u0093\5\26\f\2\u0092\u0094\7\t")
+        buf.write("\2\2\u0093\u0092\3\2\2\2\u0093\u0094\3\2\2\2\u0094\u0096")
+        buf.write("\3\2\2\2\u0095\u0097\7%\2\2\u0096\u0095\3\2\2\2\u0097")
+        buf.write("\u0098\3\2\2\2\u0098\u0096\3\2\2\2\u0098\u0099\3\2\2\2")
+        buf.write("\u0099\u00a7\3\2\2\2\u009a\u009c\5\26\f\2\u009b\u009a")
+        buf.write("\3\2\2\2\u009b\u009c\3\2\2\2\u009c\u009d\3\2\2\2\u009d")
+        buf.write("\u009f\5<\37\2\u009e\u00a0\5\30\r\2\u009f\u009e\3\2\2")
+        buf.write("\2\u009f\u00a0\3\2\2\2\u00a0\u00a2\3\2\2\2\u00a1\u00a3")
+        buf.write("\7%\2\2\u00a2\u00a1\3\2\2\2\u00a3\u00a4\3\2\2\2\u00a4")
+        buf.write("\u00a2\3\2\2\2\u00a4\u00a5\3\2\2\2\u00a5\u00a7\3\2\2\2")
+        buf.write("\u00a6\u0091\3\2\2\2\u00a6\u009b\3\2\2\2\u00a7\25\3\2")
+        buf.write("\2\2\u00a8\u00a9\5:\36\2\u00a9\u00aa\t\2\2\2\u00aa\27")
+        buf.write("\3\2\2\2\u00ab\u00b0\5\66\34\2\u00ac\u00ad\7\31\2\2\u00ad")
+        buf.write("\u00af\5\66\34\2\u00ae\u00ac\3\2\2\2\u00af\u00b2\3\2\2")
+        buf.write("\2\u00b0\u00ae\3\2\2\2\u00b0\u00b1\3\2\2\2\u00b1\31\3")
+        buf.write("\2\2\2\u00b2\u00b0\3\2\2\2\u00b3\u00b5\7\f\2\2\u00b4\u00b6")
+        buf.write("\7%\2\2\u00b5\u00b4\3\2\2\2\u00b6\u00b7\3\2\2\2\u00b7")
+        buf.write("\u00b5\3\2\2\2\u00b7\u00b8\3\2\2\2\u00b8\u00b9\3\2\2\2")
+        buf.write("\u00b9\u00ba\5\34\17\2\u00ba\u00bc\5\16\b\2\u00bb\u00bd")
+        buf.write("\5\"\22\2\u00bc\u00bb\3\2\2\2\u00bc\u00bd\3\2\2\2\u00bd")
+        buf.write("\u00be\3\2\2\2\u00be\u00c0\7\n\2\2\u00bf\u00c1\7%\2\2")
+        buf.write("\u00c0\u00bf\3\2\2\2\u00c1\u00c2\3\2\2\2\u00c2\u00c0\3")
+        buf.write("\2\2\2\u00c2\u00c3\3\2\2\2\u00c3\33\3\2\2\2\u00c4\u00c6")
+        buf.write("\5\36\20\2\u00c5\u00c4\3\2\2\2\u00c6\u00c9\3\2\2\2\u00c7")
+        buf.write("\u00c5\3\2\2\2\u00c7\u00c8\3\2\2\2\u00c8\u00ca\3\2\2\2")
+        buf.write("\u00c9\u00c7\3\2\2\2\u00ca\u00cc\5 \21\2\u00cb\u00cd\7")
+        buf.write("%\2\2\u00cc\u00cb\3\2\2\2\u00cd\u00ce\3\2\2\2\u00ce\u00cc")
+        buf.write("\3\2\2\2\u00ce\u00cf\3\2\2\2\u00cf\u00d6\3\2\2\2\u00d0")
+        buf.write("\u00d2\7\23\2\2\u00d1\u00d3\7%\2\2\u00d2\u00d1\3\2\2\2")
+        buf.write("\u00d3\u00d4\3\2\2\2\u00d4\u00d2\3\2\2\2\u00d4\u00d5\3")
+        buf.write("\2\2\2\u00d5\u00d7\3\2\2\2\u00d6\u00d0\3\2\2\2\u00d6\u00d7")
+        buf.write("\3\2\2\2\u00d7\35\3\2\2\2\u00d8\u00d9\5 \21\2\u00d9\u00da")
+        buf.write("\7\31\2\2\u00da\u00dc\5&\24\2\u00db\u00dd\7%\2\2\u00dc")
+        buf.write("\u00db\3\2\2\2\u00dd\u00de\3\2\2\2\u00de\u00dc\3\2\2\2")
+        buf.write("\u00de\u00df\3\2\2\2\u00df\37\3\2\2\2\u00e0\u00e1\5\16")
+        buf.write("\b\2\u00e1\u00e2\7\r\2\2\u00e2\u00e3\5$\23\2\u00e3!\3")
+        buf.write("\2\2\2\u00e4\u00e6\7\7\2\2\u00e5\u00e7\7%\2\2\u00e6\u00e5")
+        buf.write("\3\2\2\2\u00e7\u00e8\3\2\2\2\u00e8\u00e6\3\2\2\2\u00e8")
+        buf.write("\u00e9\3\2\2\2\u00e9\u00ea\3\2\2\2\u00ea\u00eb\5\16\b")
+        buf.write("\2\u00eb#\3\2\2\2\u00ec\u00ed\7\37\2\2\u00ed%\3\2\2\2")
+        buf.write("\u00ee\u00ef\7\37\2\2\u00ef\'\3\2\2\2\u00f0\u00f2\7\27")
+        buf.write("\2\2\u00f1\u00f3\7%\2\2\u00f2\u00f1\3\2\2\2\u00f3\u00f4")
+        buf.write("\3\2\2\2\u00f4\u00f2\3\2\2\2\u00f4\u00f5\3\2\2\2\u00f5")
+        buf.write("\u00f6\3\2\2\2\u00f6\u00f7\5*\26\2\u00f7\u00f8\7\22\2")
+        buf.write("\2\u00f8\u00fa\5$\23\2\u00f9\u00fb\7%\2\2\u00fa\u00f9")
+        buf.write("\3\2\2\2\u00fb\u00fc\3\2\2\2\u00fc\u00fa\3\2\2\2\u00fc")
+        buf.write("\u00fd\3\2\2\2\u00fd\u00fe\3\2\2\2\u00fe\u00ff\5\16\b")
+        buf.write("\2\u00ff\u0101\7\26\2\2\u0100\u0102\7%\2\2\u0101\u0100")
+        buf.write("\3\2\2\2\u0102\u0103\3\2\2\2\u0103\u0101\3\2\2\2\u0103")
+        buf.write("\u0104\3\2\2\2\u0104)\3\2\2\2\u0105\u0106\5\16\b\2\u0106")
+        buf.write("+\3\2\2\2\u0107\u0109\7\6\2\2\u0108\u010a\7%\2\2\u0109")
+        buf.write("\u0108\3\2\2\2\u010a\u010b\3\2\2\2\u010b\u0109\3\2\2\2")
+        buf.write("\u010b\u010c\3\2\2\2\u010c\u010d\3\2\2\2\u010d\u010e\5")
+        buf.write("\16\b\2\u010e\u010f\7\25\2\2\u010f\u0111\5$\23\2\u0110")
+        buf.write("\u0112\7%\2\2\u0111\u0110\3\2\2\2\u0112\u0113\3\2\2\2")
+        buf.write("\u0113\u0111\3\2\2\2\u0113\u0114\3\2\2\2\u0114-\3\2\2")
+        buf.write("\2\u0115\u0116\5\60\31\2\u0116\u0117\5\16\b\2\u0117\u0118")
+        buf.write("\5\62\32\2\u0118/\3\2\2\2\u0119\u011a\7\21\2\2\u011a\u011c")
+        buf.write("\5@!\2\u011b\u011d\7%\2\2\u011c\u011b\3\2\2\2\u011d\u011e")
+        buf.write("\3\2\2\2\u011e\u011c\3\2\2\2\u011e\u011f\3\2\2\2\u011f")
+        buf.write("\61\3\2\2\2\u0120\u0122\7\17\2\2\u0121\u0123\5@!\2\u0122")
+        buf.write("\u0121\3\2\2\2\u0122\u0123\3\2\2\2\u0123\u0125\3\2\2\2")
+        buf.write("\u0124\u0126\7%\2\2\u0125\u0124\3\2\2\2\u0126\u0127\3")
+        buf.write("\2\2\2\u0127\u0125\3\2\2\2\u0127\u0128\3\2\2\2\u0128\63")
+        buf.write("\3\2\2\2\u0129\u012a\7\13\2\2\u012a\u012b\5$\23\2\u012b")
+        buf.write("\u012c\7\31\2\2\u012c\u012e\5:\36\2\u012d\u012f\7%\2\2")
+        buf.write("\u012e\u012d\3\2\2\2\u012f\u0130\3\2\2\2\u0130\u012e\3")
+        buf.write("\2\2\2\u0130\u0131\3\2\2\2\u0131\65\3\2\2\2\u0132\u0139")
+        buf.write("\5D#\2\u0133\u0139\5B\"\2\u0134\u0139\5> \2\u0135\u0139")
+        buf.write("\5@!\2\u0136\u0139\5:\36\2\u0137\u0139\58\35\2\u0138\u0132")
+        buf.write("\3\2\2\2\u0138\u0133\3\2\2\2\u0138\u0134\3\2\2\2\u0138")
+        buf.write("\u0135\3\2\2\2\u0138\u0136\3\2\2\2\u0138\u0137\3\2\2\2")
+        buf.write("\u0139\67\3\2\2\2\u013a\u013c\7\32\2\2\u013b\u013a\3\2")
+        buf.write("\2\2\u013b\u013c\3\2\2\2\u013c\u013d\3\2\2\2\u013d\u013e")
+        buf.write("\5F$\2\u013e\u013f\7\30\2\2\u013f\u0140\5F$\2\u01409\3")
+        buf.write("\2\2\2\u0141\u0142\5F$\2\u0142;\3\2\2\2\u0143\u0144\7")
+        buf.write("\37\2\2\u0144=\3\2\2\2\u0145\u0146\7#\2\2\u0146?\3\2\2")
+        buf.write("\2\u0147\u0148\7\36\2\2\u0148A\3\2\2\2\u0149\u014a\7$")
+        buf.write("\2\2\u014aC\3\2\2\2\u014b\u014d\7\32\2\2\u014c\u014b\3")
+        buf.write("\2\2\2\u014c\u014d\3\2\2\2\u014d\u014e\3\2\2\2\u014e\u0152")
+        buf.write("\7 \2\2\u014f\u0152\7\"\2\2\u0150\u0152\7!\2\2\u0151\u014c")
+        buf.write("\3\2\2\2\u0151\u014f\3\2\2\2\u0151\u0150\3\2\2\2\u0152")
+        buf.write("E\3\2\2\2\u0153\u0154\t\3\2\2\u0154G\3\2\2\2)KQ_fmt\u0080")
+        buf.write("\u0082\u0089\u008f\u0093\u0098\u009b\u009f\u00a4\u00a6")
+        buf.write("\u00b0\u00b7\u00bc\u00c2\u00c7\u00ce\u00d4\u00d6\u00de")
+        buf.write("\u00e8\u00f4\u00fc\u0103\u010b\u0113\u011e\u0122\u0127")
+        buf.write("\u0130\u0138\u013b\u014c\u0151")
         return buf.getvalue()
 
 
@@ -174,13 +182,13 @@ class AsmParser ( Parser ):
     sharedContextCache = PredictionContextCache()
 
     literalNames = [ "<INVALID>", "'asect'", "'break'", "'continue'", "'do'", 
-                     "'else'", "'end'", "'ext'", "'fi'", "'if'", "'is'", 
-                     "'macro'", "'restore'", "'rsect'", "'save'", "'stays'", 
-                     "'then'", "'tplate'", "'until'", "'wend'", "'while'", 
-                     "'.'", "','", "'-'", "':'", "'*'", "'>'" ]
+                     "'else'", "'end'", "'ext'", "'fi'", "'goto'", "'if'", 
+                     "'is'", "'macro'", "'restore'", "'rsect'", "'save'", 
+                     "'stays'", "'then'", "'tplate'", "'until'", "'wend'", 
+                     "'while'", "'.'", "','", "'-'", "':'", "'*'", "'>'" ]
 
     symbolicNames = [ "<INVALID>", "Asect", "Break", "Continue", "Do", "Else", 
-                      "End", "Ext", "Fi", "If", "Is", "Macro", "Restore", 
+                      "End", "Ext", "Fi", "Goto", "If", "Is", "Macro", "Restore", 
                       "Rsect", "Save", "Stays", "Then", "Tplate", "Until", 
                       "Wend", "While", "DOT", "COMMA", "MINUS", "COLON", 
                       "ASTERISK", "ANGLE_BRACKET", "REGISTER", "WORD", "DECIMAL_NUMBER", 
@@ -212,15 +220,16 @@ class AsmParser ( Parser ):
     RULE_save_restore_statement = 22
     RULE_save_statement = 23
     RULE_restore_statement = 24
-    RULE_argument = 25
-    RULE_template_field = 26
-    RULE_label = 27
-    RULE_instruction = 28
-    RULE_string = 29
-    RULE_register = 30
-    RULE_character = 31
-    RULE_number = 32
-    RULE_name = 33
+    RULE_goto_statement = 25
+    RULE_argument = 26
+    RULE_template_field = 27
+    RULE_label = 28
+    RULE_instruction = 29
+    RULE_string = 30
+    RULE_register = 31
+    RULE_character = 32
+    RULE_number = 33
+    RULE_name = 34
 
     ruleNames =  [ "program", "section", "asect_header", "rsect_header", 
                    "tplate_header", "section_body", "code_block", "break_statement", 
@@ -228,9 +237,9 @@ class AsmParser ( Parser ):
                    "conditional", "conditions", "connective_condition", 
                    "condition", "else_clause", "branch_mnemonic", "conjunction", 
                    "while_loop", "while_condition", "until_loop", "save_restore_statement", 
-                   "save_statement", "restore_statement", "argument", "template_field", 
-                   "label", "instruction", "string", "register", "character", 
-                   "number", "name" ]
+                   "save_statement", "restore_statement", "goto_statement", 
+                   "argument", "template_field", "label", "instruction", 
+                   "string", "register", "character", "number", "name" ]
 
     EOF = Token.EOF
     Asect=1
@@ -241,38 +250,39 @@ class AsmParser ( Parser ):
     End=6
     Ext=7
     Fi=8
-    If=9
-    Is=10
-    Macro=11
-    Restore=12
-    Rsect=13
-    Save=14
-    Stays=15
-    Then=16
-    Tplate=17
-    Until=18
-    Wend=19
-    While=20
-    DOT=21
-    COMMA=22
-    MINUS=23
-    COLON=24
-    ASTERISK=25
-    ANGLE_BRACKET=26
-    REGISTER=27
-    WORD=28
-    DECIMAL_NUMBER=29
-    BINARY_NUMBER=30
-    HEX_NUMBER=31
-    STRING=32
-    CHAR=33
-    NEWLINE=34
-    COMMENT=35
-    WS=36
+    Goto=9
+    If=10
+    Is=11
+    Macro=12
+    Restore=13
+    Rsect=14
+    Save=15
+    Stays=16
+    Then=17
+    Tplate=18
+    Until=19
+    Wend=20
+    While=21
+    DOT=22
+    COMMA=23
+    MINUS=24
+    COLON=25
+    ASTERISK=26
+    ANGLE_BRACKET=27
+    REGISTER=28
+    WORD=29
+    DECIMAL_NUMBER=30
+    BINARY_NUMBER=31
+    HEX_NUMBER=32
+    STRING=33
+    CHAR=34
+    NEWLINE=35
+    COMMENT=36
+    WS=37
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
-        self.checkVersion("4.9.3")
+        self.checkVersion("4.9.2")
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
 
@@ -329,27 +339,27 @@ class AsmParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 71
+            self.state = 73
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while _la==AsmParser.NEWLINE:
-                self.state = 68
+                self.state = 70
                 self.match(AsmParser.NEWLINE)
-                self.state = 73
+                self.state = 75
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
-            self.state = 77
+            self.state = 79
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << AsmParser.Asect) | (1 << AsmParser.Rsect) | (1 << AsmParser.Tplate))) != 0):
-                self.state = 74
+                self.state = 76
                 self.section()
-                self.state = 79
+                self.state = 81
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
-            self.state = 80
+            self.state = 82
             self.match(AsmParser.End)
         except RecognitionException as re:
             localctx.exception = re
@@ -467,31 +477,31 @@ class AsmParser ( Parser ):
         localctx = AsmParser.SectionContext(self, self._ctx, self.state)
         self.enterRule(localctx, 2, self.RULE_section)
         try:
-            self.state = 91
+            self.state = 93
             self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [AsmParser.Asect]:
                 localctx = AsmParser.AbsoluteSectionContext(self, localctx)
                 self.enterOuterAlt(localctx, 1)
-                self.state = 82
+                self.state = 84
                 self.asect_header()
-                self.state = 83
+                self.state = 85
                 self.section_body()
                 pass
             elif token in [AsmParser.Rsect]:
                 localctx = AsmParser.RelocatableSectionContext(self, localctx)
                 self.enterOuterAlt(localctx, 2)
-                self.state = 85
+                self.state = 87
                 self.rsect_header()
-                self.state = 86
+                self.state = 88
                 self.section_body()
                 pass
             elif token in [AsmParser.Tplate]:
                 localctx = AsmParser.TemplateSectionContext(self, localctx)
                 self.enterOuterAlt(localctx, 3)
-                self.state = 88
+                self.state = 90
                 self.tplate_header()
-                self.state = 89
+                self.state = 91
                 self.section_body()
                 pass
             else:
@@ -553,17 +563,17 @@ class AsmParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 93
+            self.state = 95
             self.match(AsmParser.Asect)
-            self.state = 94
+            self.state = 96
             self.number()
-            self.state = 96 
+            self.state = 98 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 95
+                self.state = 97
                 self.match(AsmParser.NEWLINE)
-                self.state = 98 
+                self.state = 100 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if not (_la==AsmParser.NEWLINE):
@@ -625,17 +635,17 @@ class AsmParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 100
+            self.state = 102
             self.match(AsmParser.Rsect)
-            self.state = 101
+            self.state = 103
             self.name()
-            self.state = 103 
+            self.state = 105 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 102
+                self.state = 104
                 self.match(AsmParser.NEWLINE)
-                self.state = 105 
+                self.state = 107 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if not (_la==AsmParser.NEWLINE):
@@ -697,17 +707,17 @@ class AsmParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 107
+            self.state = 109
             self.match(AsmParser.Tplate)
-            self.state = 108
+            self.state = 110
             self.name()
-            self.state = 110 
+            self.state = 112 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 109
+                self.state = 111
                 self.match(AsmParser.NEWLINE)
-                self.state = 112 
+                self.state = 114 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if not (_la==AsmParser.NEWLINE):
@@ -759,7 +769,7 @@ class AsmParser ( Parser ):
         self.enterRule(localctx, 10, self.RULE_section_body)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 114
+            self.state = 116
             self.code_block()
         except RecognitionException as re:
             localctx.exception = re
@@ -826,6 +836,13 @@ class AsmParser ( Parser ):
                 return self.getTypedRuleContext(AsmParser.Save_restore_statementContext,i)
 
 
+        def goto_statement(self, i:int=None):
+            if i is None:
+                return self.getTypedRuleContexts(AsmParser.Goto_statementContext)
+            else:
+                return self.getTypedRuleContext(AsmParser.Goto_statementContext,i)
+
+
         def getRuleIndex(self):
             return AsmParser.RULE_code_block
 
@@ -852,51 +869,56 @@ class AsmParser ( Parser ):
         self.enterRule(localctx, 12, self.RULE_code_block)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 125
+            self.state = 128
             self._errHandler.sync(self)
             _alt = self._interp.adaptivePredict(self._input,7,self._ctx)
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt==1:
-                    self.state = 123
+                    self.state = 126
                     self._errHandler.sync(self)
                     la_ = self._interp.adaptivePredict(self._input,6,self._ctx)
                     if la_ == 1:
-                        self.state = 116
+                        self.state = 118
                         self.break_statement()
                         pass
 
                     elif la_ == 2:
-                        self.state = 117
+                        self.state = 119
                         self.continue_statement()
                         pass
 
                     elif la_ == 3:
-                        self.state = 118
+                        self.state = 120
                         self.line()
                         pass
 
                     elif la_ == 4:
-                        self.state = 119
+                        self.state = 121
                         self.conditional()
                         pass
 
                     elif la_ == 5:
-                        self.state = 120
+                        self.state = 122
                         self.while_loop()
                         pass
 
                     elif la_ == 6:
-                        self.state = 121
+                        self.state = 123
                         self.until_loop()
                         pass
 
                     elif la_ == 7:
-                        self.state = 122
+                        self.state = 124
                         self.save_restore_statement()
                         pass
 
+                    elif la_ == 8:
+                        self.state = 125
+                        self.goto_statement()
+                        pass
+
              
-                self.state = 127
+                self.state = 130
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,7,self._ctx)
 
@@ -952,15 +974,15 @@ class AsmParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 128
+            self.state = 131
             self.match(AsmParser.Break)
-            self.state = 130 
+            self.state = 133 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 129
+                self.state = 132
                 self.match(AsmParser.NEWLINE)
-                self.state = 132 
+                self.state = 135 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if not (_la==AsmParser.NEWLINE):
@@ -1018,15 +1040,15 @@ class AsmParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 134
+            self.state = 137
             self.match(AsmParser.Continue)
-            self.state = 136 
+            self.state = 139 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 135
+                self.state = 138
                 self.match(AsmParser.NEWLINE)
-                self.state = 138 
+                self.state = 141 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if not (_la==AsmParser.NEWLINE):
@@ -1133,29 +1155,29 @@ class AsmParser ( Parser ):
         self.enterRule(localctx, 18, self.RULE_line)
         self._la = 0 # Token type
         try:
-            self.state = 161
+            self.state = 164
             self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,15,self._ctx)
             if la_ == 1:
                 localctx = AsmParser.StandaloneLabelContext(self, localctx)
                 self.enterOuterAlt(localctx, 1)
-                self.state = 140
+                self.state = 143
                 self.label_declaration()
-                self.state = 142
+                self.state = 145
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if _la==AsmParser.Ext:
-                    self.state = 141
+                    self.state = 144
                     self.match(AsmParser.Ext)
 
 
-                self.state = 145 
+                self.state = 148 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 while True:
-                    self.state = 144
+                    self.state = 147
                     self.match(AsmParser.NEWLINE)
-                    self.state = 147 
+                    self.state = 150 
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
                     if not (_la==AsmParser.NEWLINE):
@@ -1166,31 +1188,31 @@ class AsmParser ( Parser ):
             elif la_ == 2:
                 localctx = AsmParser.InstructionLineContext(self, localctx)
                 self.enterOuterAlt(localctx, 2)
-                self.state = 150
+                self.state = 153
                 self._errHandler.sync(self)
                 la_ = self._interp.adaptivePredict(self._input,12,self._ctx)
                 if la_ == 1:
-                    self.state = 149
+                    self.state = 152
                     self.label_declaration()
 
 
-                self.state = 152
+                self.state = 155
                 self.instruction()
-                self.state = 154
+                self.state = 157
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << AsmParser.Asect) | (1 << AsmParser.Break) | (1 << AsmParser.Continue) | (1 << AsmParser.Do) | (1 << AsmParser.Else) | (1 << AsmParser.End) | (1 << AsmParser.Ext) | (1 << AsmParser.Fi) | (1 << AsmParser.If) | (1 << AsmParser.Is) | (1 << AsmParser.Macro) | (1 << AsmParser.Restore) | (1 << AsmParser.Rsect) | (1 << AsmParser.Save) | (1 << AsmParser.Stays) | (1 << AsmParser.Then) | (1 << AsmParser.Tplate) | (1 << AsmParser.Until) | (1 << AsmParser.Wend) | (1 << AsmParser.While) | (1 << AsmParser.MINUS) | (1 << AsmParser.REGISTER) | (1 << AsmParser.WORD) | (1 << AsmParser.DECIMAL_NUMBER) | (1 << AsmParser.BINARY_NUMBER) | (1 << AsmParser.HEX_NUMBER) | (1 << AsmParser.STRING) | (1 << AsmParser.CHAR))) != 0):
-                    self.state = 153
+                    self.state = 156
                     self.arguments()
 
 
-                self.state = 157 
+                self.state = 160 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 while True:
-                    self.state = 156
+                    self.state = 159
                     self.match(AsmParser.NEWLINE)
-                    self.state = 159 
+                    self.state = 162 
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
                     if not (_la==AsmParser.NEWLINE):
@@ -1252,9 +1274,9 @@ class AsmParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 163
+            self.state = 166
             self.label()
-            self.state = 164
+            self.state = 167
             _la = self._input.LA(1)
             if not(_la==AsmParser.COLON or _la==AsmParser.ANGLE_BRACKET):
                 self._errHandler.recoverInline(self)
@@ -1317,17 +1339,17 @@ class AsmParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 166
+            self.state = 169
             self.argument()
-            self.state = 171
+            self.state = 174
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while _la==AsmParser.COMMA:
-                self.state = 167
+                self.state = 170
                 self.match(AsmParser.COMMA)
-                self.state = 168
+                self.state = 171
                 self.argument()
-                self.state = 173
+                self.state = 176
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
@@ -1398,41 +1420,41 @@ class AsmParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 174
+            self.state = 177
             self.match(AsmParser.If)
-            self.state = 176 
+            self.state = 179 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 175
+                self.state = 178
                 self.match(AsmParser.NEWLINE)
-                self.state = 178 
+                self.state = 181 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if not (_la==AsmParser.NEWLINE):
                     break
 
-            self.state = 180
-            self.conditions()
-            self.state = 181
-            self.code_block()
             self.state = 183
+            self.conditions()
+            self.state = 184
+            self.code_block()
+            self.state = 186
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             if _la==AsmParser.Else:
-                self.state = 182
+                self.state = 185
                 self.else_clause()
 
 
-            self.state = 185
+            self.state = 188
             self.match(AsmParser.Fi)
-            self.state = 187 
+            self.state = 190 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 186
+                self.state = 189
                 self.match(AsmParser.NEWLINE)
-                self.state = 189 
+                self.state = 192 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if not (_la==AsmParser.NEWLINE):
@@ -1501,44 +1523,44 @@ class AsmParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 194
+            self.state = 197
             self._errHandler.sync(self)
             _alt = self._interp.adaptivePredict(self._input,20,self._ctx)
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt==1:
-                    self.state = 191
+                    self.state = 194
                     self.connective_condition() 
-                self.state = 196
+                self.state = 199
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,20,self._ctx)
 
-            self.state = 197
+            self.state = 200
             self.condition()
-            self.state = 199 
+            self.state = 202 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 198
+                self.state = 201
                 self.match(AsmParser.NEWLINE)
-                self.state = 201 
+                self.state = 204 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if not (_la==AsmParser.NEWLINE):
                     break
 
-            self.state = 209
+            self.state = 212
             self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,23,self._ctx)
             if la_ == 1:
-                self.state = 203
+                self.state = 206
                 self.match(AsmParser.Then)
-                self.state = 205 
+                self.state = 208 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 while True:
-                    self.state = 204
+                    self.state = 207
                     self.match(AsmParser.NEWLINE)
-                    self.state = 207 
+                    self.state = 210 
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
                     if not (_la==AsmParser.NEWLINE):
@@ -1606,19 +1628,19 @@ class AsmParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 211
+            self.state = 214
             self.condition()
-            self.state = 212
+            self.state = 215
             self.match(AsmParser.COMMA)
-            self.state = 213
+            self.state = 216
             self.conjunction()
-            self.state = 215 
+            self.state = 218 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 214
+                self.state = 217
                 self.match(AsmParser.NEWLINE)
-                self.state = 217 
+                self.state = 220 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if not (_la==AsmParser.NEWLINE):
@@ -1677,11 +1699,11 @@ class AsmParser ( Parser ):
         self.enterRule(localctx, 30, self.RULE_condition)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 219
+            self.state = 222
             self.code_block()
-            self.state = 220
+            self.state = 223
             self.match(AsmParser.Is)
-            self.state = 221
+            self.state = 224
             self.branch_mnemonic()
         except RecognitionException as re:
             localctx.exception = re
@@ -1739,21 +1761,21 @@ class AsmParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 223
+            self.state = 226
             self.match(AsmParser.Else)
-            self.state = 225 
+            self.state = 228 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 224
+                self.state = 227
                 self.match(AsmParser.NEWLINE)
-                self.state = 227 
+                self.state = 230 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if not (_la==AsmParser.NEWLINE):
                     break
 
-            self.state = 229
+            self.state = 232
             self.code_block()
         except RecognitionException as re:
             localctx.exception = re
@@ -1800,7 +1822,7 @@ class AsmParser ( Parser ):
         self.enterRule(localctx, 34, self.RULE_branch_mnemonic)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 231
+            self.state = 234
             self.match(AsmParser.WORD)
         except RecognitionException as re:
             localctx.exception = re
@@ -1847,7 +1869,7 @@ class AsmParser ( Parser ):
         self.enterRule(localctx, 36, self.RULE_conjunction)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 233
+            self.state = 236
             self.match(AsmParser.WORD)
         except RecognitionException as re:
             localctx.exception = re
@@ -1919,49 +1941,49 @@ class AsmParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 235
+            self.state = 238
             self.match(AsmParser.While)
-            self.state = 237 
+            self.state = 240 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 236
+                self.state = 239
                 self.match(AsmParser.NEWLINE)
-                self.state = 239 
+                self.state = 242 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if not (_la==AsmParser.NEWLINE):
                     break
 
-            self.state = 241
+            self.state = 244
             self.while_condition()
-            self.state = 242
+            self.state = 245
             self.match(AsmParser.Stays)
-            self.state = 243
+            self.state = 246
             self.branch_mnemonic()
-            self.state = 245 
+            self.state = 248 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 244
+                self.state = 247
                 self.match(AsmParser.NEWLINE)
-                self.state = 247 
+                self.state = 250 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if not (_la==AsmParser.NEWLINE):
                     break
 
-            self.state = 249
+            self.state = 252
             self.code_block()
-            self.state = 250
+            self.state = 253
             self.match(AsmParser.Wend)
-            self.state = 252 
+            self.state = 255 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 251
+                self.state = 254
                 self.match(AsmParser.NEWLINE)
-                self.state = 254 
+                self.state = 257 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if not (_la==AsmParser.NEWLINE):
@@ -2013,7 +2035,7 @@ class AsmParser ( Parser ):
         self.enterRule(localctx, 40, self.RULE_while_condition)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 256
+            self.state = 259
             self.code_block()
         except RecognitionException as re:
             localctx.exception = re
@@ -2078,33 +2100,33 @@ class AsmParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 258
+            self.state = 261
             self.match(AsmParser.Do)
-            self.state = 260 
+            self.state = 263 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 259
+                self.state = 262
                 self.match(AsmParser.NEWLINE)
-                self.state = 262 
+                self.state = 265 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if not (_la==AsmParser.NEWLINE):
                     break
 
-            self.state = 264
+            self.state = 267
             self.code_block()
-            self.state = 265
+            self.state = 268
             self.match(AsmParser.Until)
-            self.state = 266
+            self.state = 269
             self.branch_mnemonic()
-            self.state = 268 
+            self.state = 271 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 267
+                self.state = 270
                 self.match(AsmParser.NEWLINE)
-                self.state = 270 
+                self.state = 273 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if not (_la==AsmParser.NEWLINE):
@@ -2164,11 +2186,11 @@ class AsmParser ( Parser ):
         self.enterRule(localctx, 44, self.RULE_save_restore_statement)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 272
+            self.state = 275
             self.save_statement()
-            self.state = 273
+            self.state = 276
             self.code_block()
-            self.state = 274
+            self.state = 277
             self.restore_statement()
         except RecognitionException as re:
             localctx.exception = re
@@ -2226,17 +2248,17 @@ class AsmParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 276
+            self.state = 279
             self.match(AsmParser.Save)
-            self.state = 277
+            self.state = 280
             self.register()
-            self.state = 279 
+            self.state = 282 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 278
+                self.state = 281
                 self.match(AsmParser.NEWLINE)
-                self.state = 281 
+                self.state = 284 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if not (_la==AsmParser.NEWLINE):
@@ -2298,23 +2320,106 @@ class AsmParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 283
+            self.state = 286
             self.match(AsmParser.Restore)
-            self.state = 285
+            self.state = 288
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             if _la==AsmParser.REGISTER:
-                self.state = 284
+                self.state = 287
                 self.register()
 
 
-            self.state = 288 
+            self.state = 291 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 287
+                self.state = 290
                 self.match(AsmParser.NEWLINE)
-                self.state = 290 
+                self.state = 293 
+                self._errHandler.sync(self)
+                _la = self._input.LA(1)
+                if not (_la==AsmParser.NEWLINE):
+                    break
+
+        except RecognitionException as re:
+            localctx.exception = re
+            self._errHandler.reportError(self, re)
+            self._errHandler.recover(self, re)
+        finally:
+            self.exitRule()
+        return localctx
+
+
+    class Goto_statementContext(ParserRuleContext):
+        __slots__ = 'parser'
+
+        def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
+            super().__init__(parent, invokingState)
+            self.parser = parser
+
+        def Goto(self):
+            return self.getToken(AsmParser.Goto, 0)
+
+        def branch_mnemonic(self):
+            return self.getTypedRuleContext(AsmParser.Branch_mnemonicContext,0)
+
+
+        def COMMA(self):
+            return self.getToken(AsmParser.COMMA, 0)
+
+        def label(self):
+            return self.getTypedRuleContext(AsmParser.LabelContext,0)
+
+
+        def NEWLINE(self, i:int=None):
+            if i is None:
+                return self.getTokens(AsmParser.NEWLINE)
+            else:
+                return self.getToken(AsmParser.NEWLINE, i)
+
+        def getRuleIndex(self):
+            return AsmParser.RULE_goto_statement
+
+        def enterRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "enterGoto_statement" ):
+                listener.enterGoto_statement(self)
+
+        def exitRule(self, listener:ParseTreeListener):
+            if hasattr( listener, "exitGoto_statement" ):
+                listener.exitGoto_statement(self)
+
+        def accept(self, visitor:ParseTreeVisitor):
+            if hasattr( visitor, "visitGoto_statement" ):
+                return visitor.visitGoto_statement(self)
+            else:
+                return visitor.visitChildren(self)
+
+
+
+
+    def goto_statement(self):
+
+        localctx = AsmParser.Goto_statementContext(self, self._ctx, self.state)
+        self.enterRule(localctx, 50, self.RULE_goto_statement)
+        self._la = 0 # Token type
+        try:
+            self.enterOuterAlt(localctx, 1)
+            self.state = 295
+            self.match(AsmParser.Goto)
+            self.state = 296
+            self.branch_mnemonic()
+            self.state = 297
+            self.match(AsmParser.COMMA)
+            self.state = 298
+            self.label()
+            self.state = 300 
+            self._errHandler.sync(self)
+            _la = self._input.LA(1)
+            while True:
+                self.state = 299
+                self.match(AsmParser.NEWLINE)
+                self.state = 302 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if not (_la==AsmParser.NEWLINE):
@@ -2383,44 +2488,44 @@ class AsmParser ( Parser ):
     def argument(self):
 
         localctx = AsmParser.ArgumentContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 50, self.RULE_argument)
+        self.enterRule(localctx, 52, self.RULE_argument)
         try:
-            self.state = 298
+            self.state = 310
             self._errHandler.sync(self)
-            la_ = self._interp.adaptivePredict(self._input,34,self._ctx)
+            la_ = self._interp.adaptivePredict(self._input,35,self._ctx)
             if la_ == 1:
                 self.enterOuterAlt(localctx, 1)
-                self.state = 292
+                self.state = 304
                 self.number()
                 pass
 
             elif la_ == 2:
                 self.enterOuterAlt(localctx, 2)
-                self.state = 293
+                self.state = 305
                 self.character()
                 pass
 
             elif la_ == 3:
                 self.enterOuterAlt(localctx, 3)
-                self.state = 294
+                self.state = 306
                 self.string()
                 pass
 
             elif la_ == 4:
                 self.enterOuterAlt(localctx, 4)
-                self.state = 295
+                self.state = 307
                 self.register()
                 pass
 
             elif la_ == 5:
                 self.enterOuterAlt(localctx, 5)
-                self.state = 296
+                self.state = 308
                 self.label()
                 pass
 
             elif la_ == 6:
                 self.enterOuterAlt(localctx, 6)
-                self.state = 297
+                self.state = 309
                 self.template_field()
                 pass
 
@@ -2477,23 +2582,23 @@ class AsmParser ( Parser ):
     def template_field(self):
 
         localctx = AsmParser.Template_fieldContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 52, self.RULE_template_field)
+        self.enterRule(localctx, 54, self.RULE_template_field)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 301
+            self.state = 313
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             if _la==AsmParser.MINUS:
-                self.state = 300
+                self.state = 312
                 self.match(AsmParser.MINUS)
 
 
-            self.state = 303
+            self.state = 315
             self.name()
-            self.state = 304
+            self.state = 316
             self.match(AsmParser.DOT)
-            self.state = 305
+            self.state = 317
             self.name()
         except RecognitionException as re:
             localctx.exception = re
@@ -2538,10 +2643,10 @@ class AsmParser ( Parser ):
     def label(self):
 
         localctx = AsmParser.LabelContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 54, self.RULE_label)
+        self.enterRule(localctx, 56, self.RULE_label)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 307
+            self.state = 319
             self.name()
         except RecognitionException as re:
             localctx.exception = re
@@ -2585,10 +2690,10 @@ class AsmParser ( Parser ):
     def instruction(self):
 
         localctx = AsmParser.InstructionContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 56, self.RULE_instruction)
+        self.enterRule(localctx, 58, self.RULE_instruction)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 309
+            self.state = 321
             self.match(AsmParser.WORD)
         except RecognitionException as re:
             localctx.exception = re
@@ -2632,10 +2737,10 @@ class AsmParser ( Parser ):
     def string(self):
 
         localctx = AsmParser.StringContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 58, self.RULE_string)
+        self.enterRule(localctx, 60, self.RULE_string)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 311
+            self.state = 323
             self.match(AsmParser.STRING)
         except RecognitionException as re:
             localctx.exception = re
@@ -2679,10 +2784,10 @@ class AsmParser ( Parser ):
     def register(self):
 
         localctx = AsmParser.RegisterContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 60, self.RULE_register)
+        self.enterRule(localctx, 62, self.RULE_register)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 313
+            self.state = 325
             self.match(AsmParser.REGISTER)
         except RecognitionException as re:
             localctx.exception = re
@@ -2726,10 +2831,10 @@ class AsmParser ( Parser ):
     def character(self):
 
         localctx = AsmParser.CharacterContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 62, self.RULE_character)
+        self.enterRule(localctx, 64, self.RULE_character)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 315
+            self.state = 327
             self.match(AsmParser.CHAR)
         except RecognitionException as re:
             localctx.exception = re
@@ -2782,33 +2887,33 @@ class AsmParser ( Parser ):
     def number(self):
 
         localctx = AsmParser.NumberContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 64, self.RULE_number)
+        self.enterRule(localctx, 66, self.RULE_number)
         self._la = 0 # Token type
         try:
-            self.state = 323
+            self.state = 335
             self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [AsmParser.MINUS, AsmParser.DECIMAL_NUMBER]:
                 self.enterOuterAlt(localctx, 1)
-                self.state = 318
+                self.state = 330
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if _la==AsmParser.MINUS:
-                    self.state = 317
+                    self.state = 329
                     self.match(AsmParser.MINUS)
 
 
-                self.state = 320
+                self.state = 332
                 self.match(AsmParser.DECIMAL_NUMBER)
                 pass
             elif token in [AsmParser.HEX_NUMBER]:
                 self.enterOuterAlt(localctx, 2)
-                self.state = 321
+                self.state = 333
                 self.match(AsmParser.HEX_NUMBER)
                 pass
             elif token in [AsmParser.BINARY_NUMBER]:
                 self.enterOuterAlt(localctx, 3)
-                self.state = 322
+                self.state = 334
                 self.match(AsmParser.BINARY_NUMBER)
                 pass
             else:
@@ -2916,11 +3021,11 @@ class AsmParser ( Parser ):
     def name(self):
 
         localctx = AsmParser.NameContext(self, self._ctx, self.state)
-        self.enterRule(localctx, 66, self.RULE_name)
+        self.enterRule(localctx, 68, self.RULE_name)
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 325
+            self.state = 337
             _la = self._input.LA(1)
             if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << AsmParser.Asect) | (1 << AsmParser.Break) | (1 << AsmParser.Continue) | (1 << AsmParser.Do) | (1 << AsmParser.Else) | (1 << AsmParser.End) | (1 << AsmParser.Ext) | (1 << AsmParser.Fi) | (1 << AsmParser.If) | (1 << AsmParser.Is) | (1 << AsmParser.Macro) | (1 << AsmParser.Restore) | (1 << AsmParser.Rsect) | (1 << AsmParser.Save) | (1 << AsmParser.Stays) | (1 << AsmParser.Then) | (1 << AsmParser.Tplate) | (1 << AsmParser.Until) | (1 << AsmParser.Wend) | (1 << AsmParser.While) | (1 << AsmParser.WORD))) != 0)):
                 self._errHandler.recoverInline(self)

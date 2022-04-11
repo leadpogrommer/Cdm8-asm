@@ -41,20 +41,21 @@ def zero_handler(opcode: int, arguments: list):
     return [BytesSegment(bytearray([opcode]))]
 
 def branch_handler(opcode: int, arguments: list):
-    assert_args(arguments, ArgAddress)
+    assert_args(arguments, int)
+    arg = arguments[0]
 
-    if isinstance(arguments[0], int):
-        return [OffsetBranchSegment(opcode, arguments[0])]
-    elif isinstance(arguments[0], LabelNode):
-        return [LabelBranchSegment(opcode, arguments[0])]
+    if not -128 <= arg < 128:
+        raise Exception('Branch offset too big')
+    return [BytesSegment(bytearray([opcode, arg]))]
 
 def long_handler(opcode: int, arguments: list):
     assert_args(arguments, ArgAddress)
+    arg = arguments[0]
 
-    if isinstance(arguments[0], int):
-        return [BytesSegment(bytearray([opcode, arguments[0]]))]
-    elif isinstance(arguments[0], LabelNode):
-        return [BytesSegment(bytearray([opcode])), LongAddressSegment(arguments[0])]
+    if isinstance(arg, int):
+        return [BytesSegment(bytearray([opcode]) + arg.to_bytes(2, 'little'))]
+    elif isinstance(arg, LabelNode):
+        return [BytesSegment(bytearray([opcode])), LongAddressSegment(arg)]
 
 def ldsa_handler(opcode: int, arguments: list):
     assert_args(arguments, RegisterNode, ArgLdsaOffset)
