@@ -8,6 +8,8 @@ import os.path
 import sys
 from dataclasses import asdict
 import pathlib
+import os
+import argparse
 
 
 def write_image(filename: str, arr: list):
@@ -22,6 +24,7 @@ def write_image(filename: str, arr: list):
     for byte in arr:
         f.write(bytes(f'{byte:02x}\n', 'UTF-8'))
     f.close()
+
 
 def write_object_file(filename: str, obj: ObjectModule):
     # TODO: write code locations
@@ -59,29 +62,38 @@ def write_object_file(filename: str, obj: ObjectModule):
 
 
 def main():
+    # TODO: enable object file generation (when stand-alone linker will be ready)
+    parser = argparse.ArgumentParser('Cdm8e assembler')
+    # parser.add_argument('-o', '--object', type=str, help='Object file directory (object files will be stored here)')
+    parser.add_argument('-i', '--image', type=str, help='Image file path')
+    parser.add_argument('-d', '--debug', type=str, help='Debug info path')
+    parser.add_argument('sources', type=str, nargs='+', help='Source files')
+    args = parser.parse_args()
+
+
     library_macros = read_mlb(str(pathlib.Path(__file__).parent.joinpath('standard.mlb').absolute()))
-    source_files = sys.argv[1:]
+    source_files = args.sources
     objects = []
     for filepath in source_files:
-        root, ext = os.path.splitext(filepath)
         input_stream = FileStream(filepath)
         macro_expanded_input_stream = process_macros(input_stream, library_macros, str(pathlib.Path(filepath).absolute()))
         # print(macro_expanded_input_stream)
         r = build_ast(macro_expanded_input_stream, str(pathlib.Path(filepath).absolute()))
         obj = assemble(r)
 
-        write_object_file(root + '.obj', obj)
         objects.append(obj)
 
     data, code_locations = link(objects)
     image_root, _ = os.path.splitext(source_files[0])
-    write_image(image_root + '.img', data)
+    if args.image is not None:
+        write_image(args.image, data)
 
     # write code locations(debug info)
     code_locations = {key: asdict(loc) for key, loc in code_locations.items()}
     json_locations = json.dumps(code_locations, indent=4, sort_keys=True)
-    with open(image_root + '.dbg.json', 'w') as f:
-        f.write(json_locations)
+    if args.debug is not None:
+        with open(args.debug, 'w') as f:
+            f.write(json_locations)
 
 
 if __name__ == '__main__':

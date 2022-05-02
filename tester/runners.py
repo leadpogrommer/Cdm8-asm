@@ -8,7 +8,7 @@ from subprocess import run, PIPE
 import pathlib
 from tempfile import NamedTemporaryFile
 import json
-import emulator.emulator as emulator
+import cdm_emu.emulator as emulator
 import time
 from state import CdmState
 import os
