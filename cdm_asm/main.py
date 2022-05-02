@@ -1,14 +1,13 @@
 import json
-
 from antlr4 import *
-from macro_processor import process_macros, read_mlb
-from assembler import ObjectModule, assemble
-from ast_builder import build_ast
-from linker import link
+from cdm_asm.macro_processor import process_macros, read_mlb
+from cdm_asm.assembler import ObjectModule, assemble
+from cdm_asm.ast_builder import build_ast
+from cdm_asm.linker import link
 import os.path
 import sys
-import pathlib
 from dataclasses import asdict
+import pathlib
 
 
 def write_image(filename: str, arr: list):
@@ -59,7 +58,7 @@ def write_object_file(filename: str, obj: ObjectModule):
     f.close()
 
 
-if __name__ == '__main__':
+def main():
     library_macros = read_mlb(str(pathlib.Path(__file__).parent.joinpath('standard.mlb').absolute()))
     source_files = sys.argv[1:]
     objects = []
@@ -83,3 +82,7 @@ if __name__ == '__main__':
     json_locations = json.dumps(code_locations, indent=4, sort_keys=True)
     with open(image_root + '.dbg.json', 'w') as f:
         f.write(json_locations)
+
+
+if __name__ == '__main__':
+    main()

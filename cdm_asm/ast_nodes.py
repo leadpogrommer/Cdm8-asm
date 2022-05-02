@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from location import CodeLocation
+from cdm_asm.location import CodeLocation
 
 @dataclass
 class RegisterNode:

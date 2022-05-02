@@ -1,6 +1,6 @@
-from asm_commands import instructions as insset, assembly_directives as dirset
-from ast_nodes import *
-from code_segments import *
+from cdm_asm.asm_commands import instructions as insset, assembly_directives as dirset
+from cdm_asm.ast_nodes import *
+from cdm_asm.code_segments import *
 from typing import Union, get_origin, get_args
 import bitstruct
 

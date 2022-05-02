@@ -1,4 +1,4 @@
-from ast_nodes import LabelNode, TemplateFieldNode
+from cdm_asm.ast_nodes import LabelNode, TemplateFieldNode
 from dataclasses import dataclass, field
 
 @dataclass

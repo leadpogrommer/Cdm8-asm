@@ -1,8 +1,8 @@
-from assembler import ObjectSectionRecord, ObjectModule
+from cdm_asm.assembler import ObjectSectionRecord, ObjectModule
 import itertools
 
 
-from location import CodeLocation
+from cdm_asm.location import CodeLocation
 
 
 def init_bins(asects: list[ObjectSectionRecord]):

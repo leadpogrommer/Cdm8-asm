@@ -1,7 +1,7 @@
-from asm_commands import instructions as insset, assembly_directives as dirset
-from ast_nodes import *
-from code_segments import *
-from command_handlers import assemble_command
+from cdm_asm.asm_commands import instructions as insset, assembly_directives as dirset
+from cdm_asm.ast_nodes import *
+from cdm_asm.code_segments import *
+from cdm_asm.command_handlers import assemble_command
 from dataclasses import dataclass
 
 

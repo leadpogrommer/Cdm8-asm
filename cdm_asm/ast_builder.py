@@ -1,10 +1,10 @@
 from antlr4 import *
-from ast_nodes import *
-from generated.AsmLexer import AsmLexer
-from generated.AsmParser import AsmParser
-from generated.AsmParserVisitor import AsmParserVisitor
+from cdm_asm.ast_nodes import *
+from cdm_asm.generated.AsmLexer import AsmLexer
+from cdm_asm.generated.AsmParser import AsmParser
+from cdm_asm.generated.AsmParserVisitor import AsmParserVisitor
 from base64 import b64decode
-from error import LexerErrorListener, ParserErrorListener
+from cdm_asm.error import LexerErrorListener, ParserErrorListener
 
 
 class BuildAstVisitor(AsmParserVisitor):

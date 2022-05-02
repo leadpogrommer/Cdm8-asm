@@ -1,0 +1,26 @@
+[tool.poetry]
+name = "cdm8"
+version = "0.1.0"
+description = ""
+authors = ["leadpogrommer <ilyamerzlakov@gmail.com>"]
+packages = [
+    { include = "cdm_asm" },
+    { include = "cdm_emu" },
+]
+
+[tool.poetry.scripts]
+cdm-asm = 'cdm_asm.main:main'
+cdm-emu = 'cdm_emu.emulator:main'
+
+[tool.poetry.dependencies]
+python = "^3.10"
+bitstruct = "^8.14.1"
+antlr4-python3-runtime = "^4.10"
+websocket-server = "^0.6.4"
+
+[tool.poetry.dev-dependencies]
+pytest = "^5.2"
+
+[build-system]
+requires = ["poetry-core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"

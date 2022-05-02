@@ -6,7 +6,7 @@ import sys
 
 from websocket_server import WebsocketServer
 
-from emulator import CDM8Emu
+from cdm_emu.emulator import CDM8Emu
 
 ws_client = None
 exited = False

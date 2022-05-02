@@ -2,14 +2,13 @@ from antlr4 import *
 from antlr4.TokenStreamRewriter import TokenStreamRewriter
 from dataclasses import dataclass
 
-from location import CodeLocation
-from generated.MacroLexer import MacroLexer
-from generated.MacroParser import MacroParser
-from generated.MacroVisitor import MacroVisitor
-from typing import Union
+from cdm_asm.location import CodeLocation
+from cdm_asm.generated.MacroLexer import MacroLexer
+from cdm_asm.generated.MacroParser import MacroParser
+from cdm_asm.generated.MacroVisitor import MacroVisitor
 from base64 import b64encode
 import re
-from error import LexerErrorListener
+from cdm_asm.error import LexerErrorListener
 
 
 def unique(params: list[str]):

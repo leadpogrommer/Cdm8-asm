@@ -629,8 +629,8 @@ def EP(s, term=True):
 
 
 
-if __name__ == "__main__":
-    import server
+def main():
+    import cdm_emu.server
     parser = argparse.ArgumentParser(description='CdM-8 Emulator v1.0')
     parser.add_argument('filename', type=str, const=None, default="", help='memory_image_file[.img]')
     parser.add_argument('--serve', action='store_true', help='Serve as debug server on random port')
@@ -649,3 +649,7 @@ if __name__ == "__main__":
             print(emu.datamem)
     finally:
         pass
+
+
+if __name__ == '__main__':
+    main()
