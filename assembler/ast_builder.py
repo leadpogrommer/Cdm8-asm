@@ -100,7 +100,7 @@ class BuildAstVisitor(AsmParserVisitor):
         return self.visitRegister(ctx.register()) if ctx.register() else None
 
     def visitGoto_statement(self, ctx: AsmParser.Goto_statementContext):
-        return GotoStatementNode(ctx.branch_mnemonic().getText(), self.visitLabel(ctx.label()))
+        return GotoStatementNode(ctx.branch_mnemonic().getText(), self.visitGoto_argument(ctx.goto_argument()))
 
     def visitCode_block(self, ctx: AsmParser.Code_blockContext):
         if ctx.children is None:
@@ -128,6 +128,29 @@ class BuildAstVisitor(AsmParserVisitor):
                 ret.append(self.visitGoto_statement(c))
         return ret
 
+    def visitByte_expr(self, ctx: AsmParser.Byte_exprContext):
+        expr = self.visitAddr_expr(ctx.addr_expr())
+        expr.byte_specifier = ctx.byte_specifier().getText()
+        return expr
+
+    def visitAddr_expr(self, ctx: AsmParser.Addr_exprContext):
+        add_terms = []
+        sub_terms = []
+        const_term = 0
+        for c in ctx.children:
+            term = self.visitTerm(c.term())
+            if c.MINUS() is not None:
+                if isinstance(term, int):
+                    const_term -= term
+                else:
+                    sub_terms.append(term)
+            else:
+                if isinstance(term, int):
+                    const_term += term
+                else:
+                    add_terms.append(term)
+        return RelocatableExpressionNode(None, add_terms, sub_terms, const_term)
+
     def visitStandaloneLabel(self, ctx:AsmParser.StandaloneLabelContext) -> LabelNode:
         label_decl = self.visitLabel_declaration(ctx.label_declaration())
         label_decl.external = ctx.Ext() is not None
@@ -151,7 +174,7 @@ class BuildAstVisitor(AsmParserVisitor):
     def visitTemplate_field(self, ctx:AsmParser.Template_fieldContext):
         template_name = ctx.name()[0].getText()
         field_name = ctx.name()[1].getText()
-        return TemplateFieldNode(template_name, field_name, ctx.MINUS() is not None)
+        return TemplateFieldNode(template_name, field_name)
 
     def visitInstructionLine(self, ctx:AsmParser.InstructionLineContext) -> list:
         ret = []

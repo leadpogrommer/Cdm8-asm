@@ -169,7 +169,7 @@ class CodeBlock:
         self.append_goto('anything', cond_label)
 
     def assemble_goto_statement(self, line: GotoStatementNode):
-        self.segments.append(GotoSegment(line.branch_mnemonic, line.label))
+        self.segments.append(GotoSegment(line.branch_mnemonic, line.expr))
         self.size += GotoSegment.base_size
 
 @dataclass
@@ -189,70 +189,109 @@ class ObjectSectionRecord:
         self.address: int = s.address
         self.name: str = s.name
         self.data = bytearray()
-        self.rel: set[int] = set()
+        self.rell: set[int] = set()
+        self.relh: set[tuple[int, int]] = set()
         self.ents: dict[str, int] = dict(filter(lambda p: p[0] in s.ents, s.labels.items()))
-        self.ext_uses: dict[str, list[int]] = dict()
+        self.xtrl: dict[str, list[int]] = dict()
+        self.xtrh: dict[str, list[tuple[int, int]]] = dict()
         self.code_locations = s.code_locations
 
         for seg in s.segments:
             if isinstance(seg, BytesSegment):
                 self.data += seg.data
-            elif isinstance(seg, ShortAddressSegment):
-                self.fill_short_address(seg, s, local_labels)
-            elif isinstance(seg, LongAddressSegment):
-                self.fill_long_address(seg, s, local_labels)
+            elif isinstance(seg, ByteExpressionSegment):
+                self.fill_byte_expr(seg, s, local_labels, template_fields)
+            elif isinstance(seg, AddressExpressionSegment):
+                self.fill_addr_expr(seg, s, local_labels, template_fields)
             elif isinstance(seg, GotoSegment):
-                self.fill_goto(seg, s, local_labels)
+                self.fill_goto(seg, s, local_labels, template_fields)
             elif isinstance(seg, TemplateFieldSegment):
                 self.fill_tfield(seg, template_fields)
 
-    def fill_short_address(self, seg: ShortAddressSegment, s: Section, local_labels: dict[str, int]):
-        label_name = seg.label.name
-        if label_name in local_labels:
-            self.data += bytearray([local_labels[label_name]])
-        elif label_name in s.labels:
-            # self.rel.add(s.address + len(self.data))
-            self.data += bytearray([s.labels[label_name]])
-        elif label_name in s.exts:
-            # self.ext_uses.setdefault(label_name, []).append(s.address + len(self.data))
-            self.data += bytearray([0])
-        else:
-            raise Exception(f'Label "{label_name}" not found')
+    def fill_byte_expr(self, seg: ByteExpressionSegment, s: Section,
+                       local_labels: dict[str, int], template_fields: dict[str, dict[str, int]]):
+        res, is_rel, ext = eval_rel_expr(seg.expr, s, local_labels, template_fields)
 
-    def fill_long_address(self, seg: LongAddressSegment, s: Section, local_labels: dict[str, int]):
-        label_name = seg.label.name
-        if label_name in local_labels:
-            self.data += local_labels[label_name].to_bytes(2, 'little')
-        elif label_name in s.labels:
-            # Add rel (2 bytes long)
-            self.data += s.labels[label_name].to_bytes(2, 'little')
-        elif label_name in s.exts:
-            # Add external label use (2 bytes long)
-            self.data += bytearray([0, 0])
-        else:
-            raise Exception(f'Label "{label_name}" not found')
+        if (is_rel or ext is not None) and (seg.const or seg.expr.byte_specifier is None):
+            raise Exception('Number expected but label found')
 
-    def fill_goto(self, seg: GotoSegment, s: Section, local_labels: dict[str, int]):
-        label_name = seg.label.name
-        if label_name in local_labels:
-            addr = local_labels[label_name]
-        elif label_name in s.labels:
-            # Add rel (2 bytes long)
-            addr = s.labels[label_name]
-        elif label_name in s.exts:
-            # Add external label use (2 bytes long)
-            addr = 0
-        else:
-            raise Exception(f'Label "{label_name}" not found')
+        res_lo, res_hi = res.to_bytes(2, 'little', signed=(res<0))
 
+        if ext is not None:
+            if seg.expr.byte_specifier == 'low':
+                self.xtrl.setdefault(ext, []).append(s.address + len(self.data))
+                self.data.append(res_lo)
+            elif seg.expr.byte_specifier == 'high':
+                self.xtrh.setdefault(ext, []).append((s.address + len(self.data), res_lo))
+                self.data.append(res_hi)
+        elif is_rel:
+            if seg.expr.byte_specifier == 'low':
+                self.rell.add(s.address + len(self.data))
+                self.data.append(res_lo)
+            elif seg.expr.byte_specifier == 'high':
+                self.relh.add((s.address + len(self.data), res_lo))
+                self.data.append(res_hi)
+        else:
+            if seg.expr.byte_specifier == 'low':
+                self.data.append(res_lo)
+            elif seg.expr.byte_specifier == 'high':
+                self.data.append(res_hi)
+            elif -2**7 <= res < 2**8:
+                self.data.append(res_lo)
+            else:
+                raise Exception('Number out of range')
+
+    def fill_addr_expr(self, seg: AddressExpressionSegment, s: Section,
+                       local_labels: dict[str, int], template_fields: dict[str, dict[str, int]]):
+        res, is_rel, ext = eval_rel_expr(seg.expr, s, local_labels, template_fields)
+
+        res_lo, res_hi = res.to_bytes(2, 'little', signed=(res<0))
+
+        if ext is not None:
+            if seg.expr.byte_specifier == 'low':
+                self.xtrl.setdefault(ext, []).append(s.address + len(self.data))
+                self.data += bytearray([res_lo, 0])
+            elif seg.expr.byte_specifier == 'high':
+                self.xtrh.setdefault(ext, []).append((s.address + len(self.data), res_lo))
+                self.data += bytearray([res_hi, 0])
+            else:
+                self.xtrl.setdefault(ext, []).append(s.address + len(self.data))
+                self.xtrh.setdefault(ext, []).append((s.address + len(self.data) + 1, res_lo))
+                self.data += bytearray([res_lo, res_hi])
+        elif is_rel:
+            if seg.expr.byte_specifier == 'low':
+                self.rell.add(s.address + len(self.data))
+                self.data += bytearray([res_lo, 0])
+            elif seg.expr.byte_specifier == 'high':
+                self.relh.add((s.address + len(self.data), res_lo))
+                self.data += bytearray([res_hi, 0])
+            else:
+                self.rell.add(s.address + len(self.data))
+                self.relh.add((s.address + len(self.data) + 1, res_lo))
+                self.data += bytearray([res_lo, res_hi])
+        else:
+            if seg.expr.byte_specifier == 'low':
+                self.data += bytearray([res_lo, 0])
+            elif seg.expr.byte_specifier == 'high':
+                self.data += bytearray([res_hi, 0])
+            elif -2**15 <= res < 2**16:
+                self.data += bytearray([res_lo, res_hi])
+            else:
+                raise Exception('Number out of range')
+
+    def fill_goto(self, seg: GotoSegment, s: Section,
+                  local_labels: dict[str, int], template_fields: dict[str, dict[str, int]]):
         if seg.is_expanded:
             branch_opcode = insset['branch'][f'bn{seg.branch_mnemonic}']
             jmp_opcode = insset['long']['jmp']
-            self.data += bytearray([branch_opcode, 4, jmp_opcode]) + addr.to_bytes(2, 'little')
+            self.data += bytearray([branch_opcode, 4, jmp_opcode])
+            self.fill_addr_expr(AddressExpressionSegment(seg.expr), s, local_labels, template_fields)
         else:
             branch_opcode = insset['branch'][f'b{seg.branch_mnemonic}']
-            offset = addr - self.address - len(self.data) - 1
-            self.data += bytearray([branch_opcode]) + offset.to_bytes(1, 'little', signed=True)
+            self.data += bytearray([branch_opcode])
+            offset = seg.expr.const_term - self.address - len(self.data)
+            offset_expr = RelocatableExpressionNode('low', seg.expr.add_terms, seg.expr.sub_terms, offset)
+            self.fill_byte_expr(ByteExpressionSegment(offset_expr, signed=True), s, local_labels, template_fields)
 
     def fill_tfield(self, seg: TemplateFieldSegment, template_fields: dict[str, dict[str, int]]):
         tf = seg.tfield
@@ -272,16 +311,76 @@ class ObjectModule:
     def __init__(self):
         self.asects: list[ObjectSectionRecord] = []
         self.rsects: list[ObjectSectionRecord] = []
-        self.exts: dict[str, dict[str, list[int]]] = dict()
 
 
 def gather_local_labels(sects: list[Section]):
     local_labels = dict()
     for sect in sects:
-        local_labels |= dict(filter(lambda p: not p[0].startswith('$') and p[0] not in sect.ents, sect.labels.items()))
+        local_labels |= dict(filter(lambda p: not p[0].startswith('$'), sect.labels.items()))
     return local_labels
 
-def expand_goto_segments(sects: list[Section]):
+def eval_rel_expr(expr: RelocatableExpressionNode, s: Section,
+                  local_labels: dict[str, int], template_fields: dict[str, dict[str, int]]):
+    res = expr.const_term
+    used_exts = dict()
+    s_dim = 0
+    local_dim = 0
+    for term in expr.add_terms:
+        if isinstance(term, LabelNode):
+            if term.name in s.labels:
+                s_dim += 1
+                res += s.labels[term.name]
+            elif term.name in local_labels:
+                local_dim += 1
+                res += local_labels[term.name]
+            elif term.name in s.exts:
+                used_exts.setdefault(term.name, 0)
+                used_exts[term.name] += 1
+            else:
+                raise Exception(f'Label "{term.name}" not found')
+        elif isinstance(term, TemplateFieldNode):
+            res += template_fields[term.template_name][term.field_name]
+
+    for term in expr.sub_terms:
+        if isinstance(term, LabelNode):
+            if term.name in s.labels:
+                s_dim -= 1
+                res -= s.labels[term.name]
+            elif term.name in local_labels:
+                local_dim -= 1
+                res -= local_labels[term.name]
+            elif term.name in s.exts:
+                used_exts.setdefault(term.name, 0)
+                used_exts[term.name] -= 1
+            else:
+                raise Exception(f'Label "{term.name}" not found')
+        elif isinstance(term, TemplateFieldNode):
+            res -= template_fields[term.template_name][term.field_name]
+
+    if s.name == '$abs':
+        s_dim += local_dim
+        local_dim = 0
+
+    used_exts = dict(filter(lambda x: x[1] != 0, used_exts.items()))
+    if len(used_exts) > 1:
+        raise Exception('Cannot use multiple external labels in an address expression')
+
+    if len(used_exts) == 1:
+        ext, ext_dim = used_exts.popitem()
+        if local_dim == 0 and s_dim == 0 and ext_dim == 1:
+            return (res, False, ext)
+        else:
+            raise Exception('Result is not a label or a number')
+    else:
+        if s_dim == 0 and local_dim in [0, 1]:
+            return (res, False, None)
+        elif local_dim == 0 and s_dim == 1:
+            return (res, True, None)
+        else:
+            raise Exception('Result is not a label or a number')
+
+def expand_goto_segments(sects: list[Section], local_labels: dict[str, int],
+                         template_fields: dict[str, dict[str, int]]):
     @dataclass
     class GotoSegmentEntry:
         seg: GotoSegment
@@ -289,7 +388,8 @@ def expand_goto_segments(sects: list[Section]):
         pos: int
 
     gotos: list[GotoSegmentEntry] = []
-    local_labels = gather_local_labels(sects)
+    labels = gather_local_labels(sects)
+    labels.update(local_labels)
 
     for sect in sects:
         pos = sect.address
@@ -303,18 +403,15 @@ def expand_goto_segments(sects: list[Section]):
             if goto.seg.is_expanded:
                 continue
 
-            label_name = goto.seg.label.name
-            if label_name in goto.sect.labels:
-                offset = goto.sect.labels[label_name] - goto.pos
-            elif label_name in local_labels:
-                offset = local_labels[label_name] - goto.pos
+            addr, is_rel, ext = eval_rel_expr(goto.seg.expr, goto.sect, labels, template_fields)
 
-            if not -128 <= offset < 128:
+            if (not -128 <= addr - goto.pos < 128) or not is_rel or ext is not None:
                 shift_length = GotoSegment.expanded_size - GotoSegment.base_size
                 goto.seg.is_expanded = True
                 for label_name in goto.sect.labels:
                     if goto.sect.labels[label_name] > goto.pos:
                         goto.sect.labels[label_name] += shift_length
+                        labels[label_name] += shift_length
                 for other_goto in gotos:
                     if other_goto.sect is goto.sect and other_goto.pos > goto.pos:
                         other_goto.pos += shift_length
@@ -332,11 +429,10 @@ def assemble(pn: ProgramNode):
     rsects = [Section(rsect) for rsect in pn.relocatable_sections]
     asects.sort(key=lambda s: s.address)
 
-    expand_goto_segments(asects)
-    for rsect in rsects:
-        expand_goto_segments([rsect])
-
+    expand_goto_segments(asects, dict(), template_fields)
     local_labels = gather_local_labels(asects)
+    for rsect in rsects:
+        expand_goto_segments([rsect], local_labels, template_fields)
 
     obj = ObjectModule()
     obj.asects = [ObjectSectionRecord(asect, local_labels, template_fields) for asect in asects]

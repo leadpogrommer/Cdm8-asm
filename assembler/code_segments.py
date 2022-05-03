@@ -1,4 +1,4 @@
-from ast_nodes import LabelNode, TemplateFieldNode
+from ast_nodes import RelocatableExpressionNode, TemplateFieldNode
 from dataclasses import dataclass, field
 
 @dataclass
@@ -18,13 +18,16 @@ class BytesSegment(CodeSegment):
         self.base_size = len(data)
 
 @dataclass
-class ShortAddressSegment(CodeSegment):
-    label: LabelNode
+class ByteExpressionSegment(CodeSegment):
+    expr: RelocatableExpressionNode
+    const: bool = False
+    signed: bool = False
+    positive: bool = False
     base_size = 1
 
 @dataclass
-class LongAddressSegment(CodeSegment):
-    label: LabelNode
+class AddressExpressionSegment(CodeSegment):
+    expr: RelocatableExpressionNode
     base_size = 2
 
 @dataclass
@@ -35,6 +38,6 @@ class TemplateFieldSegment(CodeSegment):
 @dataclass
 class GotoSegment(VariableLengthSegment):
     branch_mnemonic: int
-    label: LabelNode
+    expr: RelocatableExpressionNode
     base_size = 2
     expanded_size = 5

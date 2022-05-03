@@ -22,12 +22,18 @@ Until : 'until' ;
 Wend : 'wend' ;
 While : 'while' ;
 
+Low : 'low' ;
+High : 'high' ;
+
 DOT : '.' ;
 COMMA : ',' ;
+PLUS : '+' ;
 MINUS : '-' ;
 COLON : ':' ;
 ASTERISK : '*' ;
 ANGLE_BRACKET : '>' ;
+OPEN_PAREN : '(' ;
+CLOSE_PAREN : ')' ;
 
 REGISTER : 'r'[0-3] ;
 WORD : [a-zA-Z_][a-zA-Z_0-9]* ;
