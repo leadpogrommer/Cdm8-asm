@@ -8,7 +8,7 @@ from cdm_asm.generated.MacroParser import MacroParser
 from cdm_asm.generated.MacroVisitor import MacroVisitor
 from base64 import b64encode
 import re
-from cdm_asm.error import LexerErrorListener
+from cdm_asm.error import AntlrErrorListener, CdmExceptionTag
 
 
 def unique(params: list[str]):
@@ -264,9 +264,12 @@ def read_mlb(filepath):
 # filepath should be absolute
 def process_macros(input_stream: InputStream, library_macros, filepath: str):
     lexer = MacroLexer(input_stream)
-    lexer.addErrorListener(LexerErrorListener())
+    lexer.removeErrorListeners()
+    lexer.addErrorListener(AntlrErrorListener(CdmExceptionTag.MACRO, filepath))
     token_stream = CommonTokenStream(lexer)
     parser = MacroParser(token_stream)
+    parser.removeErrorListeners()
+    parser.addErrorListener(AntlrErrorListener(CdmExceptionTag.MACRO, filepath))
     cst = parser.program()
     rewriter = TokenStreamRewriter(token_stream)
     ExpandMacrosVisitor(rewriter, library_macros, filepath).visit(cst)

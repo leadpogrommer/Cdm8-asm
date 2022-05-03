@@ -44,3 +44,6 @@ WS : (' ' | '\t') -> skip ;
 
 BASE64 : 'fp-' [a-zA-Z0-9/+=]+;
 
+
+UNEXPECTED_TOKEN: [\u0000-\uFFFE];
+

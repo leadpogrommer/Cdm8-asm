@@ -1,9 +1,16 @@
 from cdm_asm.ast_nodes import LabelNode, TemplateFieldNode
+from cdm_asm.location import CodeLocation
 from dataclasses import dataclass, field
 
 @dataclass
 class CodeSegment:
     size: int = field(init=False)
+
+    def __post_init__(self):
+        # ugly hack to store code location in segments
+        # now this whole project is one big and ugly hack
+        self.location: CodeLocation = CodeLocation()
+
 
 @dataclass
 class BytesSegment(CodeSegment):

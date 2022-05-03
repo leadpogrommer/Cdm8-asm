@@ -1,4 +1,4 @@
-# Generated from /home/ilya/work/cdm8e/ORiGinalASM/assembler/AsmParser.g4 by ANTLR 4.10.1
+# Generated from /home/ilya/work/cdm8e/ORiGinalASM/cdm_asm/AsmParser.g4 by ANTLR 4.10.1
 # encoding: utf-8
 from antlr4 import *
 from io import StringIO
@@ -8,9 +8,12 @@ if sys.version_info[1] > 5:
 else:
 	from typing.io import TextIO
 
+
+from base64 import b64decode
+
 def serializedATN():
     return [
-        4,1,38,348,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
+        4,1,39,350,2,0,7,0,2,1,7,1,2,2,7,2,2,3,7,3,2,4,7,4,2,5,7,5,2,6,7,
         6,2,7,7,7,2,8,7,8,2,9,7,9,2,10,7,10,2,11,7,11,2,12,7,12,2,13,7,13,
         2,14,7,14,2,15,7,15,2,16,7,16,2,17,7,17,2,18,7,18,2,19,7,19,2,20,
         7,20,2,21,7,21,2,22,7,22,2,23,7,23,2,24,7,24,2,25,7,25,2,26,7,26,
@@ -20,47 +23,47 @@ def serializedATN():
         1,1,1,1,1,1,1,1,1,3,1,99,8,1,1,2,1,2,1,2,4,2,104,8,2,11,2,12,2,105,
         1,3,1,3,1,3,4,3,111,8,3,11,3,12,3,112,1,4,1,4,1,4,4,4,118,8,4,11,
         4,12,4,119,1,5,1,5,1,6,1,6,1,6,1,6,1,6,1,6,1,6,1,6,5,6,132,8,6,10,
-        6,12,6,135,9,6,1,7,1,7,1,7,1,7,4,7,141,8,7,11,7,12,7,142,1,8,1,8,
-        1,9,1,9,1,10,1,10,4,10,151,8,10,11,10,12,10,152,1,11,1,11,4,11,157,
-        8,11,11,11,12,11,158,1,12,1,12,3,12,163,8,12,1,12,4,12,166,8,12,
-        11,12,12,12,167,1,12,3,12,171,8,12,1,12,1,12,3,12,175,8,12,1,12,
-        4,12,178,8,12,11,12,12,12,179,3,12,182,8,12,1,13,1,13,1,13,1,14,
-        1,14,1,14,5,14,190,8,14,10,14,12,14,193,9,14,1,15,1,15,4,15,197,
-        8,15,11,15,12,15,198,1,15,1,15,1,15,3,15,204,8,15,1,15,1,15,4,15,
-        208,8,15,11,15,12,15,209,1,16,5,16,213,8,16,10,16,12,16,216,9,16,
-        1,16,1,16,4,16,220,8,16,11,16,12,16,221,1,16,1,16,4,16,226,8,16,
-        11,16,12,16,227,3,16,230,8,16,1,17,1,17,1,17,1,17,4,17,236,8,17,
-        11,17,12,17,237,1,18,1,18,1,18,1,18,1,19,1,19,4,19,246,8,19,11,19,
-        12,19,247,1,19,1,19,1,20,1,20,1,21,1,21,1,22,1,22,4,22,258,8,22,
-        11,22,12,22,259,1,22,1,22,1,22,1,22,4,22,266,8,22,11,22,12,22,267,
-        1,22,1,22,1,22,4,22,273,8,22,11,22,12,22,274,1,23,1,23,1,24,1,24,
-        4,24,281,8,24,11,24,12,24,282,1,24,1,24,1,24,1,24,4,24,289,8,24,
-        11,24,12,24,290,1,25,1,25,1,25,1,25,1,26,1,26,1,26,4,26,300,8,26,
-        11,26,12,26,301,1,27,1,27,3,27,306,8,27,1,27,4,27,309,8,27,11,27,
-        12,27,310,1,28,1,28,1,28,1,28,1,28,1,28,3,28,319,8,28,1,29,3,29,
-        322,8,29,1,29,1,29,1,29,1,29,1,30,1,30,1,31,1,31,1,32,1,32,1,33,
-        1,33,1,34,1,34,1,35,3,35,339,8,35,1,35,1,35,1,35,3,35,344,8,35,1,
-        36,1,36,1,36,0,0,37,0,2,4,6,8,10,12,14,16,18,20,22,24,26,28,30,32,
-        34,36,38,40,42,44,46,48,50,52,54,56,58,60,62,64,66,68,70,72,0,2,
-        2,0,24,24,26,26,2,0,1,20,29,29,361,0,74,1,0,0,0,2,98,1,0,0,0,4,100,
-        1,0,0,0,6,107,1,0,0,0,8,114,1,0,0,0,10,121,1,0,0,0,12,133,1,0,0,
-        0,14,136,1,0,0,0,16,144,1,0,0,0,18,146,1,0,0,0,20,148,1,0,0,0,22,
-        154,1,0,0,0,24,181,1,0,0,0,26,183,1,0,0,0,28,186,1,0,0,0,30,194,
-        1,0,0,0,32,214,1,0,0,0,34,231,1,0,0,0,36,239,1,0,0,0,38,243,1,0,
-        0,0,40,251,1,0,0,0,42,253,1,0,0,0,44,255,1,0,0,0,46,276,1,0,0,0,
-        48,278,1,0,0,0,50,292,1,0,0,0,52,296,1,0,0,0,54,303,1,0,0,0,56,318,
-        1,0,0,0,58,321,1,0,0,0,60,327,1,0,0,0,62,329,1,0,0,0,64,331,1,0,
-        0,0,66,333,1,0,0,0,68,335,1,0,0,0,70,343,1,0,0,0,72,345,1,0,0,0,
-        74,78,3,14,7,0,75,77,5,35,0,0,76,75,1,0,0,0,77,80,1,0,0,0,78,76,
-        1,0,0,0,78,79,1,0,0,0,79,84,1,0,0,0,80,78,1,0,0,0,81,83,3,2,1,0,
-        82,81,1,0,0,0,83,86,1,0,0,0,84,82,1,0,0,0,84,85,1,0,0,0,85,87,1,
-        0,0,0,86,84,1,0,0,0,87,88,5,6,0,0,88,1,1,0,0,0,89,90,3,4,2,0,90,
-        91,3,10,5,0,91,99,1,0,0,0,92,93,3,6,3,0,93,94,3,10,5,0,94,99,1,0,
-        0,0,95,96,3,8,4,0,96,97,3,10,5,0,97,99,1,0,0,0,98,89,1,0,0,0,98,
-        92,1,0,0,0,98,95,1,0,0,0,99,3,1,0,0,0,100,101,5,1,0,0,101,103,3,
-        70,35,0,102,104,5,35,0,0,103,102,1,0,0,0,104,105,1,0,0,0,105,103,
-        1,0,0,0,105,106,1,0,0,0,106,5,1,0,0,0,107,108,5,13,0,0,108,110,3,
-        72,36,0,109,111,5,35,0,0,110,109,1,0,0,0,111,112,1,0,0,0,112,110,
+        6,12,6,135,9,6,1,7,1,7,1,7,1,7,4,7,141,8,7,11,7,12,7,142,1,7,1,7,
+        1,8,1,8,1,9,1,9,1,10,1,10,4,10,153,8,10,11,10,12,10,154,1,11,1,11,
+        4,11,159,8,11,11,11,12,11,160,1,12,1,12,3,12,165,8,12,1,12,4,12,
+        168,8,12,11,12,12,12,169,1,12,3,12,173,8,12,1,12,1,12,3,12,177,8,
+        12,1,12,4,12,180,8,12,11,12,12,12,181,3,12,184,8,12,1,13,1,13,1,
+        13,1,14,1,14,1,14,5,14,192,8,14,10,14,12,14,195,9,14,1,15,1,15,4,
+        15,199,8,15,11,15,12,15,200,1,15,1,15,1,15,3,15,206,8,15,1,15,1,
+        15,4,15,210,8,15,11,15,12,15,211,1,16,5,16,215,8,16,10,16,12,16,
+        218,9,16,1,16,1,16,4,16,222,8,16,11,16,12,16,223,1,16,1,16,4,16,
+        228,8,16,11,16,12,16,229,3,16,232,8,16,1,17,1,17,1,17,1,17,4,17,
+        238,8,17,11,17,12,17,239,1,18,1,18,1,18,1,18,1,19,1,19,4,19,248,
+        8,19,11,19,12,19,249,1,19,1,19,1,20,1,20,1,21,1,21,1,22,1,22,4,22,
+        260,8,22,11,22,12,22,261,1,22,1,22,1,22,1,22,4,22,268,8,22,11,22,
+        12,22,269,1,22,1,22,1,22,4,22,275,8,22,11,22,12,22,276,1,23,1,23,
+        1,24,1,24,4,24,283,8,24,11,24,12,24,284,1,24,1,24,1,24,1,24,4,24,
+        291,8,24,11,24,12,24,292,1,25,1,25,1,25,1,25,1,26,1,26,1,26,4,26,
+        302,8,26,11,26,12,26,303,1,27,1,27,3,27,308,8,27,1,27,4,27,311,8,
+        27,11,27,12,27,312,1,28,1,28,1,28,1,28,1,28,1,28,3,28,321,8,28,1,
+        29,3,29,324,8,29,1,29,1,29,1,29,1,29,1,30,1,30,1,31,1,31,1,32,1,
+        32,1,33,1,33,1,34,1,34,1,35,3,35,341,8,35,1,35,1,35,1,35,3,35,346,
+        8,35,1,36,1,36,1,36,0,0,37,0,2,4,6,8,10,12,14,16,18,20,22,24,26,
+        28,30,32,34,36,38,40,42,44,46,48,50,52,54,56,58,60,62,64,66,68,70,
+        72,0,2,2,0,24,24,26,26,2,0,1,20,29,29,363,0,74,1,0,0,0,2,98,1,0,
+        0,0,4,100,1,0,0,0,6,107,1,0,0,0,8,114,1,0,0,0,10,121,1,0,0,0,12,
+        133,1,0,0,0,14,136,1,0,0,0,16,146,1,0,0,0,18,148,1,0,0,0,20,150,
+        1,0,0,0,22,156,1,0,0,0,24,183,1,0,0,0,26,185,1,0,0,0,28,188,1,0,
+        0,0,30,196,1,0,0,0,32,216,1,0,0,0,34,233,1,0,0,0,36,241,1,0,0,0,
+        38,245,1,0,0,0,40,253,1,0,0,0,42,255,1,0,0,0,44,257,1,0,0,0,46,278,
+        1,0,0,0,48,280,1,0,0,0,50,294,1,0,0,0,52,298,1,0,0,0,54,305,1,0,
+        0,0,56,320,1,0,0,0,58,323,1,0,0,0,60,329,1,0,0,0,62,331,1,0,0,0,
+        64,333,1,0,0,0,66,335,1,0,0,0,68,337,1,0,0,0,70,345,1,0,0,0,72,347,
+        1,0,0,0,74,78,3,14,7,0,75,77,5,35,0,0,76,75,1,0,0,0,77,80,1,0,0,
+        0,78,76,1,0,0,0,78,79,1,0,0,0,79,84,1,0,0,0,80,78,1,0,0,0,81,83,
+        3,2,1,0,82,81,1,0,0,0,83,86,1,0,0,0,84,82,1,0,0,0,84,85,1,0,0,0,
+        85,87,1,0,0,0,86,84,1,0,0,0,87,88,5,6,0,0,88,1,1,0,0,0,89,90,3,4,
+        2,0,90,91,3,10,5,0,91,99,1,0,0,0,92,93,3,6,3,0,93,94,3,10,5,0,94,
+        99,1,0,0,0,95,96,3,8,4,0,96,97,3,10,5,0,97,99,1,0,0,0,98,89,1,0,
+        0,0,98,92,1,0,0,0,98,95,1,0,0,0,99,3,1,0,0,0,100,101,5,1,0,0,101,
+        103,3,70,35,0,102,104,5,35,0,0,103,102,1,0,0,0,104,105,1,0,0,0,105,
+        103,1,0,0,0,105,106,1,0,0,0,106,5,1,0,0,0,107,108,5,13,0,0,108,110,
+        3,72,36,0,109,111,5,35,0,0,110,109,1,0,0,0,111,112,1,0,0,0,112,110,
         1,0,0,0,112,113,1,0,0,0,113,7,1,0,0,0,114,115,5,17,0,0,115,117,3,
         72,36,0,116,118,5,35,0,0,117,116,1,0,0,0,118,119,1,0,0,0,119,117,
         1,0,0,0,119,120,1,0,0,0,120,9,1,0,0,0,121,122,3,12,6,0,122,11,1,
@@ -71,69 +74,70 @@ def serializedATN():
         0,131,130,1,0,0,0,132,135,1,0,0,0,133,131,1,0,0,0,133,134,1,0,0,
         0,134,13,1,0,0,0,135,133,1,0,0,0,136,137,5,27,0,0,137,138,3,16,8,
         0,138,140,3,18,9,0,139,141,5,35,0,0,140,139,1,0,0,0,141,142,1,0,
-        0,0,142,140,1,0,0,0,142,143,1,0,0,0,143,15,1,0,0,0,144,145,5,30,
-        0,0,145,17,1,0,0,0,146,147,5,38,0,0,147,19,1,0,0,0,148,150,5,2,0,
-        0,149,151,5,35,0,0,150,149,1,0,0,0,151,152,1,0,0,0,152,150,1,0,0,
-        0,152,153,1,0,0,0,153,21,1,0,0,0,154,156,5,3,0,0,155,157,5,35,0,
-        0,156,155,1,0,0,0,157,158,1,0,0,0,158,156,1,0,0,0,158,159,1,0,0,
-        0,159,23,1,0,0,0,160,162,3,26,13,0,161,163,5,7,0,0,162,161,1,0,0,
-        0,162,163,1,0,0,0,163,165,1,0,0,0,164,166,5,35,0,0,165,164,1,0,0,
-        0,166,167,1,0,0,0,167,165,1,0,0,0,167,168,1,0,0,0,168,182,1,0,0,
-        0,169,171,3,26,13,0,170,169,1,0,0,0,170,171,1,0,0,0,171,172,1,0,
-        0,0,172,174,3,62,31,0,173,175,3,28,14,0,174,173,1,0,0,0,174,175,
-        1,0,0,0,175,177,1,0,0,0,176,178,5,35,0,0,177,176,1,0,0,0,178,179,
-        1,0,0,0,179,177,1,0,0,0,179,180,1,0,0,0,180,182,1,0,0,0,181,160,
-        1,0,0,0,181,170,1,0,0,0,182,25,1,0,0,0,183,184,3,60,30,0,184,185,
-        7,0,0,0,185,27,1,0,0,0,186,191,3,56,28,0,187,188,5,22,0,0,188,190,
-        3,56,28,0,189,187,1,0,0,0,190,193,1,0,0,0,191,189,1,0,0,0,191,192,
-        1,0,0,0,192,29,1,0,0,0,193,191,1,0,0,0,194,196,5,9,0,0,195,197,5,
-        35,0,0,196,195,1,0,0,0,197,198,1,0,0,0,198,196,1,0,0,0,198,199,1,
-        0,0,0,199,200,1,0,0,0,200,201,3,32,16,0,201,203,3,12,6,0,202,204,
-        3,38,19,0,203,202,1,0,0,0,203,204,1,0,0,0,204,205,1,0,0,0,205,207,
-        5,8,0,0,206,208,5,35,0,0,207,206,1,0,0,0,208,209,1,0,0,0,209,207,
-        1,0,0,0,209,210,1,0,0,0,210,31,1,0,0,0,211,213,3,34,17,0,212,211,
-        1,0,0,0,213,216,1,0,0,0,214,212,1,0,0,0,214,215,1,0,0,0,215,217,
-        1,0,0,0,216,214,1,0,0,0,217,219,3,36,18,0,218,220,5,35,0,0,219,218,
-        1,0,0,0,220,221,1,0,0,0,221,219,1,0,0,0,221,222,1,0,0,0,222,229,
-        1,0,0,0,223,225,5,16,0,0,224,226,5,35,0,0,225,224,1,0,0,0,226,227,
-        1,0,0,0,227,225,1,0,0,0,227,228,1,0,0,0,228,230,1,0,0,0,229,223,
-        1,0,0,0,229,230,1,0,0,0,230,33,1,0,0,0,231,232,3,36,18,0,232,233,
-        5,22,0,0,233,235,3,42,21,0,234,236,5,35,0,0,235,234,1,0,0,0,236,
-        237,1,0,0,0,237,235,1,0,0,0,237,238,1,0,0,0,238,35,1,0,0,0,239,240,
-        3,12,6,0,240,241,5,10,0,0,241,242,3,40,20,0,242,37,1,0,0,0,243,245,
-        5,5,0,0,244,246,5,35,0,0,245,244,1,0,0,0,246,247,1,0,0,0,247,245,
-        1,0,0,0,247,248,1,0,0,0,248,249,1,0,0,0,249,250,3,12,6,0,250,39,
-        1,0,0,0,251,252,5,29,0,0,252,41,1,0,0,0,253,254,5,29,0,0,254,43,
-        1,0,0,0,255,257,5,20,0,0,256,258,5,35,0,0,257,256,1,0,0,0,258,259,
-        1,0,0,0,259,257,1,0,0,0,259,260,1,0,0,0,260,261,1,0,0,0,261,262,
-        3,46,23,0,262,263,5,15,0,0,263,265,3,40,20,0,264,266,5,35,0,0,265,
-        264,1,0,0,0,266,267,1,0,0,0,267,265,1,0,0,0,267,268,1,0,0,0,268,
-        269,1,0,0,0,269,270,3,12,6,0,270,272,5,19,0,0,271,273,5,35,0,0,272,
-        271,1,0,0,0,273,274,1,0,0,0,274,272,1,0,0,0,274,275,1,0,0,0,275,
-        45,1,0,0,0,276,277,3,12,6,0,277,47,1,0,0,0,278,280,5,4,0,0,279,281,
-        5,35,0,0,280,279,1,0,0,0,281,282,1,0,0,0,282,280,1,0,0,0,282,283,
-        1,0,0,0,283,284,1,0,0,0,284,285,3,12,6,0,285,286,5,18,0,0,286,288,
-        3,40,20,0,287,289,5,35,0,0,288,287,1,0,0,0,289,290,1,0,0,0,290,288,
-        1,0,0,0,290,291,1,0,0,0,291,49,1,0,0,0,292,293,3,52,26,0,293,294,
-        3,12,6,0,294,295,3,54,27,0,295,51,1,0,0,0,296,297,5,14,0,0,297,299,
-        3,66,33,0,298,300,5,35,0,0,299,298,1,0,0,0,300,301,1,0,0,0,301,299,
-        1,0,0,0,301,302,1,0,0,0,302,53,1,0,0,0,303,305,5,12,0,0,304,306,
-        3,66,33,0,305,304,1,0,0,0,305,306,1,0,0,0,306,308,1,0,0,0,307,309,
-        5,35,0,0,308,307,1,0,0,0,309,310,1,0,0,0,310,308,1,0,0,0,310,311,
-        1,0,0,0,311,55,1,0,0,0,312,319,3,70,35,0,313,319,3,68,34,0,314,319,
-        3,64,32,0,315,319,3,66,33,0,316,319,3,60,30,0,317,319,3,58,29,0,
-        318,312,1,0,0,0,318,313,1,0,0,0,318,314,1,0,0,0,318,315,1,0,0,0,
-        318,316,1,0,0,0,318,317,1,0,0,0,319,57,1,0,0,0,320,322,5,23,0,0,
-        321,320,1,0,0,0,321,322,1,0,0,0,322,323,1,0,0,0,323,324,3,72,36,
-        0,324,325,5,21,0,0,325,326,3,72,36,0,326,59,1,0,0,0,327,328,3,72,
-        36,0,328,61,1,0,0,0,329,330,5,29,0,0,330,63,1,0,0,0,331,332,5,33,
-        0,0,332,65,1,0,0,0,333,334,5,28,0,0,334,67,1,0,0,0,335,336,5,34,
-        0,0,336,69,1,0,0,0,337,339,5,23,0,0,338,337,1,0,0,0,338,339,1,0,
-        0,0,339,340,1,0,0,0,340,344,5,30,0,0,341,344,5,32,0,0,342,344,5,
-        31,0,0,343,338,1,0,0,0,343,341,1,0,0,0,343,342,1,0,0,0,344,71,1,
-        0,0,0,345,346,7,1,0,0,346,73,1,0,0,0,39,78,84,98,105,112,119,131,
-        133,142,152,158,162,167,170,174,179,181,191,198,203,209,214,221,
-        227,229,237,247,259,267,274,282,290,301,305,310,318,321,338,343
+        0,0,142,140,1,0,0,0,142,143,1,0,0,0,143,144,1,0,0,0,144,145,6,7,
+        -1,0,145,15,1,0,0,0,146,147,5,30,0,0,147,17,1,0,0,0,148,149,5,38,
+        0,0,149,19,1,0,0,0,150,152,5,2,0,0,151,153,5,35,0,0,152,151,1,0,
+        0,0,153,154,1,0,0,0,154,152,1,0,0,0,154,155,1,0,0,0,155,21,1,0,0,
+        0,156,158,5,3,0,0,157,159,5,35,0,0,158,157,1,0,0,0,159,160,1,0,0,
+        0,160,158,1,0,0,0,160,161,1,0,0,0,161,23,1,0,0,0,162,164,3,26,13,
+        0,163,165,5,7,0,0,164,163,1,0,0,0,164,165,1,0,0,0,165,167,1,0,0,
+        0,166,168,5,35,0,0,167,166,1,0,0,0,168,169,1,0,0,0,169,167,1,0,0,
+        0,169,170,1,0,0,0,170,184,1,0,0,0,171,173,3,26,13,0,172,171,1,0,
+        0,0,172,173,1,0,0,0,173,174,1,0,0,0,174,176,3,62,31,0,175,177,3,
+        28,14,0,176,175,1,0,0,0,176,177,1,0,0,0,177,179,1,0,0,0,178,180,
+        5,35,0,0,179,178,1,0,0,0,180,181,1,0,0,0,181,179,1,0,0,0,181,182,
+        1,0,0,0,182,184,1,0,0,0,183,162,1,0,0,0,183,172,1,0,0,0,184,25,1,
+        0,0,0,185,186,3,60,30,0,186,187,7,0,0,0,187,27,1,0,0,0,188,193,3,
+        56,28,0,189,190,5,22,0,0,190,192,3,56,28,0,191,189,1,0,0,0,192,195,
+        1,0,0,0,193,191,1,0,0,0,193,194,1,0,0,0,194,29,1,0,0,0,195,193,1,
+        0,0,0,196,198,5,9,0,0,197,199,5,35,0,0,198,197,1,0,0,0,199,200,1,
+        0,0,0,200,198,1,0,0,0,200,201,1,0,0,0,201,202,1,0,0,0,202,203,3,
+        32,16,0,203,205,3,12,6,0,204,206,3,38,19,0,205,204,1,0,0,0,205,206,
+        1,0,0,0,206,207,1,0,0,0,207,209,5,8,0,0,208,210,5,35,0,0,209,208,
+        1,0,0,0,210,211,1,0,0,0,211,209,1,0,0,0,211,212,1,0,0,0,212,31,1,
+        0,0,0,213,215,3,34,17,0,214,213,1,0,0,0,215,218,1,0,0,0,216,214,
+        1,0,0,0,216,217,1,0,0,0,217,219,1,0,0,0,218,216,1,0,0,0,219,221,
+        3,36,18,0,220,222,5,35,0,0,221,220,1,0,0,0,222,223,1,0,0,0,223,221,
+        1,0,0,0,223,224,1,0,0,0,224,231,1,0,0,0,225,227,5,16,0,0,226,228,
+        5,35,0,0,227,226,1,0,0,0,228,229,1,0,0,0,229,227,1,0,0,0,229,230,
+        1,0,0,0,230,232,1,0,0,0,231,225,1,0,0,0,231,232,1,0,0,0,232,33,1,
+        0,0,0,233,234,3,36,18,0,234,235,5,22,0,0,235,237,3,42,21,0,236,238,
+        5,35,0,0,237,236,1,0,0,0,238,239,1,0,0,0,239,237,1,0,0,0,239,240,
+        1,0,0,0,240,35,1,0,0,0,241,242,3,12,6,0,242,243,5,10,0,0,243,244,
+        3,40,20,0,244,37,1,0,0,0,245,247,5,5,0,0,246,248,5,35,0,0,247,246,
+        1,0,0,0,248,249,1,0,0,0,249,247,1,0,0,0,249,250,1,0,0,0,250,251,
+        1,0,0,0,251,252,3,12,6,0,252,39,1,0,0,0,253,254,5,29,0,0,254,41,
+        1,0,0,0,255,256,5,29,0,0,256,43,1,0,0,0,257,259,5,20,0,0,258,260,
+        5,35,0,0,259,258,1,0,0,0,260,261,1,0,0,0,261,259,1,0,0,0,261,262,
+        1,0,0,0,262,263,1,0,0,0,263,264,3,46,23,0,264,265,5,15,0,0,265,267,
+        3,40,20,0,266,268,5,35,0,0,267,266,1,0,0,0,268,269,1,0,0,0,269,267,
+        1,0,0,0,269,270,1,0,0,0,270,271,1,0,0,0,271,272,3,12,6,0,272,274,
+        5,19,0,0,273,275,5,35,0,0,274,273,1,0,0,0,275,276,1,0,0,0,276,274,
+        1,0,0,0,276,277,1,0,0,0,277,45,1,0,0,0,278,279,3,12,6,0,279,47,1,
+        0,0,0,280,282,5,4,0,0,281,283,5,35,0,0,282,281,1,0,0,0,283,284,1,
+        0,0,0,284,282,1,0,0,0,284,285,1,0,0,0,285,286,1,0,0,0,286,287,3,
+        12,6,0,287,288,5,18,0,0,288,290,3,40,20,0,289,291,5,35,0,0,290,289,
+        1,0,0,0,291,292,1,0,0,0,292,290,1,0,0,0,292,293,1,0,0,0,293,49,1,
+        0,0,0,294,295,3,52,26,0,295,296,3,12,6,0,296,297,3,54,27,0,297,51,
+        1,0,0,0,298,299,5,14,0,0,299,301,3,66,33,0,300,302,5,35,0,0,301,
+        300,1,0,0,0,302,303,1,0,0,0,303,301,1,0,0,0,303,304,1,0,0,0,304,
+        53,1,0,0,0,305,307,5,12,0,0,306,308,3,66,33,0,307,306,1,0,0,0,307,
+        308,1,0,0,0,308,310,1,0,0,0,309,311,5,35,0,0,310,309,1,0,0,0,311,
+        312,1,0,0,0,312,310,1,0,0,0,312,313,1,0,0,0,313,55,1,0,0,0,314,321,
+        3,70,35,0,315,321,3,68,34,0,316,321,3,64,32,0,317,321,3,66,33,0,
+        318,321,3,60,30,0,319,321,3,58,29,0,320,314,1,0,0,0,320,315,1,0,
+        0,0,320,316,1,0,0,0,320,317,1,0,0,0,320,318,1,0,0,0,320,319,1,0,
+        0,0,321,57,1,0,0,0,322,324,5,23,0,0,323,322,1,0,0,0,323,324,1,0,
+        0,0,324,325,1,0,0,0,325,326,3,72,36,0,326,327,5,21,0,0,327,328,3,
+        72,36,0,328,59,1,0,0,0,329,330,3,72,36,0,330,61,1,0,0,0,331,332,
+        5,29,0,0,332,63,1,0,0,0,333,334,5,33,0,0,334,65,1,0,0,0,335,336,
+        5,28,0,0,336,67,1,0,0,0,337,338,5,34,0,0,338,69,1,0,0,0,339,341,
+        5,23,0,0,340,339,1,0,0,0,340,341,1,0,0,0,341,342,1,0,0,0,342,346,
+        5,30,0,0,343,346,5,32,0,0,344,346,5,31,0,0,345,340,1,0,0,0,345,343,
+        1,0,0,0,345,344,1,0,0,0,346,71,1,0,0,0,347,348,7,1,0,0,348,73,1,
+        0,0,0,39,78,84,98,105,112,119,131,133,142,154,160,164,169,172,176,
+        181,183,193,200,205,211,216,223,229,231,239,249,261,269,276,284,
+        292,303,307,312,320,323,340,345
     ]
 
 class AsmParser ( Parser ):
@@ -158,7 +162,8 @@ class AsmParser ( Parser ):
                       "Wend", "While", "DOT", "COMMA", "MINUS", "COLON", 
                       "ASTERISK", "ANGLE_BRACKET", "LINE_MARK_MARKER", "REGISTER", 
                       "WORD", "DECIMAL_NUMBER", "BINARY_NUMBER", "HEX_NUMBER", 
-                      "STRING", "CHAR", "NEWLINE", "COMMENT", "WS", "BASE64" ]
+                      "STRING", "CHAR", "NEWLINE", "COMMENT", "WS", "BASE64", 
+                      "UNEXPECTED_TOKEN" ]
 
     RULE_program = 0
     RULE_section = 1
@@ -248,6 +253,7 @@ class AsmParser ( Parser ):
     COMMENT=36
     WS=37
     BASE64=38
+    UNEXPECTED_TOKEN=39
 
     def __init__(self, input:TokenStream, output:TextIO = sys.stdout):
         super().__init__(input, output)
@@ -255,6 +261,11 @@ class AsmParser ( Parser ):
         self._interp = ParserATNSimulator(self, self.atn, self.decisionsToDFA, self.sharedContextCache)
         self._predicates = None
 
+
+
+        self.current_file = ''
+        self.current_line = 0
+        self.current_offset = 0
 
 
 
@@ -912,6 +923,10 @@ class AsmParser ( Parser ):
         def __init__(self, parser, parent:ParserRuleContext=None, invokingState:int=-1):
             super().__init__(parent, invokingState)
             self.parser = parser
+            self.source_file = ''
+            self.source_line = 0
+            self._line_number = None # Line_numberContext
+            self._filepath = None # FilepathContext
 
         def LINE_MARK_MARKER(self):
             return self.getToken(AsmParser.LINE_MARK_MARKER, 0)
@@ -959,9 +974,9 @@ class AsmParser ( Parser ):
             self.state = 136
             self.match(AsmParser.LINE_MARK_MARKER)
             self.state = 137
-            self.line_number()
+            localctx._line_number = self.line_number()
             self.state = 138
-            self.filepath()
+            localctx._filepath = self.filepath()
             self.state = 140 
             self._errHandler.sync(self)
             _alt = 1
@@ -975,6 +990,13 @@ class AsmParser ( Parser ):
                 self.state = 142 
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,8,self._ctx)
+
+
+                self.current_line = int((None if localctx._line_number is None else self._input.getText(localctx._line_number.start,localctx._line_number.stop)))
+                self.current_file =  b64decode((None if localctx._filepath is None else self._input.getText(localctx._filepath.start,localctx._filepath.stop))[3:]).decode()
+                localctx.source_file = self.current_file
+                localctx.source_line = self.current_line
+                self.current_offset = (None if localctx._line_number is None else localctx._line_number.start).line - self.current_line + 1
 
         except RecognitionException as re:
             localctx.exception = re
@@ -1021,7 +1043,7 @@ class AsmParser ( Parser ):
         self.enterRule(localctx, 16, self.RULE_line_number)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 144
+            self.state = 146
             self.match(AsmParser.DECIMAL_NUMBER)
         except RecognitionException as re:
             localctx.exception = re
@@ -1068,7 +1090,7 @@ class AsmParser ( Parser ):
         self.enterRule(localctx, 18, self.RULE_filepath)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 146
+            self.state = 148
             self.match(AsmParser.BASE64)
         except RecognitionException as re:
             localctx.exception = re
@@ -1122,15 +1144,15 @@ class AsmParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 148
+            self.state = 150
             self.match(AsmParser.Break)
-            self.state = 150 
+            self.state = 152 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 149
+                self.state = 151
                 self.match(AsmParser.NEWLINE)
-                self.state = 152 
+                self.state = 154 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if not (_la==AsmParser.NEWLINE):
@@ -1188,15 +1210,15 @@ class AsmParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 154
+            self.state = 156
             self.match(AsmParser.Continue)
-            self.state = 156 
+            self.state = 158 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 155
+                self.state = 157
                 self.match(AsmParser.NEWLINE)
-                self.state = 158 
+                self.state = 160 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if not (_la==AsmParser.NEWLINE):
@@ -1303,29 +1325,29 @@ class AsmParser ( Parser ):
         self.enterRule(localctx, 24, self.RULE_line)
         self._la = 0 # Token type
         try:
-            self.state = 181
+            self.state = 183
             self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,16,self._ctx)
             if la_ == 1:
                 localctx = AsmParser.StandaloneLabelContext(self, localctx)
                 self.enterOuterAlt(localctx, 1)
-                self.state = 160
-                self.label_declaration()
                 self.state = 162
+                self.label_declaration()
+                self.state = 164
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if _la==AsmParser.Ext:
-                    self.state = 161
+                    self.state = 163
                     self.match(AsmParser.Ext)
 
 
-                self.state = 165 
+                self.state = 167 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 while True:
-                    self.state = 164
+                    self.state = 166
                     self.match(AsmParser.NEWLINE)
-                    self.state = 167 
+                    self.state = 169 
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
                     if not (_la==AsmParser.NEWLINE):
@@ -1336,31 +1358,31 @@ class AsmParser ( Parser ):
             elif la_ == 2:
                 localctx = AsmParser.InstructionLineContext(self, localctx)
                 self.enterOuterAlt(localctx, 2)
-                self.state = 170
+                self.state = 172
                 self._errHandler.sync(self)
                 la_ = self._interp.adaptivePredict(self._input,13,self._ctx)
                 if la_ == 1:
-                    self.state = 169
+                    self.state = 171
                     self.label_declaration()
 
 
-                self.state = 172
-                self.instruction()
                 self.state = 174
+                self.instruction()
+                self.state = 176
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if (((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << AsmParser.Asect) | (1 << AsmParser.Break) | (1 << AsmParser.Continue) | (1 << AsmParser.Do) | (1 << AsmParser.Else) | (1 << AsmParser.End) | (1 << AsmParser.Ext) | (1 << AsmParser.Fi) | (1 << AsmParser.If) | (1 << AsmParser.Is) | (1 << AsmParser.Macro) | (1 << AsmParser.Restore) | (1 << AsmParser.Rsect) | (1 << AsmParser.Save) | (1 << AsmParser.Stays) | (1 << AsmParser.Then) | (1 << AsmParser.Tplate) | (1 << AsmParser.Until) | (1 << AsmParser.Wend) | (1 << AsmParser.While) | (1 << AsmParser.MINUS) | (1 << AsmParser.REGISTER) | (1 << AsmParser.WORD) | (1 << AsmParser.DECIMAL_NUMBER) | (1 << AsmParser.BINARY_NUMBER) | (1 << AsmParser.HEX_NUMBER) | (1 << AsmParser.STRING) | (1 << AsmParser.CHAR))) != 0):
-                    self.state = 173
+                    self.state = 175
                     self.arguments()
 
 
-                self.state = 177 
+                self.state = 179 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 while True:
-                    self.state = 176
+                    self.state = 178
                     self.match(AsmParser.NEWLINE)
-                    self.state = 179 
+                    self.state = 181 
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
                     if not (_la==AsmParser.NEWLINE):
@@ -1422,9 +1444,9 @@ class AsmParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 183
+            self.state = 185
             self.label()
-            self.state = 184
+            self.state = 186
             _la = self._input.LA(1)
             if not(_la==AsmParser.COLON or _la==AsmParser.ANGLE_BRACKET):
                 self._errHandler.recoverInline(self)
@@ -1487,17 +1509,17 @@ class AsmParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 186
+            self.state = 188
             self.argument()
-            self.state = 191
+            self.state = 193
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while _la==AsmParser.COMMA:
-                self.state = 187
+                self.state = 189
                 self.match(AsmParser.COMMA)
-                self.state = 188
+                self.state = 190
                 self.argument()
-                self.state = 193
+                self.state = 195
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
 
@@ -1568,41 +1590,41 @@ class AsmParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 194
+            self.state = 196
             self.match(AsmParser.If)
-            self.state = 196 
+            self.state = 198 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 195
+                self.state = 197
                 self.match(AsmParser.NEWLINE)
-                self.state = 198 
+                self.state = 200 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if not (_la==AsmParser.NEWLINE):
                     break
 
-            self.state = 200
+            self.state = 202
             self.conditions()
-            self.state = 201
-            self.code_block()
             self.state = 203
+            self.code_block()
+            self.state = 205
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             if _la==AsmParser.Else:
-                self.state = 202
+                self.state = 204
                 self.else_clause()
 
 
-            self.state = 205
+            self.state = 207
             self.match(AsmParser.Fi)
-            self.state = 207 
+            self.state = 209 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 206
+                self.state = 208
                 self.match(AsmParser.NEWLINE)
-                self.state = 209 
+                self.state = 211 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if not (_la==AsmParser.NEWLINE):
@@ -1671,44 +1693,44 @@ class AsmParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 214
+            self.state = 216
             self._errHandler.sync(self)
             _alt = self._interp.adaptivePredict(self._input,21,self._ctx)
             while _alt!=2 and _alt!=ATN.INVALID_ALT_NUMBER:
                 if _alt==1:
-                    self.state = 211
+                    self.state = 213
                     self.connective_condition() 
-                self.state = 216
+                self.state = 218
                 self._errHandler.sync(self)
                 _alt = self._interp.adaptivePredict(self._input,21,self._ctx)
 
-            self.state = 217
+            self.state = 219
             self.condition()
-            self.state = 219 
+            self.state = 221 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 218
+                self.state = 220
                 self.match(AsmParser.NEWLINE)
-                self.state = 221 
+                self.state = 223 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if not (_la==AsmParser.NEWLINE):
                     break
 
-            self.state = 229
+            self.state = 231
             self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,24,self._ctx)
             if la_ == 1:
-                self.state = 223
+                self.state = 225
                 self.match(AsmParser.Then)
-                self.state = 225 
+                self.state = 227 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 while True:
-                    self.state = 224
+                    self.state = 226
                     self.match(AsmParser.NEWLINE)
-                    self.state = 227 
+                    self.state = 229 
                     self._errHandler.sync(self)
                     _la = self._input.LA(1)
                     if not (_la==AsmParser.NEWLINE):
@@ -1776,19 +1798,19 @@ class AsmParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 231
-            self.condition()
-            self.state = 232
-            self.match(AsmParser.COMMA)
             self.state = 233
+            self.condition()
+            self.state = 234
+            self.match(AsmParser.COMMA)
+            self.state = 235
             self.conjunction()
-            self.state = 235 
+            self.state = 237 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 234
+                self.state = 236
                 self.match(AsmParser.NEWLINE)
-                self.state = 237 
+                self.state = 239 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if not (_la==AsmParser.NEWLINE):
@@ -1847,11 +1869,11 @@ class AsmParser ( Parser ):
         self.enterRule(localctx, 36, self.RULE_condition)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 239
-            self.code_block()
-            self.state = 240
-            self.match(AsmParser.Is)
             self.state = 241
+            self.code_block()
+            self.state = 242
+            self.match(AsmParser.Is)
+            self.state = 243
             self.branch_mnemonic()
         except RecognitionException as re:
             localctx.exception = re
@@ -1909,21 +1931,21 @@ class AsmParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 243
+            self.state = 245
             self.match(AsmParser.Else)
-            self.state = 245 
+            self.state = 247 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 244
+                self.state = 246
                 self.match(AsmParser.NEWLINE)
-                self.state = 247 
+                self.state = 249 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if not (_la==AsmParser.NEWLINE):
                     break
 
-            self.state = 249
+            self.state = 251
             self.code_block()
         except RecognitionException as re:
             localctx.exception = re
@@ -1970,7 +1992,7 @@ class AsmParser ( Parser ):
         self.enterRule(localctx, 40, self.RULE_branch_mnemonic)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 251
+            self.state = 253
             self.match(AsmParser.WORD)
         except RecognitionException as re:
             localctx.exception = re
@@ -2017,7 +2039,7 @@ class AsmParser ( Parser ):
         self.enterRule(localctx, 42, self.RULE_conjunction)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 253
+            self.state = 255
             self.match(AsmParser.WORD)
         except RecognitionException as re:
             localctx.exception = re
@@ -2089,49 +2111,49 @@ class AsmParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 255
+            self.state = 257
             self.match(AsmParser.While)
-            self.state = 257 
+            self.state = 259 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 256
+                self.state = 258
                 self.match(AsmParser.NEWLINE)
-                self.state = 259 
+                self.state = 261 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if not (_la==AsmParser.NEWLINE):
                     break
 
-            self.state = 261
-            self.while_condition()
-            self.state = 262
-            self.match(AsmParser.Stays)
             self.state = 263
+            self.while_condition()
+            self.state = 264
+            self.match(AsmParser.Stays)
+            self.state = 265
             self.branch_mnemonic()
-            self.state = 265 
+            self.state = 267 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 264
+                self.state = 266
                 self.match(AsmParser.NEWLINE)
-                self.state = 267 
+                self.state = 269 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if not (_la==AsmParser.NEWLINE):
                     break
 
-            self.state = 269
+            self.state = 271
             self.code_block()
-            self.state = 270
+            self.state = 272
             self.match(AsmParser.Wend)
-            self.state = 272 
+            self.state = 274 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 271
+                self.state = 273
                 self.match(AsmParser.NEWLINE)
-                self.state = 274 
+                self.state = 276 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if not (_la==AsmParser.NEWLINE):
@@ -2183,7 +2205,7 @@ class AsmParser ( Parser ):
         self.enterRule(localctx, 46, self.RULE_while_condition)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 276
+            self.state = 278
             self.code_block()
         except RecognitionException as re:
             localctx.exception = re
@@ -2248,33 +2270,33 @@ class AsmParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 278
+            self.state = 280
             self.match(AsmParser.Do)
-            self.state = 280 
+            self.state = 282 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 279
+                self.state = 281
                 self.match(AsmParser.NEWLINE)
-                self.state = 282 
+                self.state = 284 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if not (_la==AsmParser.NEWLINE):
                     break
 
-            self.state = 284
-            self.code_block()
-            self.state = 285
-            self.match(AsmParser.Until)
             self.state = 286
+            self.code_block()
+            self.state = 287
+            self.match(AsmParser.Until)
+            self.state = 288
             self.branch_mnemonic()
-            self.state = 288 
+            self.state = 290 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 287
+                self.state = 289
                 self.match(AsmParser.NEWLINE)
-                self.state = 290 
+                self.state = 292 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if not (_la==AsmParser.NEWLINE):
@@ -2334,11 +2356,11 @@ class AsmParser ( Parser ):
         self.enterRule(localctx, 50, self.RULE_save_restore_statement)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 292
-            self.save_statement()
-            self.state = 293
-            self.code_block()
             self.state = 294
+            self.save_statement()
+            self.state = 295
+            self.code_block()
+            self.state = 296
             self.restore_statement()
         except RecognitionException as re:
             localctx.exception = re
@@ -2396,17 +2418,17 @@ class AsmParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 296
+            self.state = 298
             self.match(AsmParser.Save)
-            self.state = 297
+            self.state = 299
             self.register()
-            self.state = 299 
+            self.state = 301 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 298
+                self.state = 300
                 self.match(AsmParser.NEWLINE)
-                self.state = 301 
+                self.state = 303 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if not (_la==AsmParser.NEWLINE):
@@ -2468,23 +2490,23 @@ class AsmParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 303
-            self.match(AsmParser.Restore)
             self.state = 305
+            self.match(AsmParser.Restore)
+            self.state = 307
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             if _la==AsmParser.REGISTER:
-                self.state = 304
+                self.state = 306
                 self.register()
 
 
-            self.state = 308 
+            self.state = 310 
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             while True:
-                self.state = 307
+                self.state = 309
                 self.match(AsmParser.NEWLINE)
-                self.state = 310 
+                self.state = 312 
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if not (_la==AsmParser.NEWLINE):
@@ -2555,42 +2577,42 @@ class AsmParser ( Parser ):
         localctx = AsmParser.ArgumentContext(self, self._ctx, self.state)
         self.enterRule(localctx, 56, self.RULE_argument)
         try:
-            self.state = 318
+            self.state = 320
             self._errHandler.sync(self)
             la_ = self._interp.adaptivePredict(self._input,35,self._ctx)
             if la_ == 1:
                 self.enterOuterAlt(localctx, 1)
-                self.state = 312
+                self.state = 314
                 self.number()
                 pass
 
             elif la_ == 2:
                 self.enterOuterAlt(localctx, 2)
-                self.state = 313
+                self.state = 315
                 self.character()
                 pass
 
             elif la_ == 3:
                 self.enterOuterAlt(localctx, 3)
-                self.state = 314
+                self.state = 316
                 self.string()
                 pass
 
             elif la_ == 4:
                 self.enterOuterAlt(localctx, 4)
-                self.state = 315
+                self.state = 317
                 self.register()
                 pass
 
             elif la_ == 5:
                 self.enterOuterAlt(localctx, 5)
-                self.state = 316
+                self.state = 318
                 self.label()
                 pass
 
             elif la_ == 6:
                 self.enterOuterAlt(localctx, 6)
-                self.state = 317
+                self.state = 319
                 self.template_field()
                 pass
 
@@ -2651,19 +2673,19 @@ class AsmParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 321
+            self.state = 323
             self._errHandler.sync(self)
             _la = self._input.LA(1)
             if _la==AsmParser.MINUS:
-                self.state = 320
+                self.state = 322
                 self.match(AsmParser.MINUS)
 
 
-            self.state = 323
-            self.name()
-            self.state = 324
-            self.match(AsmParser.DOT)
             self.state = 325
+            self.name()
+            self.state = 326
+            self.match(AsmParser.DOT)
+            self.state = 327
             self.name()
         except RecognitionException as re:
             localctx.exception = re
@@ -2711,7 +2733,7 @@ class AsmParser ( Parser ):
         self.enterRule(localctx, 60, self.RULE_label)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 327
+            self.state = 329
             self.name()
         except RecognitionException as re:
             localctx.exception = re
@@ -2758,7 +2780,7 @@ class AsmParser ( Parser ):
         self.enterRule(localctx, 62, self.RULE_instruction)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 329
+            self.state = 331
             self.match(AsmParser.WORD)
         except RecognitionException as re:
             localctx.exception = re
@@ -2805,7 +2827,7 @@ class AsmParser ( Parser ):
         self.enterRule(localctx, 64, self.RULE_string)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 331
+            self.state = 333
             self.match(AsmParser.STRING)
         except RecognitionException as re:
             localctx.exception = re
@@ -2852,7 +2874,7 @@ class AsmParser ( Parser ):
         self.enterRule(localctx, 66, self.RULE_register)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 333
+            self.state = 335
             self.match(AsmParser.REGISTER)
         except RecognitionException as re:
             localctx.exception = re
@@ -2899,7 +2921,7 @@ class AsmParser ( Parser ):
         self.enterRule(localctx, 68, self.RULE_character)
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 335
+            self.state = 337
             self.match(AsmParser.CHAR)
         except RecognitionException as re:
             localctx.exception = re
@@ -2955,30 +2977,30 @@ class AsmParser ( Parser ):
         self.enterRule(localctx, 70, self.RULE_number)
         self._la = 0 # Token type
         try:
-            self.state = 343
+            self.state = 345
             self._errHandler.sync(self)
             token = self._input.LA(1)
             if token in [AsmParser.MINUS, AsmParser.DECIMAL_NUMBER]:
                 self.enterOuterAlt(localctx, 1)
-                self.state = 338
+                self.state = 340
                 self._errHandler.sync(self)
                 _la = self._input.LA(1)
                 if _la==AsmParser.MINUS:
-                    self.state = 337
+                    self.state = 339
                     self.match(AsmParser.MINUS)
 
 
-                self.state = 340
+                self.state = 342
                 self.match(AsmParser.DECIMAL_NUMBER)
                 pass
             elif token in [AsmParser.HEX_NUMBER]:
                 self.enterOuterAlt(localctx, 2)
-                self.state = 341
+                self.state = 343
                 self.match(AsmParser.HEX_NUMBER)
                 pass
             elif token in [AsmParser.BINARY_NUMBER]:
                 self.enterOuterAlt(localctx, 3)
-                self.state = 342
+                self.state = 344
                 self.match(AsmParser.BINARY_NUMBER)
                 pass
             else:
@@ -3090,7 +3112,7 @@ class AsmParser ( Parser ):
         self._la = 0 # Token type
         try:
             self.enterOuterAlt(localctx, 1)
-            self.state = 345
+            self.state = 347
             _la = self._input.LA(1)
             if not((((_la) & ~0x3f) == 0 and ((1 << _la) & ((1 << AsmParser.Asect) | (1 << AsmParser.Break) | (1 << AsmParser.Continue) | (1 << AsmParser.Do) | (1 << AsmParser.Else) | (1 << AsmParser.End) | (1 << AsmParser.Ext) | (1 << AsmParser.Fi) | (1 << AsmParser.If) | (1 << AsmParser.Is) | (1 << AsmParser.Macro) | (1 << AsmParser.Restore) | (1 << AsmParser.Rsect) | (1 << AsmParser.Save) | (1 << AsmParser.Stays) | (1 << AsmParser.Then) | (1 << AsmParser.Tplate) | (1 << AsmParser.Until) | (1 << AsmParser.Wend) | (1 << AsmParser.While) | (1 << AsmParser.WORD))) != 0)):
                 self._errHandler.recoverInline(self)

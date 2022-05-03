@@ -3,7 +3,9 @@ from cdm_asm.ast_nodes import *
 from cdm_asm.code_segments import *
 from cdm_asm.command_handlers import assemble_command
 from dataclasses import dataclass
+from cdm_asm.error import CdmException, CdmExceptionTag
 
+TAG = CdmExceptionTag.ASM
 
 @dataclass
 class Template:
@@ -74,6 +76,9 @@ class ObjectSectionRecord:
             elif isinstance(seg, TemplateFieldSegment):
                 self.fill_tfield(seg, template_fields)
 
+    def _error(self, segment: CodeSegment, message: str):
+        raise CdmException(TAG, segment.location.file, segment.location.line, message)
+
     def fill_short_address(self, seg: ShortAddressSegment, s: Section, local_labels: dict[str, int]):
         label_name = seg.label.name
         if label_name in local_labels:
@@ -85,7 +90,7 @@ class ObjectSectionRecord:
             self.data += bytearray([0])
             self.ext_uses.setdefault(label_name, []).append(s.address + len(self.data))
         else:
-            raise Exception(f'Label "{label_name}" not found')
+            self._error(seg, f'Label "{label_name}" not found')
 
     def fill_long_address(self, seg: LongAddressSegment, s: Section, local_labels: dict[str, int]):
         label_name = seg.label.name
@@ -95,10 +100,11 @@ class ObjectSectionRecord:
             # Add rel (2 bytes long)
             self.data += s.labels[label_name].to_bytes(2, 'little')
         elif label_name in s.exts:
+            # TODO: Where is actual ext definition?
             # Add external label use (2 bytes long)
             self.data += bytearray([0, 0])
         else:
-            raise Exception(f'Label "{label_name}" not found')
+            self._error(seg, f'Label "{label_name}" not found')
 
     def fill_branch(self, seg: LabelBranchSegment, s: Section, local_labels: dict[str, int]):
         label_name = seg.label.name
@@ -107,20 +113,20 @@ class ObjectSectionRecord:
         elif label_name in s.labels:
             addr = s.labels[label_name]
         elif label_name in s.exts:
-            raise Exception(f'Cannot branch to an external label "{label_name}"')
+            self._error(seg, f'Cannot branch to an external label "{label_name}"')
         else:
-            raise Exception(f'Label "{label_name}" not found')
+            self._error(seg, f'Label "{label_name}" not found')
 
         offset = addr - s.address - len(self.data) - 1
         if not -128 <= offset < 128:
-            raise Exception('Branch offset too far')
+            self._error(seg, 'Branch offset too far')
 
         self.data += seg.opcode.to_bytes(1, 'little')
         self.data += offset.to_bytes(1, 'little', signed=True)
 
     def fill_offset_branch(self, seg: OffsetBranchSegment):
         if not -128 <= seg.offset < 128:
-            raise Exception('Branch offset too far')
+            self._error(seg, 'Branch offset too far')
         self.data += seg.opcode.to_bytes(1, 'little')
         self.data += seg.offset.to_bytes(1, 'little', signed=True)
 
@@ -145,9 +151,9 @@ class ObjectSectionRecord:
                 if tf.negative:
                     self.data += (-value).to_bytes(1, 'little', signed=True)
             else:
-                raise Exception(f'Template field "{tf.template_name}.{tf.field_name}" not found')
+                self._error(seg, f'Template field "{tf.template_name}.{tf.field_name}" not found')
         else:
-            raise Exception(f'Template "{tf.template_name}" not found')
+            self._error(seg, f'Template "{tf.template_name}" not found')
 
 @dataclass
 class ObjectModule:
@@ -182,6 +188,7 @@ def assemble_template(sn: TemplateSectionNode):
     template.labels['_'] = size
     return template
 
+
 def assemble_label_declaration(line: LabelDeclarationNode, start_addr: int):
     block = CodeBlock(start_addr)
     label_name = line.label.name
@@ -198,12 +205,14 @@ def assemble_label_declaration(line: LabelDeclarationNode, start_addr: int):
             block.ents.add(label_name)
     return block
 
+
 def assemble_instruction(line: InstructionNode):
     block = CodeBlock(0)
     block.segments += assemble_command(line)
     for seg in block.segments:
         block.size += seg.size
     return block
+
 
 def assemble_conditional_statement(line: ConditionalStatementNode, start_addr: int, loop_stack: list):
     block = CodeBlock(start_addr)
@@ -238,6 +247,7 @@ def assemble_conditional_statement(line: ConditionalStatementNode, start_addr: i
         block.append_label(else_label)
 
     return block
+
 
 def assemble_while_loop(line: WhileLoopNode, start_addr: int, loop_stack: list):
     block = CodeBlock(start_addr)

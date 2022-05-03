@@ -68,6 +68,9 @@ class SaveRestoreStatement:
 class SectionNode:
     lines: list
 
+    def __post_init__(self):
+        self.line_sources: list[CodeLocation] = []
+
 @dataclass
 class AbsoluteSectionNode(SectionNode):
     address: int

@@ -4,7 +4,7 @@ from cdm_asm.generated.AsmLexer import AsmLexer
 from cdm_asm.generated.AsmParser import AsmParser
 from cdm_asm.generated.AsmParserVisitor import AsmParserVisitor
 from base64 import b64decode
-from cdm_asm.error import LexerErrorListener, ParserErrorListener
+from cdm_asm.error import AntlrErrorListener, CdmExceptionTag, CdmException
 
 
 class BuildAstVisitor(AsmParserVisitor):
@@ -48,6 +48,7 @@ class BuildAstVisitor(AsmParserVisitor):
         return TemplateSectionNode(lines, name)
 
     def visitLine_mark(self, ctx:AsmParser.Line_markContext):
+        # TODO: use already parsed values
         value = int(ctx.line_number().getText())
         filepath = b64decode(ctx.filepath().getText()[3:]).decode()
         self.source_path = filepath
@@ -83,7 +84,7 @@ class BuildAstVisitor(AsmParserVisitor):
         cond = self.visitCondition(ctx.condition())
         cond.conjunction = ctx.conjunction().getText()
         if cond.conjunction != 'and' and cond.conjunction != 'or':
-            raise Exception('Expected "and" or "or" in compound condition')
+            raise CdmException(CdmExceptionTag.ASM, self.source_path, ctx.start.line - self.line_offset, 'Expected "and" or "or" in compound condition')
         return cond
 
     def visitCondition(self, ctx: AsmParser.ConditionContext):
@@ -148,7 +149,7 @@ class BuildAstVisitor(AsmParserVisitor):
         label_decl = self.visitLabel_declaration(ctx.label_declaration())
         label_decl.external = ctx.Ext() is not None
         if label_decl.entry and label_decl.external:
-            raise Exception(f'Label {label_decl.label.name} cannot be both external and entry')
+            raise CdmException(CdmExceptionTag.ASM, self.source_path, ctx.start.line - self.line_offset, f'Label {label_decl.label.name} cannot be both external and entry')
         return label_decl
 
     def visitLabel_declaration(self, ctx: AsmParser.Label_declarationContext) -> LabelDeclarationNode:
@@ -183,10 +184,12 @@ class BuildAstVisitor(AsmParserVisitor):
 
 def build_ast(input_stream: InputStream, filepath: str):
     lexer = AsmLexer(input_stream)
-    lexer.addErrorListener(LexerErrorListener())
+    lexer.removeErrorListeners()
+    lexer.addErrorListener(AntlrErrorListener(CdmExceptionTag.ASM, filepath))
     token_stream = CommonTokenStream(lexer)
     token_stream.fill()
     parser = AsmParser(token_stream)
-    parser.addErrorListener(ParserErrorListener())
+    parser.removeErrorListeners()
+    parser.addErrorListener(AntlrErrorListener(CdmExceptionTag.ASM, filepath))
     cst = parser.program()
     return BuildAstVisitor(filepath).visit(cst)

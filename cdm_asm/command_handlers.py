@@ -4,6 +4,7 @@ from cdm_asm.code_segments import *
 from typing import Union, get_origin, get_args
 import bitstruct
 
+from cdm_asm.error import CdmException, CdmExceptionTag
 
 ArgAddress = Union[int, LabelNode]
 ArgDcConstant = Union[int, str, LabelNode]
@@ -158,10 +159,21 @@ assembler_directives = {}
 for directive in dirset:
     assembler_directives[directive] = command_handlers[directive]
 
+
 def assemble_command(line: InstructionNode) -> list[CodeSegment]:
-    if line.mnemonic in dirset:
-        handler = assembler_directives[line.mnemonic]
-        return handler(line.arguments)
-    else:
-        opcode, handler = cpu_instructions[line.mnemonic]
-        return handler(opcode, line.arguments)
+    try:
+        if line.mnemonic in dirset:
+            handler = assembler_directives[line.mnemonic]
+            return handler(line.arguments)
+        else:
+            opcode, handler = cpu_instructions[line.mnemonic]
+            segments = handler(opcode, line.arguments)
+            for segment in segments:
+                segment.location = line.location
+            return segments
+    except Exception as e:
+        if len(e.args) > 0:
+            message = str(e.args[0])
+        else:
+            message = 'Unknown error'
+        raise CdmException(CdmExceptionTag.ASM, line.location.file, line.location.line, message)

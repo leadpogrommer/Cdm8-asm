@@ -3,6 +3,6 @@ from dataclasses import dataclass
 
 @dataclass
 class CodeLocation:
-    file: str
-    line: int
-    column: int
+    file: str = "unknown"
+    line: int = 0
+    column: int = 0

@@ -1,9 +1,12 @@
-# Generated from /home/ilya/work/cdm8e/ORiGinalASM/assembler/AsmParser.g4 by ANTLR 4.10.1
+# Generated from /home/ilya/work/cdm8e/ORiGinalASM/cdm_asm/AsmParser.g4 by ANTLR 4.10.1
 from antlr4 import *
 if __name__ is not None and "." in __name__:
     from .AsmParser import AsmParser
 else:
     from AsmParser import AsmParser
+
+from base64 import b64decode
+
 
 # This class defines a complete generic visitor for a parse tree produced by AsmParser.
 

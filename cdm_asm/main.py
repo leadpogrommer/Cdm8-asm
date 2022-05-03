@@ -1,5 +1,10 @@
+import codecs
 import json
+
+import colorama
 from antlr4 import *
+
+from cdm_asm.error import CdmException
 from cdm_asm.macro_processor import process_macros, read_mlb
 from cdm_asm.assembler import ObjectModule, assemble
 from cdm_asm.ast_builder import build_ast
@@ -70,30 +75,42 @@ def main():
     parser.add_argument('sources', type=str, nargs='+', help='Source files')
     args = parser.parse_args()
 
+    colorama.init()
 
-    library_macros = read_mlb(str(pathlib.Path(__file__).parent.joinpath('standard.mlb').absolute()))
-    source_files = args.sources
-    objects = []
-    for filepath in source_files:
-        input_stream = FileStream(filepath)
-        macro_expanded_input_stream = process_macros(input_stream, library_macros, str(pathlib.Path(filepath).absolute()))
-        # print(macro_expanded_input_stream)
-        r = build_ast(macro_expanded_input_stream, str(pathlib.Path(filepath).absolute()))
-        obj = assemble(r)
+    try:
+        library_macros = read_mlb(str(pathlib.Path(__file__).parent.joinpath('standard.mlb').absolute()))
+        source_files = args.sources
+        objects = []
+        for filepath in source_files:
+            with open(filepath, 'rb') as file:
+                data = file.read()
+                data = codecs.decode(data, 'ascii', 'strict')
+                # tolerate files without newline at the end
+                if data[-1] != '\n':
+                    data += '\n'
+                input_stream = InputStream(data)
 
-        objects.append(obj)
+            macro_expanded_input_stream = process_macros(input_stream, library_macros, str(pathlib.Path(filepath).absolute()))
+            # print(macro_expanded_input_stream)
+            r = build_ast(macro_expanded_input_stream, str(pathlib.Path(filepath).absolute()))
+            obj = assemble(r)
 
-    data, code_locations = link(objects)
-    image_root, _ = os.path.splitext(source_files[0])
-    if args.image is not None:
-        write_image(args.image, data)
+            objects.append(obj)
 
-    # write code locations(debug info)
-    code_locations = {key: asdict(loc) for key, loc in code_locations.items()}
-    json_locations = json.dumps(code_locations, indent=4, sort_keys=True)
-    if args.debug is not None:
-        with open(args.debug, 'w') as f:
-            f.write(json_locations)
+        data, code_locations = link(objects)
+        image_root, _ = os.path.splitext(source_files[0])
+        if args.image is not None:
+            write_image(args.image, data)
+
+        # write code locations(debug info)
+        code_locations = {key: asdict(loc) for key, loc in code_locations.items()}
+        json_locations = json.dumps(code_locations, indent=4, sort_keys=True)
+        if args.debug is not None:
+            with open(args.debug, 'w') as f:
+                f.write(json_locations)
+    except CdmException as e:
+        e.log()
+        exit(1)
 
 
 if __name__ == '__main__':
