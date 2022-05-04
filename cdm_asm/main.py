@@ -4,7 +4,7 @@ import json
 import colorama
 from antlr4 import *
 
-from cdm_asm.error import CdmException
+from cdm_asm.error import CdmException, log_error, CdmLinkException, CdmExceptionTag
 from cdm_asm.macro_processor import process_macros, read_mlb
 from cdm_asm.assembler import ObjectModule, assemble
 from cdm_asm.ast_builder import build_ast
@@ -111,6 +111,18 @@ def main():
     except CdmException as e:
         e.log()
         exit(1)
+    except OSError as e:
+        message = e.strerror
+        if e.filename is not None:
+            message += f': {colorama.Style.BRIGHT}{e.filename}{colorama.Style.NORMAL}'
+        if e.filename2 is not None:
+            message += f', {colorama.Style.BRIGHT}{e.filename2}{colorama.Style.NORMAL}'
+        log_error("MAIN", message)
+        exit(1)
+    except CdmLinkException as e:
+        log_error(CdmExceptionTag.LINK.value, e.message)
+        exit(1)
+
 
 
 if __name__ == '__main__':

@@ -8,7 +8,7 @@ from cdm_asm.generated.MacroParser import MacroParser
 from cdm_asm.generated.MacroVisitor import MacroVisitor
 from base64 import b64encode
 import re
-from cdm_asm.error import AntlrErrorListener, CdmExceptionTag
+from cdm_asm.error import AntlrErrorListener, CdmExceptionTag, CdmException, CdmTempException
 
 
 def unique(params: list[str]):
@@ -19,7 +19,7 @@ def unique(params: list[str]):
         if param_match:
             register_number = int(param_match.group(1))
             if not register_available[register_number]:
-                raise Exception(f'unique: {param} appears multiple times')
+                raise CdmTempException(f'unique: {param} appears multiple times')
             register_available[register_number] = False
         else:
             var_params.append(param)
@@ -30,7 +30,7 @@ def unique(params: list[str]):
         while not register_available[i]:
             i += 1
             if i == 4:
-                raise Exception(f'unique: not enough registers')
+                raise CdmTempException(f'unique: not enough registers')
         register_available[i] = False
         defined_vars[param] = f'r{i}'
     return defined_vars
@@ -99,7 +99,7 @@ class ExpandMacrosVisitor(MacroVisitor):
         if macro.name not in self.macros:
             self.macros[macro.name] = dict()
         if macro.arity in self.macros[macro.name]:
-            raise Exception(f'Multiple definitions of macro {macro.name}')
+            raise CdmTempException(f'Multiple definitions of macro {macro.name}')
         self.macros[macro.name][macro.arity] = macro
 
     def expand_macro(self, macro_name: str, macro_params: list[str]):
@@ -152,24 +152,30 @@ class ExpandMacrosVisitor(MacroVisitor):
 
     def visitMlb(self, ctx: MacroParser.MlbContext):
         for child in filter(lambda c: isinstance(c, MacroParser.Mlb_macroContext), ctx.children):
-            self.add_macro(self.visitMlb_macro(child))
+            try:
+                self.add_macro(self.visitMlb_macro(child))
+            except CdmTempException as e:
+                raise CdmException(CdmExceptionTag.MACRO, self.filepath, child.start.line, e.message)
         return self.macros
 
     def visitProgram(self, ctx: MacroParser.ProgramContext):
         if len(ctx.children) > 0:
             self.rewriter.insertBeforeToken(ctx.children[0].start, self._generate_location_line(self.filepath, 1))
         for child in ctx.children:
-            if isinstance(child, MacroParser.MacroContext):
-                self.add_macro(self.visitMacro(child))
-            elif isinstance(child, MacroParser.LineContext):
-                label, instruction, parameters = self.visitLine(child)
-                expanded_text = self.expand_macro(instruction, parameters)
-                if expanded_text is not None:
-                    if label != '':
-                        expanded_text = f'{label}\n{expanded_text}'
-                    expanded_text = f'{expanded_text}\n{self._generate_location_line(self.filepath, child.stop.line+1)}'
-                    self.rewriter.insertBeforeToken(child.start, expanded_text)
-                    self.rewriter.delete(self.rewriter.DEFAULT_PROGRAM_NAME, child.start, child.stop)
+            try:
+                if isinstance(child, MacroParser.MacroContext):
+                    self.add_macro(self.visitMacro(child))
+                elif isinstance(child, MacroParser.LineContext):
+                    label, instruction, parameters = self.visitLine(child)
+                    expanded_text = self.expand_macro(instruction, parameters)
+                    if expanded_text is not None:
+                        if label != '':
+                            expanded_text = f'{label}\n{expanded_text}'
+                        expanded_text = f'{expanded_text}\n{self._generate_location_line(self.filepath, child.stop.line+1)}'
+                        self.rewriter.insertBeforeToken(child.start, expanded_text)
+                        self.rewriter.delete(self.rewriter.DEFAULT_PROGRAM_NAME, child.start, child.stop)
+            except CdmTempException as e:
+                raise CdmException(CdmExceptionTag.MACRO, self.filepath, child.start.line, e.message)
 
     def visitMacro(self, ctx: MacroParser.MacroContext):
         header = ctx.macro_header()

@@ -31,21 +31,21 @@ class BuildAstVisitor(AsmParserVisitor):
 
     def visitAbsoluteSection(self, ctx:AsmParser.AbsoluteSectionContext) -> AbsoluteSectionNode:
         header = ctx.asect_header()
-        lines = self.visitSection_body(ctx.section_body())
+        lines, locations = self.visitSection_body(ctx.section_body())
         address = self.visitNumber(header.number())
-        return AbsoluteSectionNode(lines, address)
+        return AbsoluteSectionNode(lines, locations, address)
 
     def visitRelocatableSection(self, ctx:AsmParser.RelocatableSectionContext) -> RelocatableSectionNode:
         header = ctx.rsect_header()
-        lines = self.visitSection_body(ctx.section_body())
+        lines, locations = self.visitSection_body(ctx.section_body())
         name = header.name().getText()
-        return RelocatableSectionNode(lines, name)
+        return RelocatableSectionNode(lines, locations, name)
 
     def visitTemplateSection(self, ctx:AsmParser.TemplateSectionContext) -> TemplateSectionNode:
         header = ctx.tplate_header()
-        lines = self.visitSection_body(ctx.section_body())
+        lines, locations = self.visitSection_body(ctx.section_body())
         name = header.name().getText()
-        return TemplateSectionNode(lines, name)
+        return TemplateSectionNode(lines, locations, name)
 
     def visitLine_mark(self, ctx:AsmParser.Line_markContext):
         # TODO: use already parsed values
@@ -64,8 +64,8 @@ class BuildAstVisitor(AsmParserVisitor):
         else:
             return ord(ctx.getText()[1])
 
-    def visitSection_body(self, ctx:AsmParser.Section_bodyContext) -> list:
-        return self.visitCode_block(ctx.code_block())
+    def visitSection_body(self, ctx:AsmParser.Section_bodyContext) -> tuple[list, list[CodeLocation]]:
+        return self.visitCode_block(ctx.code_block(), return_locations=True)
 
     def visitConditional(self, ctx: AsmParser.ConditionalContext):
         conditions = self.visitConditions(ctx.conditions())
@@ -119,10 +119,11 @@ class BuildAstVisitor(AsmParserVisitor):
     def visitRestore_statement(self, ctx: AsmParser.Restore_statementContext):
         return self.visitRegister(ctx.register()) if ctx.register() else None
 
-    def visitCode_block(self, ctx: AsmParser.Code_blockContext):
+    def visitCode_block(self, ctx: AsmParser.Code_blockContext, return_locations=False):
         if ctx.children is None:
             return []
 
+        locations = []
         ret = []
         for c in ctx.children:
             if isinstance(c, AsmParser.StandaloneLabelContext):
@@ -143,7 +144,12 @@ class BuildAstVisitor(AsmParserVisitor):
                 ret.append(ContinueStatementNode())
             elif isinstance(c, AsmParser.Line_markContext):
                 self.visit(c)
-        return ret
+            while len(locations) < len(ret):
+                locations.append(CodeLocation(self.source_path, c.start.line - self.line_offset))
+        if return_locations:
+            return ret, locations
+        else:
+            return ret
 
     def visitStandaloneLabel(self, ctx:AsmParser.StandaloneLabelContext) -> LabelNode:
         label_decl = self.visitLabel_declaration(ctx.label_declaration())

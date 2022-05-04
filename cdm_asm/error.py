@@ -11,6 +11,19 @@ class CdmExceptionTag(Enum):
     LINK = "Linker"
 
 
+# this exception should be used when we don't know code location now,
+# but this info is somewhere up the call stack
+# it should be re-raised
+# it s here to avoid except Exception
+class CdmTempException(Exception):
+    def __init__(self, message: str):
+        self.message = message
+
+
+class CdmLinkException(Exception):
+    def __init__(self, message: str):
+        self.message = message
+
 class CdmException(Exception):
     def __init__(self, tag: str | CdmExceptionTag, file: str, line: int, description: str):
         if isinstance(tag, CdmExceptionTag):
@@ -24,6 +37,11 @@ class CdmException(Exception):
         print(f'[{self.tag}] {Fore.RED}ERROR{Fore.RESET} at line {Style.BRIGHT}{self.line}{Style.RESET_ALL} of {Style.BRIGHT}{self.file}{Style.RESET_ALL}')
         print(f'{self.description}')
 
+
+def log_error(tag: str, message: str):
+    print(
+        f'[{tag}] {Fore.RED}ERROR{Fore.RESET}')
+    print(message)
 
 
 

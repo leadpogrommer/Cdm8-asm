@@ -167,22 +167,23 @@ def assemble_template(sn: TemplateSectionNode):
     size = 0
     template = Template()
     template.name = sn.name
-    for line in sn.lines:
+    for line_number, line in enumerate(sn.lines):
+        location = sn.locations[line_number]
         if isinstance(line, LabelDeclarationNode):
             label_name = line.label.name
             if label_name in template.labels:
-                raise Exception(f'Duplicate label "{label_name}" declaration')
+                raise CdmException(TAG,location.file, location.line, f'Duplicate label "{label_name}" declaration')
 
             if line.external:
-                raise Exception('External labels not allowed in templates')
+                raise CdmException(TAG,location.file, location.line, 'External labels not allowed in templates')
             elif line.entry:
-                raise Exception('Ents not allowed in templates')
+                raise CdmException(TAG,location.file, location.line, 'Ents not allowed in templates')
             else:
                 template.labels[label_name] = size
 
         elif isinstance(line, InstructionNode):
             if line.mnemonic not in dirset:
-                raise Exception('Only "dc" and "ds" allowed in templates')
+                raise CdmException(TAG,location.file, location.line, 'Only "dc" and "ds" allowed in templates')
             cmd_piece = assemble_instruction(line)
             size += cmd_piece.segments[0].size
     template.labels['_'] = size
@@ -195,6 +196,7 @@ def assemble_label_declaration(line: LabelDeclarationNode, start_addr: int):
     if (label_name in block.labels or
         label_name in block.ents or
         label_name in block.exts):
+        # TODO: use CdmException
         raise Exception(f'Duplicate label "{label_name}" declaration')
 
     if line.external:
@@ -293,6 +295,7 @@ def assemble_save_restore_statement(line: SaveRestoreStatement, start_addr: int,
 def assemble_break_statement(loop_stack: list):
     block = CodeBlock(0)
     if len(loop_stack) == 0:
+        # TODO: use CdmException
         raise Exception('"break" not allowed outside of a loop')
     _, finally_label = loop_stack[-1]
     block.append_branch('br', finally_label)
@@ -301,6 +304,7 @@ def assemble_break_statement(loop_stack: list):
 def assemble_continue_statement(loop_stack: list):
     block = CodeBlock(0)
     if len(loop_stack) == 0:
+        # TODO: use CdmException
         raise Exception('"continue" not allowed outside of a loop')
     cond_label, _ = loop_stack[-1]
     block.append_branch('br', cond_label)

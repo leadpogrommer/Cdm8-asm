@@ -1,7 +1,7 @@
 from cdm_asm.assembler import ObjectSectionRecord, ObjectModule
 import itertools
 
-
+from cdm_asm.error import CdmLinkException
 from cdm_asm.location import CodeLocation
 
 
@@ -17,7 +17,7 @@ def init_bins(asects: list[ObjectSectionRecord]):
             addr2 = asects[i].address
             len1 = len(asects[i - 1].data)
             len2 = len(asects[i].data)
-            raise Exception(f'Overlapping sections at {addr1} (size {len1}) and {addr2} (size {len2})')
+            raise CdmLinkException(f'Overlapping sections at {addr1} (size {len1}) and {addr2} (size {len2})')
         last_bin_begin = asects[i].address + len(asects[i].data)
 
     if last_bin_begin < 2 ** 16:
@@ -33,12 +33,12 @@ def place_sects(rsects: list[ObjectSectionRecord], rsect_bins: list):
             bin_begin, bin_size = rsect_bins[i]
             if bin_size >= rsect_size:
                 if rsect.name in sect_addresses:
-                    raise Exception(f'Duplicate sections "{rsect.name}"')
+                    raise CdmLinkException(f'Duplicate sections "{rsect.name}"')
                 sect_addresses[rsect.name] = bin_begin
                 rsect_bins[i] = (bin_begin + rsect_size, bin_size - rsect_size)
                 break
         else:
-            raise Exception(f'Section "{rsect.name}" exceeds image size limit')
+            raise CdmLinkException(f'Section "{rsect.name}" exceeds image size limit')
     return sect_addresses
 
 def gather_ents(sects: list[ObjectSectionRecord], sect_addresses: dict[str, int]):
@@ -46,7 +46,7 @@ def gather_ents(sects: list[ObjectSectionRecord], sect_addresses: dict[str, int]
     for sect in sects:
         for ent_name in sect.ents:
             if ent_name in ents:
-                raise Exception(f'Duplicate entries "{ent_name}"')
+                raise CdmLinkException(f'Duplicate entries "{ent_name}"')
             ents[ent_name] = sect.ents[ent_name] + sect_addresses[sect.name]
     return ents
 
@@ -65,7 +65,7 @@ def find_referenced_sects(exts_by_sect: dict[str, dict[str, list[int]]], sect_by
         if used_sects_queue[i] in exts_by_sect:
             for ext_name in exts_by_sect[used_sects_queue[i]]:
                 if ext_name not in sect_by_ent:
-                    raise Exception(f'Unresolved ext "{ext_name}"')
+                    raise CdmLinkException(f'Unresolved ext "{ext_name}"')
                 new_sect = sect_by_ent[ext_name]
                 if new_sect not in used_sects:
                     used_sects_queue.append(new_sect)
