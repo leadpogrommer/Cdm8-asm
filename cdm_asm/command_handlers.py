@@ -6,13 +6,6 @@ import bitstruct
 
 from cdm_asm.error import CdmException, CdmExceptionTag
 
-ArgAddress = Union[int, LabelNode]
-ArgDcConstant = Union[int, str, LabelNode]
-ArgLdiConstant = Union[int, str, LabelNode, TemplateFieldNode]
-ArgStackOffset = Union[int, TemplateFieldNode]
-ArgLdsaOffset = Union[int, LabelNode, TemplateFieldNode]
-
-
 def assert_args(args, *types, single_type=False):
     ts = [(t if get_origin(t) is None else get_args(t)) for t in types]
     if single_type:
@@ -42,97 +35,76 @@ def zero_handler(opcode: int, arguments: list):
     return [BytesSegment(bytearray([opcode]))]
 
 def branch_handler(opcode: int, arguments: list):
-    assert_args(arguments, ArgAddress)
+    assert_args(arguments, RelocatableExpressionNode)
+    arg = arguments[0]
 
-    if isinstance(arguments[0], int):
-        return [OffsetBranchSegment(opcode, arguments[0])]
-    elif isinstance(arguments[0], LabelNode):
-        return [LabelBranchSegment(opcode, arguments[0])]
+    return [BytesSegment(bytearray([opcode])), ByteExpressionSegment(arg, signed=True)]
 
 def long_handler(opcode: int, arguments: list):
-    assert_args(arguments, ArgAddress)
+    assert_args(arguments, RelocatableExpressionNode)
+    arg = arguments[0]
 
-    if isinstance(arguments[0], int):
-        return [BytesSegment(bytearray([opcode, arguments[0]]))]
-    elif isinstance(arguments[0], LabelNode):
-        return [BytesSegment(bytearray([opcode])), LongAddressSegment(arguments[0])]
+    return [BytesSegment(bytearray([opcode])), AddressExpressionSegment(arg)]
 
 def ldsa_handler(opcode: int, arguments: list):
-    assert_args(arguments, RegisterNode, ArgLdsaOffset)
+    assert_args(arguments, RegisterNode, RelocatableExpressionNode)
     reg, arg = arguments
     cmd_piece = unary_handler(opcode, [reg])[0]
 
-    if isinstance(arg, int):
-        cmd_piece.data.append(arg)
-        return [BytesSegment(cmd_piece.data)]
-    elif isinstance(arg, LabelNode):
-        return [BytesSegment(cmd_piece.data), ShortAddressSegment(arg)]
-    elif isinstance(arg, TemplateFieldNode):
-        if arg.negative:
-            raise Exception('Cannot use negative template fields in "ldsa" (at least cocas.py doesn\'t allow it)')
-        return [BytesSegment(cmd_piece.data), TemplateFieldSegment(arg)]
+    return [BytesSegment(cmd_piece.data), ByteExpressionSegment(arg)]
 
 def ldi_handler(opcode: int, arguments: list):
-    assert_args(arguments, RegisterNode, ArgLdiConstant)
+    assert_args(arguments, RegisterNode, RelocatableExpressionNode | str)
     reg, arg = arguments
     cmd_piece = unary_handler(opcode, [reg])[0]
 
-    if isinstance(arg, int):
-        cmd_piece.data.append(arg)
-        return [BytesSegment(cmd_piece.data)]
-    elif isinstance(arg, str):
+    if isinstance(arg, str):
         arg_data = bytearray(arg, 'utf8')
         if len(arg_data) != 1:
             raise Exception('Argument must be a string of length 1')
         cmd_piece.data.extend(arg_data)
         return [BytesSegment(cmd_piece.data)]
-    elif isinstance(arg, LabelNode):
-        return [BytesSegment(cmd_piece.data), ShortAddressSegment(arg)]
-    elif isinstance(arg, TemplateFieldNode):
-        if arg.negative:
-            raise Exception('Cannot use negative template fields in "ldi" (at least cocas.py doesn\'t allow it)')
-        return [BytesSegment(cmd_piece.data), TemplateFieldSegment(arg)]
+    elif isinstance(arg, RelocatableExpressionNode):
+        return [BytesSegment(cmd_piece.data), ByteExpressionSegment(arg)]
 
 def osix_handler(opcode: int, arguments: list):
-    assert_args(arguments, int)
+    assert_args(arguments, RelocatableExpressionNode)
     arg = arguments[0]
 
-    if arg < 0:
-        raise Exception('Cannot use negative numbers in "osix"')
-    return [BytesSegment(bytearray([opcode, arg]))]
+    return [BytesSegment(bytearray([opcode])), ByteExpressionSegment(arg, positive=True)]
 
 def spmove_handler(opcode: int, arguments: list):
-    assert_args(arguments, ArgStackOffset)
+    assert_args(arguments, RelocatableExpressionNode)
     arg = arguments[0]
 
-    if isinstance(arg, int):
-        if arg < 0: arg += 256
-        return [BytesSegment(bytearray([opcode, arg]))]
-    elif isinstance(arg, TemplateFieldNode):
-        return [BytesSegment(bytearray([opcode, 0])), TemplateFieldSegment(arg)]
+    return [BytesSegment(bytearray([opcode])), ByteExpressionSegment(arg)]
 
 
 def dc_handler(arguments: list):
-    assert_args(arguments, ArgDcConstant, single_type=True)
+    assert_args(arguments, RelocatableExpressionNode | str, single_type=True)
     if len(arguments) == 0:
         raise Exception('At least one argument must be provided')
 
     segments = []
     for arg in arguments:
-        if isinstance(arg, int):
-            segments.append(BytesSegment(bytearray([arg])))
-        elif isinstance(arg, str):
+        if isinstance(arg, str):
             segments.append(BytesSegment(bytearray(arg, 'utf8')))
-        elif isinstance(arg, LabelNode):
-            segments.append(ShortAddressSegment(arg))
+        elif isinstance(arg, RelocatableExpressionNode):
+            if arg.byte_specifier is None:
+                segments.append(AddressExpressionSegment(arg))
+            else:
+                segments.append(ByteExpressionSegment(arg))
     return segments
 
 def ds_handler(arguments: list):
-    assert_args(arguments, int)
-    space_size = arguments[0]
-    if space_size < 0:
+    assert_args(arguments, RelocatableExpressionNode)
+    arg = arguments[0]
+
+    if len(arg.add_terms) != 0 or len(arg.sub_terms) != 0 or arg.byte_specifier is not None:
+        raise Exception('Number expected')
+    if arg.const_term < 0:
         raise Exception('Cannot specify negative size in "ds"')
-    return [BytesSegment(bytearray(space_size))]
+    return [BytesSegment(bytearray(arg.const_term))]
 
 
 command_handlers = {

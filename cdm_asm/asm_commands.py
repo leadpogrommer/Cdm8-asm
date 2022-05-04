@@ -86,14 +86,16 @@ instructions = {
 
         'br':   0xEE,
         'banything':  0xEE,
+        'btrue':      0xEE,
         'bnfalse':    0xEE,
 
         'nop':  0xEF,
         'bnanything': 0xEF,
         'bntrue':     0xEF,
+        'bfalse':     0xEF,
     },
     'long': {
-        'jsr' : 0xD6,
+        'jsr': 0xD6,
         'jmp': 0xDD,
     },
     'ldsa': { 'ldsa': 0xC8 },

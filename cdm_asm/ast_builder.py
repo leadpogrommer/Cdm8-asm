@@ -111,13 +111,16 @@ class BuildAstVisitor(AsmParserVisitor):
         restored_register = self.visitRestore_statement(ctx.restore_statement())
         if restored_register is None: restored_register = saved_register
         lines = self.visitCode_block(ctx.code_block())
-        return SaveRestoreStatement(saved_register, lines, restored_register)
+        return SaveRestoreStatementNode(saved_register, lines, restored_register)
 
     def visitSave_statement(self, ctx: AsmParser.Save_statementContext):
         return self.visitRegister(ctx.register())
 
     def visitRestore_statement(self, ctx: AsmParser.Restore_statementContext):
         return self.visitRegister(ctx.register()) if ctx.register() else None
+
+    def visitGoto_statement(self, ctx: AsmParser.Goto_statementContext):
+        return GotoStatementNode(ctx.branch_mnemonic().getText(), self.visitGoto_argument(ctx.goto_argument()))
 
     def visitCode_block(self, ctx: AsmParser.Code_blockContext, return_locations=False):
         if ctx.children is None:
@@ -142,6 +145,8 @@ class BuildAstVisitor(AsmParserVisitor):
                 ret.append(BreakStatementNode())
             elif isinstance(c, AsmParser.Continue_statementContext):
                 ret.append(ContinueStatementNode())
+            elif isinstance(c, AsmParser.Goto_statementContext):
+                ret.append(self.visitGoto_statement(c))
             elif isinstance(c, AsmParser.Line_markContext):
                 self.visit(c)
             while len(locations) < len(ret):
@@ -150,6 +155,29 @@ class BuildAstVisitor(AsmParserVisitor):
             return ret, locations
         else:
             return ret
+
+    def visitByte_expr(self, ctx: AsmParser.Byte_exprContext):
+        expr = self.visitAddr_expr(ctx.addr_expr())
+        expr.byte_specifier = ctx.byte_specifier().getText()
+        return expr
+
+    def visitAddr_expr(self, ctx: AsmParser.Addr_exprContext):
+        add_terms = []
+        sub_terms = []
+        const_term = 0
+        for c in ctx.children:
+            term = self.visitTerm(c.term())
+            if c.MINUS() is not None:
+                if isinstance(term, int):
+                    const_term -= term
+                else:
+                    sub_terms.append(term)
+            else:
+                if isinstance(term, int):
+                    const_term += term
+                else:
+                    add_terms.append(term)
+        return RelocatableExpressionNode(None, add_terms, sub_terms, const_term)
 
     def visitStandaloneLabel(self, ctx:AsmParser.StandaloneLabelContext) -> LabelNode:
         label_decl = self.visitLabel_declaration(ctx.label_declaration())
@@ -174,7 +202,7 @@ class BuildAstVisitor(AsmParserVisitor):
     def visitTemplate_field(self, ctx:AsmParser.Template_fieldContext):
         template_name = ctx.name()[0].getText()
         field_name = ctx.name()[1].getText()
-        return TemplateFieldNode(template_name, field_name, ctx.MINUS() is not None)
+        return TemplateFieldNode(template_name, field_name)
 
     def visitInstructionLine(self, ctx:AsmParser.InstructionLineContext) -> list:
         ret = []

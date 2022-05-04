@@ -13,7 +13,13 @@ class LabelNode:
 class TemplateFieldNode:
     template_name: str
     field_name: str
-    negative: bool
+
+@dataclass
+class RelocatableExpressionNode:
+    byte_specifier: str | None
+    add_terms: list
+    sub_terms: list
+    const_term: int
 
 @dataclass
 class LabelDeclarationNode:
@@ -59,10 +65,15 @@ class ContinueStatementNode:
     pass
 
 @dataclass
-class SaveRestoreStatement:
+class SaveRestoreStatementNode:
     saved_register: RegisterNode
     lines: list
     restored_register: RegisterNode
+
+@dataclass
+class GotoStatementNode:
+    branch_mnemonic: str
+    expr: RelocatableExpressionNode
 
 @dataclass
 class SectionNode:

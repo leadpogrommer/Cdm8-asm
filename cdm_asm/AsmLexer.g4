@@ -8,6 +8,7 @@ Else : 'else' ;
 End : 'end' ;
 Ext : 'ext' ;
 Fi : 'fi' ;
+Goto : 'goto' ;
 If : 'if' ;
 Is : 'is' ;
 Macro : 'macro' ;
@@ -21,12 +22,18 @@ Until : 'until' ;
 Wend : 'wend' ;
 While : 'while' ;
 
+Low : 'low' ;
+High : 'high' ;
+
 DOT : '.' ;
 COMMA : ',' ;
+PLUS : '+' ;
 MINUS : '-' ;
 COLON : ':' ;
 ASTERISK : '*' ;
 ANGLE_BRACKET : '>' ;
+OPEN_PAREN : '(' ;
+CLOSE_PAREN : ')' ;
 LINE_MARK_MARKER: '-|';
 
 REGISTER : 'r'[0-3] ;

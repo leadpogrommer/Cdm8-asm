@@ -290,12 +290,84 @@ class AsmParserListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by AsmParser#goto_statement.
+    def enterGoto_statement(self, ctx:AsmParser.Goto_statementContext):
+        pass
+
+    # Exit a parse tree produced by AsmParser#goto_statement.
+    def exitGoto_statement(self, ctx:AsmParser.Goto_statementContext):
+        pass
+
+
+    # Enter a parse tree produced by AsmParser#goto_argument.
+    def enterGoto_argument(self, ctx:AsmParser.Goto_argumentContext):
+        pass
+
+    # Exit a parse tree produced by AsmParser#goto_argument.
+    def exitGoto_argument(self, ctx:AsmParser.Goto_argumentContext):
+        pass
+
+
     # Enter a parse tree produced by AsmParser#argument.
     def enterArgument(self, ctx:AsmParser.ArgumentContext):
         pass
 
     # Exit a parse tree produced by AsmParser#argument.
     def exitArgument(self, ctx:AsmParser.ArgumentContext):
+        pass
+
+
+    # Enter a parse tree produced by AsmParser#byte_expr.
+    def enterByte_expr(self, ctx:AsmParser.Byte_exprContext):
+        pass
+
+    # Exit a parse tree produced by AsmParser#byte_expr.
+    def exitByte_expr(self, ctx:AsmParser.Byte_exprContext):
+        pass
+
+
+    # Enter a parse tree produced by AsmParser#addr_expr.
+    def enterAddr_expr(self, ctx:AsmParser.Addr_exprContext):
+        pass
+
+    # Exit a parse tree produced by AsmParser#addr_expr.
+    def exitAddr_expr(self, ctx:AsmParser.Addr_exprContext):
+        pass
+
+
+    # Enter a parse tree produced by AsmParser#first_term.
+    def enterFirst_term(self, ctx:AsmParser.First_termContext):
+        pass
+
+    # Exit a parse tree produced by AsmParser#first_term.
+    def exitFirst_term(self, ctx:AsmParser.First_termContext):
+        pass
+
+
+    # Enter a parse tree produced by AsmParser#add_term.
+    def enterAdd_term(self, ctx:AsmParser.Add_termContext):
+        pass
+
+    # Exit a parse tree produced by AsmParser#add_term.
+    def exitAdd_term(self, ctx:AsmParser.Add_termContext):
+        pass
+
+
+    # Enter a parse tree produced by AsmParser#term.
+    def enterTerm(self, ctx:AsmParser.TermContext):
+        pass
+
+    # Exit a parse tree produced by AsmParser#term.
+    def exitTerm(self, ctx:AsmParser.TermContext):
+        pass
+
+
+    # Enter a parse tree produced by AsmParser#byte_specifier.
+    def enterByte_specifier(self, ctx:AsmParser.Byte_specifierContext):
+        pass
+
+    # Exit a parse tree produced by AsmParser#byte_specifier.
+    def exitByte_specifier(self, ctx:AsmParser.Byte_specifierContext):
         pass
 
 

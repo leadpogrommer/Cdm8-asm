@@ -167,8 +167,48 @@ class AsmParserVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by AsmParser#goto_statement.
+    def visitGoto_statement(self, ctx:AsmParser.Goto_statementContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AsmParser#goto_argument.
+    def visitGoto_argument(self, ctx:AsmParser.Goto_argumentContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by AsmParser#argument.
     def visitArgument(self, ctx:AsmParser.ArgumentContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AsmParser#byte_expr.
+    def visitByte_expr(self, ctx:AsmParser.Byte_exprContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AsmParser#addr_expr.
+    def visitAddr_expr(self, ctx:AsmParser.Addr_exprContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AsmParser#first_term.
+    def visitFirst_term(self, ctx:AsmParser.First_termContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AsmParser#add_term.
+    def visitAdd_term(self, ctx:AsmParser.Add_termContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AsmParser#term.
+    def visitTerm(self, ctx:AsmParser.TermContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AsmParser#byte_specifier.
+    def visitByte_specifier(self, ctx:AsmParser.Byte_specifierContext):
         return self.visitChildren(ctx)
 
 

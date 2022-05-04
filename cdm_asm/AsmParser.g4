@@ -34,6 +34,7 @@ code_block
     | while_loop
     | until_loop
     | save_restore_statement
+    | goto_statement
     | line_mark
     )*
     ;
@@ -81,23 +82,32 @@ save_restore_statement : save_statement code_block restore_statement ;
 save_statement : Save register NEWLINE+ ;
 restore_statement : Restore register? NEWLINE+ ;
 
+goto_statement : Goto branch_mnemonic COMMA goto_argument NEWLINE+ ;
+goto_argument : addr_expr | byte_expr ;
+
 argument
-    : number
-    | character
+    : character
     | string
     | register
-    | label
-    | template_field
+    | addr_expr
+    | byte_expr
     ;
 
-template_field : MINUS? name DOT name ;
+byte_expr : byte_specifier OPEN_PAREN addr_expr CLOSE_PAREN ;
+addr_expr : first_term add_term* ;
+first_term : (PLUS | MINUS)? term ;
+add_term : (PLUS | MINUS) term ;
+term : number | template_field | label ;
+byte_specifier : Low | High ;
+
+template_field : name DOT name ;
 label : name ;
 instruction : WORD ;
 string : STRING ;
 register : REGISTER ;
 character : CHAR ;
 number
-    : MINUS? DECIMAL_NUMBER
+    : DECIMAL_NUMBER
     | HEX_NUMBER
     | BINARY_NUMBER
     ;
@@ -111,8 +121,11 @@ name
     | End
     | Ext
     | Fi
+    | Goto
+    | High
     | If
     | Is
+    | Low
     | Macro
     | Restore
     | Rsect
