@@ -141,13 +141,15 @@ def assemble_command(line: InstructionNode) -> list[CodeSegment]:
     try:
         if line.mnemonic in dirset:
             handler = assembler_directives[line.mnemonic]
-            return handler(line.arguments)
-        else:
+            segments = handler(line.arguments)
+        elif line.mnemonic in cpu_instructions:
             opcode, handler = cpu_instructions[line.mnemonic]
             segments = handler(opcode, line.arguments)
-            for segment in segments:
-                segment.location = line.location
-            return segments
+        else:
+            raise Exception(f'Unknown instruction "{line.mnemonic}"')
+        for segment in segments:
+            segment.location = line.location
+        return segments
     except Exception as e:
         if len(e.args) > 0:
             message = str(e.args[0])
