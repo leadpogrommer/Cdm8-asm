@@ -91,7 +91,12 @@ def dc_handler(arguments: list):
             segments.append(BytesSegment(bytearray(arg, 'utf8')))
         elif isinstance(arg, RelocatableExpressionNode):
             if arg.byte_specifier is None:
-                segments.append(AddressExpressionSegment(arg))
+                addedLabels = list(filter(lambda t: isinstance(t, LabelNode), arg.add_terms))
+                subtractedLabels = list(filter(lambda t: isinstance(t, LabelNode), arg.sub_terms))
+                if len(addedLabels) == len(subtractedLabels):
+                    segments.append(ByteExpressionSegment(arg, True, True, False))
+                else:
+                    segments.append(AddressExpressionSegment(arg))
             else:
                 segments.append(ByteExpressionSegment(arg))
     return segments
