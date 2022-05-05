@@ -194,6 +194,9 @@ class ExpandMacrosVisitor(MacroVisitor):
         return MacroDefinition(name, arity, lines, CodeLocation(self.filepath, ctx.macro_body().start.line, 0))
 
     def visitMacro_body(self, ctx: MacroParser.Macro_bodyContext):
+        if ctx.children is None:
+            return []
+
         lines = []
         for child in ctx.children:
             lines.append(self.visitMacroLine(child))
