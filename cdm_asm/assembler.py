@@ -68,6 +68,8 @@ class CodeBlock:
             GotoStatementNode:          self.assemble_goto_statement
         }
         for line in lines:
+            if isinstance(line, LocatableNode):
+                self.code_locations[self.size] = line.location
             ast_node_handlers[type(line)](line)
 
     def assemble_label_declaration(self, line: LabelDeclarationNode):
@@ -85,8 +87,6 @@ class CodeBlock:
                 self.ents.add(label_name)
 
     def assemble_instruction(self, line: InstructionNode):
-        if line.location is not None:
-            self.code_locations[self.size] = line.location
         for seg in assemble_command(line):
             self.segments.append(seg)
             self.size += seg.base_size
@@ -414,6 +414,14 @@ def expand_goto_segments(sects: list[Section], local_labels: dict[str, int],
             if (not -128 <= addr - goto.pos < 128) or not is_rel or ext is not None:
                 shift_length = GotoSegment.expanded_size - GotoSegment.base_size
                 goto.seg.is_expanded = True
+                # print("shif")
+                old_locations = goto.sect.code_locations
+                goto.sect.code_locations = dict()
+                for PC, location in old_locations.items():
+                    if PC > goto.pos:
+                        PC += shift_length
+                    goto.sect.code_locations[PC] = location
+
                 for label_name in goto.sect.labels:
                     if goto.sect.labels[label_name] > goto.pos:
                         goto.sect.labels[label_name] += shift_length

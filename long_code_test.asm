@@ -1,5 +1,6 @@
 asect 0x00
-
+goto true, long_goto_test
+start:
 ldi r0, 0x01
 push r0
 ldi r0, 0x00
@@ -16,7 +17,7 @@ dc "Calculating r0 fib number", 0x0a, 0x00
 done:
 dc "Done, your answer in r0", 0x0a, 0x00
 first_vec:
-dc "You activated first vector", 0x0a, 0x00
+dc "First vector", 0x0a, 0x00
 
 
 
@@ -88,6 +89,11 @@ ldi r0, low(first_vec)
 jsr print
 pop r0
 rti
+
+asect 120
+# this is here to test debug codegen
+long_goto_test:
+goto true, start
 
 
 asect 0xf2fe

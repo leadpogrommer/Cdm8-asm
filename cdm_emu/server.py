@@ -21,6 +21,7 @@ class EmulatorThread(threading.Thread):
         self.daemon = True
         self.running = False
         self.breakpoints: list[int] = []
+        self.line_locations: list[int] = []
 
 
     def run(self) -> None:
@@ -49,15 +50,28 @@ class EmulatorThread(threading.Thread):
                     self.command_run()
             if action == 'breakpoints':
                 self.breakpoints = msg['data']
+            if action == 'line_locations':
+                self.line_locations = msg['data']
 
     def command_run(self):
+        self.run_emu(breakOnLine=False)
+
+    def command_step(self):
+        self.run_emu(breakOnLine=True)
+
+    def run_emu(self, breakOnLine = False):
         self.running = True
         stop_reason = 'pause'
         while self.running:
             self.emu.step()
+
+            if self.emu.PC in self.line_locations and breakOnLine:
+                stop_reason = 'step'
+                break
             if self.emu.PC in self.breakpoints:
                 stop_reason = 'breakpoint'
                 break
+
             if self.emu.HALT:
                 stop_reason = 'halt'
                 break
@@ -65,12 +79,6 @@ class EmulatorThread(threading.Thread):
         self.running = False
         self.send_state()
         self.send_stop(stop_reason)
-
-
-    def command_step(self):
-        self.emu.step()
-        self.send_state()
-        self.send_stop('step')
 
     def send_state(self):
         state = {

@@ -92,8 +92,11 @@ class ExpandMacrosVisitor(MacroVisitor):
         self.rewriter = rewriter
         self.filepath = filepath
 
-    def _generate_location_line(self, filepath: str, line: int) -> str:
-        return f'-| {line} fp-{b64encode(filepath.encode()).decode()}\n'
+    def _generate_location_line(self, filepath: str, line: int, info: str = None) -> str:
+        if info is not None:
+            info = " " + info
+        else:info = ""
+        return f'-| {line} fp-{b64encode(filepath.encode()).decode()} {info}\n'
 
     def add_macro(self, macro: MacroDefinition):
         if macro.name not in self.macros:
@@ -171,7 +174,10 @@ class ExpandMacrosVisitor(MacroVisitor):
                     if expanded_text is not None:
                         if label != '':
                             expanded_text = f'{label}\n{expanded_text}'
-                        expanded_text = f'{expanded_text}\n{self._generate_location_line(self.filepath, child.stop.line+1)}'
+
+                        mstart = self._generate_location_line(self.filepath, child.start.line, "mstart")
+                        mstop = self._generate_location_line(self.filepath, child.stop.line+1, "mstop")
+                        expanded_text = f'{mstart}{expanded_text}{mstop}'
                         self.rewriter.insertBeforeToken(child.start, expanded_text)
                         self.rewriter.delete(self.rewriter.DEFAULT_PROGRAM_NAME, child.start, child.stop)
             except CdmTempException as e:

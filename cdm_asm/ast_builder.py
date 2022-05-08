@@ -14,7 +14,14 @@ class BuildAstVisitor(AsmParserVisitor):
         # self.line_offset = 0
         self.source_path = filepath
         self.line_offset = 0
+        self.in_macro = False
+        self.current_macro_file = ""
+        self.current_macro_line = 0
 
+    def _ctx_location(self, ctx) -> CodeLocation:
+        if self.in_macro:
+            return CodeLocation(self.current_macro_file, self.current_macro_line)
+        return CodeLocation(self.source_path, ctx.start.line - self.line_offset)
 
     def visitProgram(self, ctx:AsmParser.ProgramContext) -> ProgramNode:
         ret = ProgramNode([], [], [])
@@ -53,6 +60,16 @@ class BuildAstVisitor(AsmParserVisitor):
         filepath = b64decode(ctx.filepath().getText()[3:]).decode()
         self.source_path = filepath
         self.line_offset = ctx.start.line - value + 1
+
+        info = ctx.WORD()
+        if info is not None:
+            info = info.getText()
+            if info == 'mstart':
+                self.current_macro_line = value
+                self.current_macro_file = self.source_path
+                self.in_macro = True
+            elif info == 'mstop':
+                self.in_macro = False
 
 
     def visitNumber(self, ctx:AsmParser.NumberContext) -> int:
@@ -129,28 +146,33 @@ class BuildAstVisitor(AsmParserVisitor):
         locations = []
         ret = []
         for c in ctx.children:
+            nodes = []
             if isinstance(c, AsmParser.StandaloneLabelContext):
-                ret.append(self.visitStandaloneLabel(c))
+                nodes.append(self.visitStandaloneLabel(c))
             elif isinstance(c, AsmParser.InstructionLineContext):
-                ret += self.visitInstructionLine(c)
+                nodes += self.visitInstructionLine(c)
             elif isinstance(c, AsmParser.ConditionalContext):
-                ret.append(self.visitConditional(c))
+                nodes.append(self.visitConditional(c))
             elif isinstance(c, AsmParser.While_loopContext):
-                ret.append(self.visitWhile_loop(c))
+                nodes.append(self.visitWhile_loop(c))
             elif isinstance(c, AsmParser.Until_loopContext):
-                ret.append(self.visitUntil_loop(c))
+                nodes.append(self.visitUntil_loop(c))
             elif isinstance(c, AsmParser.Save_restore_statementContext):
-                ret.append(self.visitSave_restore_statement(c))
+                nodes.append(self.visitSave_restore_statement(c))
             elif isinstance(c, AsmParser.Break_statementContext):
-                ret.append(BreakStatementNode())
+                nodes.append(BreakStatementNode())
             elif isinstance(c, AsmParser.Continue_statementContext):
-                ret.append(ContinueStatementNode())
+                nodes.append(ContinueStatementNode())
             elif isinstance(c, AsmParser.Goto_statementContext):
-                ret.append(self.visitGoto_statement(c))
+                nodes.append(self.visitGoto_statement(c))
             elif isinstance(c, AsmParser.Line_markContext):
                 self.visit(c)
+            for node in nodes:
+                if isinstance(node, LocatableNode):
+                    node.location = self._ctx_location(c)
+            ret += nodes
             while len(locations) < len(ret):
-                locations.append(CodeLocation(self.source_path, c.start.line - self.line_offset))
+                locations.append(self._ctx_location(c))
         if return_locations:
             return ret, locations
         else:
@@ -210,7 +232,7 @@ class BuildAstVisitor(AsmParserVisitor):
             ret.append(self.visitLabel_declaration(ctx.label_declaration()))
         op = ctx.instruction().getText()
         args = self.visitArguments(ctx.arguments()) if ctx.arguments() is not None else []
-        ret.append(InstructionNode(op, args, CodeLocation(self.source_path, ctx.start.line - self.line_offset, ctx.start.column)))
+        ret.append(InstructionNode(op, args))
         return ret
 
     def visitArguments(self, ctx:AsmParser.ArgumentsContext):

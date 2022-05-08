@@ -630,7 +630,7 @@ def EP(s, term=True):
 
 
 def main():
-    import cdm_emu.server
+    import cdm_emu.server as server
     parser = argparse.ArgumentParser(description='CdM-8 Emulator v1.0')
     parser.add_argument('filename', type=str, const=None, default="", help='memory_image_file[.img]')
     parser.add_argument('--serve', action='store_true', help='Serve as debug server on random port')

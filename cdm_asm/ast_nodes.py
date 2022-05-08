@@ -9,29 +9,34 @@ class RegisterNode:
 class LabelNode:
     name: str
 
+
 @dataclass
-class TemplateFieldNode:
+class LocatableNode:
+    def __post_init__(self):
+        self.location: CodeLocation = CodeLocation()
+
+@dataclass
+class TemplateFieldNode(LocatableNode):
     template_name: str
     field_name: str
 
 @dataclass
-class RelocatableExpressionNode:
+class RelocatableExpressionNode(LocatableNode):
     byte_specifier: str | None
     add_terms: list
     sub_terms: list
     const_term: int
 
 @dataclass
-class LabelDeclarationNode:
+class LabelDeclarationNode(LocatableNode):
     label: LabelNode
     entry: bool
     external: bool
 
 @dataclass
-class InstructionNode:
+class InstructionNode(LocatableNode):
     mnemonic: str
     arguments: list
-    location: CodeLocation
 
 @dataclass
 class ConditionNode:
@@ -57,11 +62,11 @@ class UntilLoopNode:
     branch_mnemonic: str
 
 @dataclass
-class BreakStatementNode:
+class BreakStatementNode(LocatableNode):
     pass
 
 @dataclass
-class ContinueStatementNode:
+class ContinueStatementNode(LocatableNode):
     pass
 
 @dataclass
@@ -71,7 +76,7 @@ class SaveRestoreStatementNode:
     restored_register: RegisterNode
 
 @dataclass
-class GotoStatementNode:
+class GotoStatementNode(LocatableNode):
     branch_mnemonic: str
     expr: RelocatableExpressionNode
 

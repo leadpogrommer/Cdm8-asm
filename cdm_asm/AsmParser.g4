@@ -42,7 +42,7 @@ code_block
 line_mark locals [
 source_file = '',
 source_line = 0
-] : LINE_MARK_MARKER  line_number filepath  NEWLINE+ {
+] : LINE_MARK_MARKER  line_number filepath  WORD? NEWLINE+ {
     self.current_line = int($line_number.text)
     self.current_file =  b64decode($filepath.text[3:]).decode()
     $source_file = self.current_file
