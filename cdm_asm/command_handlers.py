@@ -1,10 +1,10 @@
 from cdm_asm.asm_commands import instructions as insset, assembly_directives as dirset
 from cdm_asm.ast_nodes import *
 from cdm_asm.code_segments import *
-from typing import Union, get_origin, get_args
+from typing import get_origin, get_args
 import bitstruct
 
-from cdm_asm.error import CdmException, CdmExceptionTag
+from cdm_asm.error import CdmException, CdmExceptionTag, CdmTempException
 
 def assert_args(args, *types, single_type=False):
     ts = [(t if get_origin(t) is None else get_args(t)) for t in types]
@@ -13,11 +13,11 @@ def assert_args(args, *types, single_type=False):
             raise TypeError('Exactly one type must be specified when single_type is True')
         ts = ts * len(args)
     elif len(args) != len(ts):
-        raise Exception(f'Expected {len(ts)} arguments, but found {len(args)}')
+        raise CdmTempException(f'Expected {len(ts)} arguments, but found {len(args)}')
 
     for i in range(len(args)):
         if not isinstance(args[i], ts[i]):
-            raise Exception(f'Incompatible argument type {type(args[i])}')
+            raise CdmTempException(f'Incompatible argument type {type(args[i])}')
 
 
 def binary_handler(opcode: int, arguments: list):
@@ -38,20 +38,20 @@ def branch_handler(opcode: int, arguments: list):
     assert_args(arguments, RelocatableExpressionNode)
     arg = arguments[0]
 
-    return [BytesSegment(bytearray([opcode])), ByteExpressionSegment(arg, signed=True)]
+    return [BytesSegment(bytearray([opcode])), OffsetExpressionSegment(arg)]
 
 def long_handler(opcode: int, arguments: list):
     assert_args(arguments, RelocatableExpressionNode)
     arg = arguments[0]
 
-    return [BytesSegment(bytearray([opcode])), AddressExpressionSegment(arg)]
+    return [BytesSegment(bytearray([opcode])), LongExpressionSegment(arg)]
 
 def ldsa_handler(opcode: int, arguments: list):
     assert_args(arguments, RegisterNode, RelocatableExpressionNode)
     reg, arg = arguments
     cmd_piece = unary_handler(opcode, [reg])[0]
 
-    return [BytesSegment(cmd_piece.data), ByteExpressionSegment(arg)]
+    return [BytesSegment(cmd_piece.data), ShortExpressionSegment(arg)]
 
 def ldi_handler(opcode: int, arguments: list):
     assert_args(arguments, RegisterNode, RelocatableExpressionNode | str)
@@ -61,29 +61,29 @@ def ldi_handler(opcode: int, arguments: list):
     if isinstance(arg, str):
         arg_data = bytearray(arg, 'utf8')
         if len(arg_data) != 1:
-            raise Exception('Argument must be a string of length 1')
+            raise CdmTempException('Argument must be a string of length 1')
         cmd_piece.data.extend(arg_data)
         return [BytesSegment(cmd_piece.data)]
     elif isinstance(arg, RelocatableExpressionNode):
-        return [BytesSegment(cmd_piece.data), ByteExpressionSegment(arg)]
+        return [BytesSegment(cmd_piece.data), ShortExpressionSegment(arg)]
 
 def osix_handler(opcode: int, arguments: list):
     assert_args(arguments, RelocatableExpressionNode)
     arg = arguments[0]
 
-    return [BytesSegment(bytearray([opcode])), ByteExpressionSegment(arg, positive=True)]
+    return [BytesSegment(bytearray([opcode])), ConstExpressionSegment(arg, positive=True)]
 
 def spmove_handler(opcode: int, arguments: list):
     assert_args(arguments, RelocatableExpressionNode)
     arg = arguments[0]
 
-    return [BytesSegment(bytearray([opcode])), ByteExpressionSegment(arg)]
+    return [BytesSegment(bytearray([opcode])), ConstExpressionSegment(arg)]
 
 
 def dc_handler(arguments: list):
     assert_args(arguments, RelocatableExpressionNode | str, single_type=True)
     if len(arguments) == 0:
-        raise Exception('At least one argument must be provided')
+        raise CdmTempException('At least one argument must be provided')
 
     segments = []
     for arg in arguments:
@@ -94,21 +94,21 @@ def dc_handler(arguments: list):
                 addedLabels = list(filter(lambda t: isinstance(t, LabelNode), arg.add_terms))
                 subtractedLabels = list(filter(lambda t: isinstance(t, LabelNode), arg.sub_terms))
                 if len(addedLabels) == len(subtractedLabels):
-                    segments.append(ByteExpressionSegment(arg, True, True, False))
+                    segments.append(ShortExpressionSegment(arg))
                 else:
-                    segments.append(AddressExpressionSegment(arg))
+                    segments.append(LongExpressionSegment(arg))
             else:
-                segments.append(ByteExpressionSegment(arg))
+                segments.append(ShortExpressionSegment(arg))
     return segments
 
 def ds_handler(arguments: list):
     assert_args(arguments, RelocatableExpressionNode)
     arg = arguments[0]
 
-    if len(arg.add_terms) != 0 or len(arg.sub_terms) != 0 or arg.byte_specifier is not None:
-        raise Exception('Number expected')
+    if len(arg.add_terms) != 0 or len(arg.sub_terms) != 0:
+        raise CdmTempException('Number expected')
     if arg.const_term < 0:
-        raise Exception('Cannot specify negative size in "ds"')
+        raise CdmTempException('Cannot specify negative size in "ds"')
     return [BytesSegment(bytearray(arg.const_term))]
 
 
@@ -146,13 +146,9 @@ def assemble_command(line: InstructionNode) -> list[CodeSegment]:
             opcode, handler = cpu_instructions[line.mnemonic]
             segments = handler(opcode, line.arguments)
         else:
-            raise Exception(f'Unknown instruction "{line.mnemonic}"')
+            raise CdmTempException(f'Unknown instruction "{line.mnemonic}"')
         for segment in segments:
             segment.location = line.location
         return segments
-    except Exception as e:
-        if len(e.args) > 0:
-            message = str(e.args[0])
-        else:
-            message = 'Unknown error'
-        raise CdmException(CdmExceptionTag.ASM, line.location.file, line.location.line, message)
+    except CdmTempException as e:
+        raise CdmException(CdmExceptionTag.ASM, line.location.file, line.location.line, e.message)
