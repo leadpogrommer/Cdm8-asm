@@ -258,3 +258,7 @@ gen
 *.obj
 *.img
 *.dbg.json
+
+docs
+*.tokens
+notes.txt

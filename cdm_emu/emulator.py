@@ -25,6 +25,11 @@ import random
 random.seed()
 import sys
 
+# костыль
+# TODO: remove this
+class _Args_:
+    v3 = False
+args = _Args_()
 
 def hx(n):
     return format((n + 256) % 256, "02x").upper()

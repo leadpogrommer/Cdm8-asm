@@ -27,7 +27,7 @@ asect 0x0100
 ldi r0, low(calculating)
 jsr print
 
-ldi r0, 9
+ldi r0, 8
 jsr fib
 
 push r0

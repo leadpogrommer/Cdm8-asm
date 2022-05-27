@@ -59,10 +59,10 @@ pushall: SPstep;					# prepare to push
 		 SP2b0, asrtD, mem, SPstep, data;	# r1
 		 SP2b0, asrtD, mem, data			# r0
 
-popall:	SP2b0, asrtD, mem, data, mem_ld, latch, SPstep, up_down;	# r0
- 		SP2b0, asrtD, mem, data, mem_ld, latch, SPstep, up_down;	# r1
- 		SP2b0, asrtD, mem, data, mem_ld, latch, SPstep, up_down;	# r2
- 		SP2b0, asrtD, mem, data, mem_ld, latch, SPstep, up_down	# r3
+popall:	SP2b0, mem, data, mem_ld, latch, SPstep, up_down;	# r0
+ 		SP2b0, mem, data, mem_ld, latch, SPstep, up_down;	# r1
+ 		SP2b0, mem, data, mem_ld, latch, SPstep, up_down;	# r2
+ 		SP2b0, mem, data, mem_ld, latch, SPstep, up_down	# r3
 
 # control
 jsr: 	PC2b0, mem, mem_ld, latchRX, PCinc;					#load low byte of target into rx
