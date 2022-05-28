@@ -408,6 +408,7 @@ pushall
 
     # now we must get rid of signs
     # and save result's sign bit
+
     xor r3, r3
     ldsa r0, div16.n
     jsr abs16
@@ -722,7 +723,5 @@ digit: ds 2
 num: ds 2
 return_addr: ds 1
 
-
-
-
 end
+# WYSI
