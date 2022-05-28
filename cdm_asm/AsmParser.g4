@@ -2,7 +2,7 @@ parser grammar AsmParser;
 
 options { tokenVocab=AsmLexer; }
 
-@header{
+@header {
 from base64 import b64decode
 }
 
@@ -12,7 +12,7 @@ from base64 import b64decode
     self.current_offset = 0
 }
 
-program : line_mark NEWLINE* section* End ;
+program : NEWLINE* line_mark+ section* End ;
 
 section
     :  asect_header section_body # absoluteSection

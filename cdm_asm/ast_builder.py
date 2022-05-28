@@ -141,7 +141,10 @@ class BuildAstVisitor(AsmParserVisitor):
 
     def visitCode_block(self, ctx: AsmParser.Code_blockContext, return_locations=False):
         if ctx.children is None:
-            return []
+            if return_locations:
+                return [], []
+            else:
+                return []
 
         locations = []
         ret = []
