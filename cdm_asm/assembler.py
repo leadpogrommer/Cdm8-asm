@@ -7,6 +7,12 @@ from cdm_asm.error import CdmException, CdmExceptionTag
 
 TAG = CdmExceptionTag.ASM
 
+def _nonce():
+    if not hasattr(_nonce, 'n'):
+        _nonce.n = 0
+    _nonce.n += 1
+    return _nonce.n
+
 def _error(segment: CodeSegment, message: str):
     raise CdmException(TAG, segment.location.file, segment.location.line, message)
 
@@ -95,7 +101,7 @@ class CodeBlock:
             self.size += seg.base_size
 
     def assemble_conditional_statement(self, line: ConditionalStatementNode):
-        nonce = self.address + self.size
+        nonce = _nonce()
         or_label = f'${nonce}_or'
         then_label = f'${nonce}_then'
         else_label = f'${nonce}_else'
@@ -119,14 +125,16 @@ class CodeBlock:
 
         if len(line.else_lines) > 0:
             self.append_goto('anything', finally_label)
+            self.append_label(next_or_label)
             self.append_label(else_label)
             self.assemble_lines(line.else_lines)
             self.append_label(finally_label)
         else:
+            self.append_label(next_or_label)
             self.append_label(else_label)
 
     def assemble_while_loop(self, line: WhileLoopNode):
-        nonce = self.address + self.size
+        nonce = _nonce()
         cond_label = f'${nonce}_cond'
         finally_label = f'${nonce}_finally'
 
@@ -140,7 +148,7 @@ class CodeBlock:
         self.loop_stack.pop()
 
     def assemble_until_loop(self, line: UntilLoopNode):
-        nonce = self.address + self.size
+        nonce = _nonce()
         loop_body_label = f'${nonce}_loop_body'
         cond_label = f'${nonce}_cond'
         finally_label = f'${nonce}_finally'
@@ -155,8 +163,8 @@ class CodeBlock:
 
     def assemble_save_restore_statement(self, line: SaveRestoreStatementNode):
         rn = line.saved_register.number
-        push = InstructionNode('push', [RegisterNode(rn)], None)
-        pop  = InstructionNode('pop',  [RegisterNode(rn)], None)
+        push = InstructionNode('push', [RegisterNode(rn)])
+        pop  = InstructionNode('pop',  [RegisterNode(rn)])
         self.assemble_instruction(push)
         self.assemble_lines(line.lines)
         self.assemble_instruction(pop)
@@ -258,10 +266,11 @@ class ObjectSectionRecord:
                        local_labels: dict[str, int], template_fields: dict[str, dict[str, int]]):
         val, val_long, val_sect, ext = eval_rel_expr_seg(seg, s, local_labels, template_fields)
 
+        is_rel = (val_sect == s.name != '$abs')
         if not -2**15 <= val < 2**16:
             _error(seg, 'Number out of range')
 
-        self.add_rel_record(val_sect, s, val_long, seg)
+        self.add_rel_record(is_rel, s, val_long, seg)
         self.add_ext_record(ext, s, val_long, seg)
         self.data.extend(val.to_bytes(seg.base_size, 'little', signed=(val<0)))
 
@@ -316,7 +325,7 @@ class ObjectModule:
 def gather_local_labels(sects: list[Section]):
     local_labels = dict()
     for sect in sects:
-        local_labels |= dict(filter(lambda p: not p[0].startswith('$'), sect.labels.items()))
+        local_labels |= sect.labels.items()
     return local_labels
 
 def eval_rel_expr_seg(seg: ShortExpressionSegment, s: Section,

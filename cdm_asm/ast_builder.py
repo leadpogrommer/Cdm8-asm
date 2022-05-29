@@ -11,9 +11,7 @@ class BuildAstVisitor(AsmParserVisitor):
     def __init__(self, filepath: str):
         super().__init__()
         self.line_offset = 0
-        # self.line_offset = 0
         self.source_path = filepath
-        self.line_offset = 0
         self.in_macro = False
         self.current_macro_file = ""
         self.current_macro_line = 0
@@ -150,24 +148,12 @@ class BuildAstVisitor(AsmParserVisitor):
         ret = []
         for c in ctx.children:
             nodes = []
-            if isinstance(c, AsmParser.StandaloneLabelContext):
-                nodes.append(self.visitStandaloneLabel(c))
-            elif isinstance(c, AsmParser.InstructionLineContext):
-                nodes += self.visitInstructionLine(c)
-            elif isinstance(c, AsmParser.ConditionalContext):
-                nodes.append(self.visitConditional(c))
-            elif isinstance(c, AsmParser.While_loopContext):
-                nodes.append(self.visitWhile_loop(c))
-            elif isinstance(c, AsmParser.Until_loopContext):
-                nodes.append(self.visitUntil_loop(c))
-            elif isinstance(c, AsmParser.Save_restore_statementContext):
-                nodes.append(self.visitSave_restore_statement(c))
-            elif isinstance(c, AsmParser.Break_statementContext):
-                nodes.append(BreakStatementNode())
-            elif isinstance(c, AsmParser.Continue_statementContext):
-                nodes.append(ContinueStatementNode())
-            elif isinstance(c, AsmParser.Goto_statementContext):
-                nodes.append(self.visitGoto_statement(c))
+            if isinstance(c, AsmParser.StatementContext):
+                nodes.append(self.visitStatement(c))
+            elif isinstance(c, AsmParser.Line_labelContext):
+                nodes.append(self.visitLine_label(c))
+            elif isinstance(c, AsmParser.Standalone_labelContext):
+                nodes.append(self.visitStandalone_label(c))
             elif isinstance(c, AsmParser.Line_markContext):
                 self.visit(c)
             for node in nodes:
@@ -180,6 +166,25 @@ class BuildAstVisitor(AsmParserVisitor):
             return ret, locations
         else:
             return ret
+
+    def visitStatement(self, ctx: AsmParser.StatementContext):
+        c = ctx.getChild(0)
+        if isinstance(c, AsmParser.Instruction_lineContext):
+            return self.visitInstruction_line(c)
+        elif isinstance(c, AsmParser.ConditionalContext):
+            return self.visitConditional(c)
+        elif isinstance(c, AsmParser.While_loopContext):
+            return self.visitWhile_loop(c)
+        elif isinstance(c, AsmParser.Until_loopContext):
+            return self.visitUntil_loop(c)
+        elif isinstance(c, AsmParser.Save_restore_statementContext):
+            return self.visitSave_restore_statement(c)
+        elif isinstance(c, AsmParser.Break_statementContext):
+            return BreakStatementNode()
+        elif isinstance(c, AsmParser.Continue_statementContext):
+            return ContinueStatementNode()
+        elif isinstance(c, AsmParser.Goto_statementContext):
+            return self.visitGoto_statement(c)
 
     def visitByte_expr(self, ctx: AsmParser.Byte_exprContext):
         expr = self.visitAddr_expr(ctx.addr_expr())
@@ -204,16 +209,17 @@ class BuildAstVisitor(AsmParserVisitor):
                     add_terms.append(term)
         return RelocatableExpressionNode(None, add_terms, sub_terms, const_term)
 
-    def visitStandaloneLabel(self, ctx:AsmParser.StandaloneLabelContext) -> LabelNode:
-        label_decl = self.visitLabel_declaration(ctx.label_declaration())
+    def visitLine_label(self, ctx:AsmParser.Line_labelContext|AsmParser.Standalone_labelContext) -> LabelDeclarationNode:
+        entry = ctx.ANGLE_BRACKET() is not None
+        label = self.visitLabel(ctx.label())
+        return LabelDeclarationNode(label, entry, False)
+
+    def visitStandalone_label(self, ctx:AsmParser.Standalone_labelContext) -> LabelDeclarationNode:
+        label_decl = self.visitLine_label(ctx)
         label_decl.external = ctx.Ext() is not None
         if label_decl.entry and label_decl.external:
             raise CdmException(CdmExceptionTag.ASM, self.source_path, ctx.start.line - self.line_offset, f'Label {label_decl.label.name} cannot be both external and entry')
         return label_decl
-
-    def visitLabel_declaration(self, ctx: AsmParser.Label_declarationContext) -> LabelDeclarationNode:
-        is_entry = ctx.ANGLE_BRACKET() is not None
-        return LabelDeclarationNode(self.visitLabel(ctx.label()), is_entry, False)
 
     def visitLabel(self, ctx:AsmParser.LabelContext) -> LabelNode:
         return LabelNode(ctx.getText())
@@ -229,14 +235,10 @@ class BuildAstVisitor(AsmParserVisitor):
         field_name = ctx.name()[1].getText()
         return TemplateFieldNode(template_name, field_name)
 
-    def visitInstructionLine(self, ctx:AsmParser.InstructionLineContext) -> list:
-        ret = []
-        if ctx.label_declaration() is not None:
-            ret.append(self.visitLabel_declaration(ctx.label_declaration()))
+    def visitInstruction_line(self, ctx:AsmParser.Instruction_lineContext) -> list:
         op = ctx.instruction().getText()
         args = self.visitArguments(ctx.arguments()) if ctx.arguments() is not None else []
-        ret.append(InstructionNode(op, args))
-        return ret
+        return InstructionNode(op, args)
 
     def visitArguments(self, ctx:AsmParser.ArgumentsContext):
         return [self.visitArgument(i) for i in ctx.children if isinstance(i, AsmParser.ArgumentContext)]

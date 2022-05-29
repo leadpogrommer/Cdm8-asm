@@ -1,4 +1,4 @@
-# Generated from /home/ilya/work/cdm8e/ORiGinalASM/cdm_asm/AsmParser.g4 by ANTLR 4.10.1
+# Generated from AsmParser.g4 by ANTLR 4.10.1
 from antlr4 import *
 if __name__ is not None and "." in __name__:
     from .AsmParser import AsmParser
@@ -92,6 +92,33 @@ class AsmParserListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by AsmParser#standalone_label.
+    def enterStandalone_label(self, ctx:AsmParser.Standalone_labelContext):
+        pass
+
+    # Exit a parse tree produced by AsmParser#standalone_label.
+    def exitStandalone_label(self, ctx:AsmParser.Standalone_labelContext):
+        pass
+
+
+    # Enter a parse tree produced by AsmParser#line_label.
+    def enterLine_label(self, ctx:AsmParser.Line_labelContext):
+        pass
+
+    # Exit a parse tree produced by AsmParser#line_label.
+    def exitLine_label(self, ctx:AsmParser.Line_labelContext):
+        pass
+
+
+    # Enter a parse tree produced by AsmParser#statement.
+    def enterStatement(self, ctx:AsmParser.StatementContext):
+        pass
+
+    # Exit a parse tree produced by AsmParser#statement.
+    def exitStatement(self, ctx:AsmParser.StatementContext):
+        pass
+
+
     # Enter a parse tree produced by AsmParser#line_mark.
     def enterLine_mark(self, ctx:AsmParser.Line_markContext):
         pass
@@ -137,21 +164,12 @@ class AsmParserListener(ParseTreeListener):
         pass
 
 
-    # Enter a parse tree produced by AsmParser#standaloneLabel.
-    def enterStandaloneLabel(self, ctx:AsmParser.StandaloneLabelContext):
+    # Enter a parse tree produced by AsmParser#instruction_line.
+    def enterInstruction_line(self, ctx:AsmParser.Instruction_lineContext):
         pass
 
-    # Exit a parse tree produced by AsmParser#standaloneLabel.
-    def exitStandaloneLabel(self, ctx:AsmParser.StandaloneLabelContext):
-        pass
-
-
-    # Enter a parse tree produced by AsmParser#instructionLine.
-    def enterInstructionLine(self, ctx:AsmParser.InstructionLineContext):
-        pass
-
-    # Exit a parse tree produced by AsmParser#instructionLine.
-    def exitInstructionLine(self, ctx:AsmParser.InstructionLineContext):
+    # Exit a parse tree produced by AsmParser#instruction_line.
+    def exitInstruction_line(self, ctx:AsmParser.Instruction_lineContext):
         pass
 
 

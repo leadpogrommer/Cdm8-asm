@@ -25,18 +25,18 @@ rsect_header  :  Rsect name   NEWLINE+ ;
 tplate_header : Tplate name   NEWLINE+ ;
 
 section_body : code_block ;
-code_block
-    :
-    ( break_statement
+code_block : (standalone_label | line_label? statement | line_mark)* ;
+standalone_label : label COLON Ext? NEWLINE+ | label ANGLE_BRACKET NEWLINE+ ;
+line_label: label (COLON | ANGLE_BRACKET) ;
+statement
+    : break_statement
     | continue_statement
-    | line
+    | instruction_line
     | conditional
     | while_loop
     | until_loop
     | save_restore_statement
     | goto_statement
-    | line_mark
-    )*
     ;
 
 line_mark locals [
@@ -56,10 +56,7 @@ filepath: BASE64;
 break_statement : Break NEWLINE+ ;
 continue_statement : Continue NEWLINE+ ;
 
-line
-    : label_declaration Ext? NEWLINE+                    # standaloneLabel
-    | label_declaration? instruction arguments? NEWLINE+ # instructionLine
-    ;
+instruction_line : instruction arguments? NEWLINE+ ;
 
 label_declaration: label (COLON | ANGLE_BRACKET) ;
 arguments : argument (COMMA argument)* ;

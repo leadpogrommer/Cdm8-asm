@@ -1,4 +1,4 @@
-# Generated from /home/ilya/work/cdm8e/ORiGinalASM/cdm_asm/AsmParser.g4 by ANTLR 4.10.1
+# Generated from AsmParser.g4 by ANTLR 4.10.1
 from antlr4 import *
 if __name__ is not None and "." in __name__:
     from .AsmParser import AsmParser
@@ -57,6 +57,21 @@ class AsmParserVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by AsmParser#standalone_label.
+    def visitStandalone_label(self, ctx:AsmParser.Standalone_labelContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AsmParser#line_label.
+    def visitLine_label(self, ctx:AsmParser.Line_labelContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AsmParser#statement.
+    def visitStatement(self, ctx:AsmParser.StatementContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by AsmParser#line_mark.
     def visitLine_mark(self, ctx:AsmParser.Line_markContext):
         return self.visitChildren(ctx)
@@ -82,13 +97,8 @@ class AsmParserVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
-    # Visit a parse tree produced by AsmParser#standaloneLabel.
-    def visitStandaloneLabel(self, ctx:AsmParser.StandaloneLabelContext):
-        return self.visitChildren(ctx)
-
-
-    # Visit a parse tree produced by AsmParser#instructionLine.
-    def visitInstructionLine(self, ctx:AsmParser.InstructionLineContext):
+    # Visit a parse tree produced by AsmParser#instruction_line.
+    def visitInstruction_line(self, ctx:AsmParser.Instruction_lineContext):
         return self.visitChildren(ctx)
 
 
