@@ -54,7 +54,7 @@ class CodeBlock:
     def append_label(self, label_name):
         self.labels[label_name] = self.address + self.size
 
-    def append_goto(self, mnemonic, label_name):
+    def append_goto(self, mnemonic, label_name, location=CodeLocation()):
         self.segments.append(GotoSegment(mnemonic, RelocatableExpressionNode(None, [LabelNode(label_name)], [], 0)))
         self.size += GotoSegment.base_size
 
@@ -175,6 +175,7 @@ class CodeBlock:
 
     def assemble_goto_statement(self, line: GotoStatementNode):
         self.segments.append(GotoSegment(line.branch_mnemonic, line.expr))
+        self.segments[-1].location = line.location
         self.size += GotoSegment.base_size
 
 @dataclass
@@ -372,6 +373,7 @@ def expand_goto_segments(sects: list[Section], local_labels: dict[str, int],
         seg: GotoSegment
         sect: Section
         pos: int
+        location: CodeLocation
 
     gotos: list[GotoSegmentEntry] = []
     labels = gather_local_labels(sects)
@@ -381,39 +383,42 @@ def expand_goto_segments(sects: list[Section], local_labels: dict[str, int],
         pos = sect.address
         for seg in sect.segments:
             if isinstance(seg, GotoSegment):
-                gotos.append(GotoSegmentEntry(seg, sect, pos + 1))
+                gotos.append(GotoSegmentEntry(seg, sect, pos + 1, seg.location))
             pos += seg.base_size
 
     while True:
         for goto in gotos:
-            if goto.seg.is_expanded:
-                continue
+            try:
+                if goto.seg.is_expanded:
+                    continue
 
-            addr, _, res_sect, ext = eval_rel_expr_seg(goto.seg, goto.sect, labels, template_fields)
-            is_rel = (res_sect == goto.sect.name != '$abs')
-            if (not -2**7 <= addr - goto.pos < 2**7
-                or (goto.sect.name != '$abs' and not is_rel)
-                or (goto.seg.expr.byte_specifier is not None and is_rel)
-                or (ext is not None)):
+                addr, _, res_sect, ext = eval_rel_expr_seg(goto.seg, goto.sect, labels, template_fields)
+                is_rel = (res_sect == goto.sect.name != '$abs')
+                if (not -2**7 <= addr - goto.pos < 2**7
+                    or (goto.sect.name != '$abs' and not is_rel)
+                    or (goto.seg.expr.byte_specifier is not None and is_rel)
+                    or (ext is not None)):
 
-                shift_length = GotoSegment.expanded_size - GotoSegment.base_size
-                goto.seg.is_expanded = True
-                # print("shif")
-                old_locations = goto.sect.code_locations
-                goto.sect.code_locations = dict()
-                for PC, location in old_locations.items():
-                    if PC > goto.pos:
-                        PC += shift_length
-                    goto.sect.code_locations[PC] = location
+                    shift_length = GotoSegment.expanded_size - GotoSegment.base_size
+                    goto.seg.is_expanded = True
+                    # print("shif")
+                    old_locations = goto.sect.code_locations
+                    goto.sect.code_locations = dict()
+                    for PC, location in old_locations.items():
+                        if PC > goto.pos:
+                            PC += shift_length
+                        goto.sect.code_locations[PC] = location
 
-                for label_name in goto.sect.labels:
-                    if goto.sect.labels[label_name] > goto.pos:
-                        goto.sect.labels[label_name] += shift_length
-                        labels[label_name] += shift_length
-                for other_goto in gotos:
-                    if other_goto.sect is goto.sect and other_goto.pos > goto.pos:
-                        other_goto.pos += shift_length
-                break
+                    for label_name in goto.sect.labels:
+                        if goto.sect.labels[label_name] > goto.pos:
+                            goto.sect.labels[label_name] += shift_length
+                            labels[label_name] += shift_length
+                    for other_goto in gotos:
+                        if other_goto.sect is goto.sect and other_goto.pos > goto.pos:
+                            other_goto.pos += shift_length
+                    break
+            except Exception as e:
+                raise CdmException(TAG, goto.location.file, goto.location.line, str(e))
         else:
             break
 
