@@ -171,6 +171,10 @@ class BuildAstVisitor(AsmParserVisitor):
         c = ctx.getChild(0)
         if isinstance(c, AsmParser.Instruction_lineContext):
             return self.visitInstruction_line(c)
+        elif isinstance(c, AsmParser.Define_constantContext):
+            return self.visitDefine_constant(c)
+        elif isinstance(c, AsmParser.Declare_spaceContext):
+            return self.visitDeclare_space(c)
         elif isinstance(c, AsmParser.ConditionalContext):
             return self.visitConditional(c)
         elif isinstance(c, AsmParser.While_loopContext):
@@ -242,6 +246,15 @@ class BuildAstVisitor(AsmParserVisitor):
 
     def visitArguments(self, ctx:AsmParser.ArgumentsContext):
         return [self.visitArgument(i) for i in ctx.children if isinstance(i, AsmParser.ArgumentContext)]
+
+    def visitDefine_constant(self, ctx: AsmParser.Define_constantContext):
+        return DefineConstantNode(self.visitDc_arguments(ctx.dc_arguments()))
+
+    def visitDc_arguments(self, ctx: AsmParser.Dc_argumentsContext):
+        return [self.visitDc_argument(i) for i in ctx.children if isinstance(i, AsmParser.Dc_argumentContext)]
+
+    def visitDeclare_space(self, ctx: AsmParser.Declare_spaceContext):
+        return DeclareSpaceNode(self.visitNumber(ctx.number()))
 
 def build_ast(input_stream: InputStream, filepath: str):
     lexer = AsmLexer(input_stream)

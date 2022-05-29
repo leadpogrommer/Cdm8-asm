@@ -1,4 +1,4 @@
-from cdm_asm.asm_commands import instructions as insset, assembly_directives as dirset
+from cdm_asm.asm_commands import instructions as insset
 from cdm_asm.ast_nodes import *
 from cdm_asm.code_segments import *
 from cdm_asm.command_handlers import assemble_command
@@ -36,11 +36,22 @@ class Template:
                 else:
                     self.labels[label_name] = size
 
-            elif isinstance(line, InstructionNode):
-                if line.mnemonic not in dirset:
-                    raise Exception('Only "dc" and "ds" allowed in templates')
-                for seg in assemble_command(line):
-                    size += seg.base_size
+            elif isinstance(line, DefineConstantNode):
+                for arg in line.arguments:
+                    if isinstance(arg, str):
+                        size += len(bytearray(arg, 'utf8'))
+                    elif isinstance(arg, RelocatableExpressionNode):
+                        size += 1
+                        if arg.byte_specifier is None:
+                            addedLabels = list(filter(lambda t: isinstance(t, LabelNode), arg.add_terms))
+                            subtractedLabels = list(filter(lambda t: isinstance(t, LabelNode), arg.sub_terms))
+                            if len(addedLabels) != len(subtractedLabels):
+                                size += 1
+
+            elif isinstance(line, DeclareSpaceNode):
+                if line.size < 0:
+                    raise Exception('Cannot specify negative size in "ds"')
+                size += line.size
 
         self.labels['_'] = size
 
@@ -57,17 +68,22 @@ class CodeBlock:
         self.code_locations: dict[int, CodeLocation] = dict()
         self.assemble_lines(lines)
 
-    def append_label(self, label_name):
+    def append_segment(self, seg: CodeSegment):
+        self.segments.append(seg)
+        self.size += seg.base_size
+
+    def append_label(self, label_name: str):
         self.labels[label_name] = self.address + self.size
 
-    def append_goto(self, mnemonic, label_name):
-        self.segments.append(GotoSegment(mnemonic, RelocatableExpressionNode(None, [LabelNode(label_name)], [], 0)))
-        self.size += GotoSegment.base_size
+    def append_goto(self, mnemonic: str, label_name: str):
+        self.append_segment(GotoSegment(mnemonic, RelocatableExpressionNode(None, [LabelNode(label_name)], [], 0)))
 
     def assemble_lines(self, lines: list):
         ast_node_handlers = {
             LabelDeclarationNode:       self.assemble_label_declaration,
             InstructionNode:            self.assemble_instruction,
+            DefineConstantNode:         self.assemble_dc,
+            DeclareSpaceNode:           self.assemble_ds,
             ConditionalStatementNode:   self.assemble_conditional_statement,
             WhileLoopNode:              self.assemble_while_loop,
             UntilLoopNode:              self.assemble_until_loop,
@@ -97,8 +113,27 @@ class CodeBlock:
 
     def assemble_instruction(self, line: InstructionNode):
         for seg in assemble_command(line):
-            self.segments.append(seg)
-            self.size += seg.base_size
+            self.append_segment(seg)
+
+    def assemble_dc(self, line: DefineConstantNode):
+        for arg in line.arguments:
+            if isinstance(arg, str):
+                self.append_segment(BytesSegment(bytearray(arg, 'utf8')))
+            elif isinstance(arg, RelocatableExpressionNode):
+                if arg.byte_specifier is None:
+                    addedLabels = list(filter(lambda t: isinstance(t, LabelNode), arg.add_terms))
+                    subtractedLabels = list(filter(lambda t: isinstance(t, LabelNode), arg.sub_terms))
+                    if len(addedLabels) == len(subtractedLabels):
+                        self.append_segment(ShortExpressionSegment(arg))
+                    else:
+                        self.append_segment(LongExpressionSegment(arg))
+                else:
+                    self.append_segment(ShortExpressionSegment(arg))
+
+    def assemble_ds(self, line: DeclareSpaceNode):
+        if line.size < 0:
+            raise Exception('Cannot specify negative size in "ds"')
+        self.append_segment(BytesSegment(bytearray(line.size)))
 
     def assemble_conditional_statement(self, line: ConditionalStatementNode):
         nonce = _nonce()
@@ -182,8 +217,7 @@ class CodeBlock:
         self.append_goto('anything', cond_label)
 
     def assemble_goto_statement(self, line: GotoStatementNode):
-        self.segments.append(GotoSegment(line.branch_mnemonic, line.expr))
-        self.size += GotoSegment.base_size
+        self.append_segment(GotoSegment(line.branch_mnemonic, line.expr))
 
 @dataclass
 class Section(CodeBlock):
@@ -306,7 +340,11 @@ class ObjectSectionRecord:
     def fill_goto(self, seg: GotoSegment, s: Section,
                   local_labels: dict[str, int], template_fields: dict[str, dict[str, int]]):
         if seg.is_expanded:
-            branch_opcode = insset['branch'][f'bn{seg.branch_mnemonic}']
+            if seg.branch_mnemonic.startswith('n'):
+                branch_opcode = insset['branch'][f'b{seg.branch_mnemonic[1:]}']
+            else:
+                branch_opcode = insset['branch'][f'bn{seg.branch_mnemonic}']
+
             jmp_opcode = insset['long']['jmp']
             self.data += bytearray([branch_opcode, 4, jmp_opcode])
             self.fill_long_expr(LongExpressionSegment(seg.expr), s, local_labels, template_fields)

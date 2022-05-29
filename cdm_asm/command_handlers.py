@@ -1,4 +1,4 @@
-from cdm_asm.asm_commands import instructions as insset, assembly_directives as dirset
+from cdm_asm.asm_commands import instructions as insset
 from cdm_asm.ast_nodes import *
 from cdm_asm.code_segments import *
 from typing import get_origin, get_args
@@ -80,38 +80,6 @@ def spmove_handler(opcode: int, arguments: list):
     return [BytesSegment(bytearray([opcode])), ConstExpressionSegment(arg)]
 
 
-def dc_handler(arguments: list):
-    assert_args(arguments, RelocatableExpressionNode | str, single_type=True)
-    if len(arguments) == 0:
-        raise CdmTempException('At least one argument must be provided')
-
-    segments = []
-    for arg in arguments:
-        if isinstance(arg, str):
-            segments.append(BytesSegment(bytearray(arg, 'utf8')))
-        elif isinstance(arg, RelocatableExpressionNode):
-            if arg.byte_specifier is None:
-                addedLabels = list(filter(lambda t: isinstance(t, LabelNode), arg.add_terms))
-                subtractedLabels = list(filter(lambda t: isinstance(t, LabelNode), arg.sub_terms))
-                if len(addedLabels) == len(subtractedLabels):
-                    segments.append(ShortExpressionSegment(arg))
-                else:
-                    segments.append(LongExpressionSegment(arg))
-            else:
-                segments.append(ShortExpressionSegment(arg))
-    return segments
-
-def ds_handler(arguments: list):
-    assert_args(arguments, RelocatableExpressionNode)
-    arg = arguments[0]
-
-    if len(arg.add_terms) != 0 or len(arg.sub_terms) != 0:
-        raise CdmTempException('Number expected')
-    if arg.const_term < 0:
-        raise CdmTempException('Cannot specify negative size in "ds"')
-    return [BytesSegment(bytearray(arg.const_term))]
-
-
 command_handlers = {
     'zero':   zero_handler,
     'unary':  unary_handler,
@@ -122,9 +90,6 @@ command_handlers = {
     'ldi':    ldi_handler,
     'osix':   osix_handler,
     'spmove': spmove_handler,
-
-    'dc': dc_handler,
-    'ds': ds_handler,
 }
 
 cpu_instructions = {}
@@ -132,17 +97,9 @@ for category, instructions in insset.items():
     for mnemonic, opcode in instructions.items():
         cpu_instructions[mnemonic] = (opcode, command_handlers[category])
 
-assembler_directives = {}
-for directive in dirset:
-    assembler_directives[directive] = command_handlers[directive]
-
-
 def assemble_command(line: InstructionNode) -> list[CodeSegment]:
     try:
-        if line.mnemonic in dirset:
-            handler = assembler_directives[line.mnemonic]
-            segments = handler(line.arguments)
-        elif line.mnemonic in cpu_instructions:
+        if line.mnemonic in cpu_instructions:
             opcode, handler = cpu_instructions[line.mnemonic]
             segments = handler(opcode, line.arguments)
         else:

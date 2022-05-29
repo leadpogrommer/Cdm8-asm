@@ -106,5 +106,3 @@ instructions = {
         'setsp': 0xCD,
     },
 }
-
-assembly_directives = { 'ds', 'dc' }

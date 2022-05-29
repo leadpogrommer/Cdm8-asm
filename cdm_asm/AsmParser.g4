@@ -12,7 +12,7 @@ from base64 import b64decode
     self.current_offset = 0
 }
 
-program : NEWLINE* line_mark+ section* End ;
+program : NEWLINE* line_mark* section* End ;
 
 section
     :  asect_header section_body # absoluteSection
@@ -32,6 +32,8 @@ statement
     : break_statement
     | continue_statement
     | instruction_line
+    | define_constant
+    | declare_space
     | conditional
     | while_loop
     | until_loop
@@ -60,6 +62,12 @@ instruction_line : instruction arguments? NEWLINE+ ;
 
 label_declaration: label (COLON | ANGLE_BRACKET) ;
 arguments : argument (COMMA argument)* ;
+
+define_constant : Dc dc_arguments NEWLINE+ ;
+dc_arguments : dc_argument (COMMA dc_argument)* ;
+dc_argument : string | addr_expr | byte_expr ;
+
+declare_space : Ds number NEWLINE+ ;
 
 conditional : If NEWLINE+ conditions code_block else_clause? Fi NEWLINE+ ;
 conditions : connective_condition* condition NEWLINE+ (Then NEWLINE+)? ;
@@ -113,7 +121,9 @@ name
     : Asect
     | Break
     | Continue
+    | Dc
     | Do
+    | Ds
     | Else
     | End
     | Ext

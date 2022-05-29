@@ -112,6 +112,26 @@ class AsmParserVisitor(ParseTreeVisitor):
         return self.visitChildren(ctx)
 
 
+    # Visit a parse tree produced by AsmParser#define_constant.
+    def visitDefine_constant(self, ctx:AsmParser.Define_constantContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AsmParser#dc_arguments.
+    def visitDc_arguments(self, ctx:AsmParser.Dc_argumentsContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AsmParser#dc_argument.
+    def visitDc_argument(self, ctx:AsmParser.Dc_argumentContext):
+        return self.visitChildren(ctx)
+
+
+    # Visit a parse tree produced by AsmParser#declare_space.
+    def visitDeclare_space(self, ctx:AsmParser.Declare_spaceContext):
+        return self.visitChildren(ctx)
+
+
     # Visit a parse tree produced by AsmParser#conditional.
     def visitConditional(self, ctx:AsmParser.ConditionalContext):
         return self.visitChildren(ctx)

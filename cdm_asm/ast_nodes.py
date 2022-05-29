@@ -39,6 +39,14 @@ class InstructionNode(LocatableNode):
     arguments: list
 
 @dataclass
+class DefineConstantNode:
+    arguments: list
+
+@dataclass
+class DeclareSpaceNode:
+    size: int
+
+@dataclass
 class ConditionNode:
     lines: list
     branch_mnemonic: str

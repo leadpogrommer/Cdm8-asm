@@ -191,6 +191,42 @@ class AsmParserListener(ParseTreeListener):
         pass
 
 
+    # Enter a parse tree produced by AsmParser#define_constant.
+    def enterDefine_constant(self, ctx:AsmParser.Define_constantContext):
+        pass
+
+    # Exit a parse tree produced by AsmParser#define_constant.
+    def exitDefine_constant(self, ctx:AsmParser.Define_constantContext):
+        pass
+
+
+    # Enter a parse tree produced by AsmParser#dc_arguments.
+    def enterDc_arguments(self, ctx:AsmParser.Dc_argumentsContext):
+        pass
+
+    # Exit a parse tree produced by AsmParser#dc_arguments.
+    def exitDc_arguments(self, ctx:AsmParser.Dc_argumentsContext):
+        pass
+
+
+    # Enter a parse tree produced by AsmParser#dc_argument.
+    def enterDc_argument(self, ctx:AsmParser.Dc_argumentContext):
+        pass
+
+    # Exit a parse tree produced by AsmParser#dc_argument.
+    def exitDc_argument(self, ctx:AsmParser.Dc_argumentContext):
+        pass
+
+
+    # Enter a parse tree produced by AsmParser#declare_space.
+    def enterDeclare_space(self, ctx:AsmParser.Declare_spaceContext):
+        pass
+
+    # Exit a parse tree produced by AsmParser#declare_space.
+    def exitDeclare_space(self, ctx:AsmParser.Declare_spaceContext):
+        pass
+
+
     # Enter a parse tree produced by AsmParser#conditional.
     def enterConditional(self, ctx:AsmParser.ConditionalContext):
         pass
