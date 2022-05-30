@@ -1,0 +1,561 @@
+%% Overleaf			
+%% Software Manual and Technical Document Template	
+%% 									
+%% This provides an example of a software manual created in Overleaf.
+% \input{sph-preamble}
+\documentclass{ol-softwaremanual}
+\usepackage{layouts}
+\usepackage{tabularx}
+\usepackage{makecell}
+
+% Packages used in this example
+\usepackage{graphicx}  % for including images
+\usepackage{microtype} % for typographical enhancements
+\usepackage{minted}    % for code listings
+\usepackage{amsmath}   % for equations and mathematics
+\setminted{style=friendly,fontsize=\small}
+\renewcommand{\listoflistingscaption}{List of Code Listings}
+\usepackage{hyperref}  % for hyperlinks
+\usepackage[a4paper,top=2cm,bottom=2cm,left=2cm,right=2cm]{geometry} % for setting page size and margins
+% \usepackage{multirow}
+
+% Custom macros used in this example document
+\newcommand{\doclink}[2]{\href{#1}{#2}\footnote{\url{#1}}}
+\newcommand{\cs}[1]{\texttt{\textbackslash #1}}
+
+
+\title{Cdm8 extended \\Programmer's manual}
+
+\author{Merzlyakov Ilya, Korotkov Nikita, Odina Anastasia}
+\softwarelogo{\includegraphics[width=8cm]{logo}}
+\version{0.1}
+
+
+\begin{document}
+
+    \maketitle
+
+    \tableofcontents
+
+
+    \newpage
+
+
+    \section{Cdm8e architecture}
+
+    \subsection{Memory}
+    Cdm8e has 8-bit data bus and 16-bit address bus. Cdm8e can address 64 kilobytes of memory, but only the first 256 bytes of
+    address space can be used to store data. All address space can be used to store program.
+
+    \subsubsection{Von Neuman and Harvard architectures}
+
+    Cdm8e can be used in systems with Von Neuman (same address space for instructions and data) and Harvard (different address spaces for
+    instructions and data) architectures.
+
+    For this purpose, cdm8e has \emph{data/ins'} output, which is low when processor accesses data memory.
+
+    However, our development tools (emulator and debugger) only support Harvard architecture.
+
+    \subsection{Registers}
+    Cdm8e has 4 8-bit general purpose registers (r0, r1, r2, r3), 8-bit stack pointer register (SP), 8-bit processor status register (PS) and
+    16-bit program counter register (PC).
+    All registers are initialized to zero upon reset.
+
+    \subsubsection{General purpose registers}
+    These registers can be used as operands for instructions that accept \emph{register} operand.
+
+    \subsubsection{Stack pointer}
+    The Stack Pointer is an 8-bit register that holds a pointer to the top of the stack.\\
+    The stack is a data structure of variable size made up of memory cells. The first byte of the stack is held at memory location {\tt{0xFF}}, and the stack grows {\em{down}} memory from there. It is managed using SP register, which contains the address of the most recent byte stored on the stack. It is the responsibility of the programmer to manage the stack properly. Each {\tt{\em{push}}} instruction makes the stack {\bf{grow}} in size by 1 byte, causing it to get closer and closer to those locations where program instructions and initial data are stored, so too many {\tt{push}}es without a {\tt{pop}} can cause a program to be corrupted by being over-written by the stack.
+
+    \subsubsection{Program counter}
+    The Program Counter is an 16-bit register that holds the address of the next machine instruction that will
+    be executed.
+    The PC is therefore used as a pointer to the start address of the next instruction. When an
+    uninterrupted sequence of instructions is being executed PC is updated so that
+    it points at the next memory location. Each instruction occupies a known number of bytes, and when a
+    byte is fetched the PC is immediately incremented to point to the next byte before anything else happens, in
+    particular before the instruction starts to be executed. The PC cannot be accessed directly by a programmer,
+    but its contents can be updated indirectly by control instructions.
+
+    \subsubsection{Processor status}
+    The Processor Status register holds an 8-bit bitstring, where ech bit have it's own function.
+
+
+    \begin{tabular}{l || c | c | c | c | c | c | c | c }
+        bit number & 7 & 6 & 5 & 4 & 3 & 2 & 1 & 0 \\ \hline
+        function   & I & R & R & R & C & V & Z & N
+    \end{tabular}
+
+    \begin{itemize}
+        \item \textbf{I} is Interrups enabled flag. When it is set, processor will react to external interrupts
+        \item \textbf{C} is the Carry flag. This bit will be updated on completion of any arithmetic operation that produces a
+        carry-out from bit 7 of the result. The carry-out value (whether 0 or 1) is transferred to the C bit of
+        the PS register.
+        \item \textbf{V} is the oVerflow flag. This bit will be updated on completion of any arithmetic operation that can give
+        rise to a two's complement overflow event. The flag is set if an overflow event has been detected and
+        cleared otherwise.
+        \item \textbf{Z} is the Zero flag. This bit will be updated on completion of any arithmetic or logic operation. The flag is
+        set when the result is an all-zeros bit-string and cleared when it is not.
+        \item \textbf{N} is the Negative flag. This bit will be updated on completion of any arithmetic or logic operation. It is
+        set if the operation resulted in a bit-string that is, or would be interpreted as a negative number based
+        on the sign bit. Specifically, the value of bit 7 is copied to the N flag, so N is set when the result is a
+        bit-string that could represent a negative number and cleared otherwise.
+        \item \textbf{R} are reserved bits. These bits are unused.
+    \end{itemize}
+
+    The PS register is examined by control instructions to change the PC (thus changing which instruction
+    will be executed next) if a certain combination of flag values is present at this point. It is important to
+    understand that the PS register is updated based on the category of operation performed (arithmetic/logic
+    operation), not because the update is wanted by the program. If the result of an operation is to be used to
+    control program execution the flags must be checked immediately, by the next machine instruction, unless
+    the intervening instructions are such that they do not affect the flags.
+
+    \subsection{Interrupts}
+    Interrupts are external events that require immediate reaction from program. When interrupts are enabled and an interrupt occurs,
+    processor pushes current value of PC and PSR onto stack and loads Interrupt Service Routine (ISR) address and new value of PS from from interrupt vector,
+    thus passing control to ISR. To return from ISR and restore normal program execution, \emph{rti} instruction must be used.
+
+    Cdm8e has 8 interrupt vectors which form interrupt vector table that must be placed in code memory at address 0xFFE0.
+    Each interrupt vector has length of 4 bytes and has following structure: \textbf{<lower byte of ISR address><higher byte of ISR address><new value of PS><padding byte (ignored)>}
+
+    \section{Cdm8e assembly}
+    Cdm8e assembler syntax is mostly identical to syntax of \emph{cocas.py}, which is described in \emph{tome.pdf}.
+    However, it has some new features which will be described here.\\
+
+    For more detailed syntax description see assembler grammar.
+    \subsection{Goto}
+    The \emph{goto} statement should be used instead of branch instructions, because it is can handle long jumps.
+    If the jump is short, assembler replaces \emph{goto} with corresponding branch instruction, otherwise it is replaced
+    with a pair of branch and jmp instructions.
+
+    The syntax is \framebox{\texttt{goto <branch mnemonic>, \emph{const}}}
+
+
+
+    Example:
+    \begin{minted}{asm}
+asect 0x00
+goto z, near_code       # equivalent to bz near_code, takes 2 byes
+goto hs, far_code       # will branch on 'higher or same', takes 5 bytes
+
+near_code:
+ldi r0, 1
+
+asect 0x1337
+far_code:
+ldi r0, 2
+end
+    \end{minted}
+
+    \subsection{Address arithmetics}
+    All instructions that accept integer literals and labels now accept address expressions.
+    In address expressions it is possible to add and subtract numbers, labels and tplate fields.
+    To get low and or high byte of an expression, \texttt{low(expression)} and \texttt{high(expression)} specifiers can be used.\\
+    Examples:
+    \begin{minted}{asm}
+asect 0x00
+
+ldi r0, low(sting_end - string) # load string length into r0
+
+ldi r0, high(far_code)          # push 16 bit address onto stack
+push r0
+ldi r0, low(far_code)
+push r0
+
+
+string: dc "Hello, world"
+string_end:
+
+asect 0x1337
+far_code:
+
+end
+    \end{minted}
+
+
+
+
+
+    \input{instruction-description.tex}
+
+
+    \section{List of cdm8e instructions}
+
+    \subsection{Memory access instructions}
+
+
+
+    \instructionHeader{ldi}{\regn, {\em const}}{{\em const} $\rightarrow$ \regn}{\instrFlagsMem}
+    {
+        \textbf{Load} the \textbf{immediate} single-byte data item \em{const} into \regn.
+        The bit-string representing \em{const} is copied into \regn.
+
+        \machinecode{2}{110100}{\regoperand}{\immoperand}
+
+        \usage{ldi r1, 0x6E}{11010001 01101110}{N/A}{r1 contains 01101110}
+    }
+
+    \instructionHeader{ld}{\regn,\regm}{*\regn\ $\rightarrow$ \regm}{\instrFlagsMem}{
+            {\textbf Load} a byte into \regm\ from the data memory cell addressed by \regn.\\
+        ({*\regn} is the memory cell {\em pointed to} by \regn.\ The bit-string read from this memory cell is copied into \regm.)
+
+
+        \machinecode{1}{1011}{\regoperand}{\regoperand}
+
+        \usage{ld r0, r3}{10110011}{r0 contains 01111001}{r0 and mem[01111001] unchanged, r3 contains a copy of mem[01111001]}
+
+    }
+
+    \instructionHeader{ldc}{\regn,\regm}{*\regn\ $\rightarrow$ \regm}{\instrFlagsMem}{
+            {\bf Load} a byte into \regm\ from the code memory cell addressed by \regn.\\
+        ({*\regn} is the memory cell {\em pointed to} by \regn.\ The bit-string read from this memory cell is copied into \regm.)
+
+        \machinecode{1}{1111}{\regoperand}{\regoperand}
+    }
+
+    \instructionHeader{st}{\regn,\regm}{\regm\ $\rightarrow$ *\regn}{\instrFlagsMem}{
+            {\bf Store} the byte in \regm\ to the memory cell addressed by \regn.\\
+        ({*\regn} is the memory cell {\em pointed to} by \regn.\ This cell is over-written by the bit-string copied from \regm.)
+
+        \machinecode{1}{1010}{\regoperand}{\regoperand}
+
+        \usage{st r1, r0}{10100100}{r1 contains 00000110}{r1 and r0 unchanged, mem[00000110] contains a copy of r0}
+
+    }
+
+    \subsection{Stack instructions}
+
+    \instructionHeader{push}{\regn}{((SP-1)$\rightarrow$SP) then (\regn\ $\rightarrow$ *SP)}{\instrFlagsMem}{
+            {\bf Push} the byte in \regn\ onto the stack.
+        SP is the {\em stack pointer} register. This is decremented, then used to point at a memory cell which is over-written by the bit-string copied from \regn.\ (*SP is the memory cell pointed to by SP)
+        \machinecode{1}{110000}{\regoperand}{None}
+
+        \usage{push r2}{11000010}{SP contains 00000000}{r2 unchanged, SP contains 11111111, mem[11111111] contains a copy of r2}
+
+    }
+
+    \instructionHeader{pop}{\regn}{(*SP $\rightarrow$ \regn) then ((SP+1)$\rightarrow$SP)}{\instrFlagsMem}{
+            {\bf Pop} a byte off the stack into \regn.
+        SP is the {\em stack pointer} register. This is used to point at a memory cell which is copied into \regn, then incremented.  (*SP is the memory cell pointed to by SP)
+
+        \machinecode{1}{110001}{\regoperand}{None}
+
+        \usage{pop r3}{11000111}{SP contains 11111111}{mem[11111111] unchanged, SP contains 00000000, r3 contains a copy of mem[11111111]}
+
+    }
+
+    \instructionHeader{ldsa}{\regn,\em{const}}{(SP + \emph{const}) $\rightarrow$ \regn}{\instrFlagsMem}{
+        \textbf{Load stack address} + \emph{const} into \regn\\
+        This can be used in conjunction with \emph{tplate}s to get address of local variable
+
+        \machinecode{2}{110010}{\regoperand}{\immoperand}
+    }
+
+    \instructionHeader{addsp}{\emph{const}}{(SP + \emph{const}) $\rightarrow$ SP}{\instrFlagsMem}{
+        \textbf{Add} const to \textbf{Stack Pointer}
+        This can be used in conjunction with tplates to push and pop tplates to and from stack.
+
+        \machinecode{2}{11001100}{\immoperand}{None}
+    }
+
+    \instructionHeader{setsp}{\emph{const}}{\emph{const} $\rightarrow$ SP}{\instrFlagsMem}{
+        \textbf{Set Stack Pointer} to \emph{const}
+
+        \machinecode{2}{11001101}{\immoperand}{None}
+    }
+
+
+
+    \instructionHeader{pushall}{}{r3 \rarrow *(SP-1); r2 \rarrow *(SP-2); r1 \rarrow *(SP-3); r0 \rarrow *(SP-4); (SP - 4)  \rarrow SP}{\instrFlagsMem}{
+        \textbf{Push all} registers onto stack
+
+        \machinecode{1}{11001110}{None}{None}
+    }
+
+    \instructionHeader{popall}{}{*SP \rarrow r0; *(SP + 1) \rarrow r1; *(SP + 2) \rarrow r2; *(SP + 3) \rarrow r3;  (SP + 4)  \rarrow SP}{\instrFlagsMem}{
+        \textbf{Pop all} registers from stack
+
+        \machinecode{1}{11001111}{None}{None}
+    }
+
+    \subsection{Arithmetic instructions}
+    Like all other Cdm8e operations these may be used on any bit-strings. However, they are {\em named} for the results they give when those bit-strings represent numbers.\\
+    The flags in the Processor Status (PS) register are affected by each of these operations. C and V are modified in the course of {\em{calculating}} the result, whereas Z and N depend solely on the result bit-string: Z is 1 when the result is an all-zeros bit-pattern, and 0 otherwise, N is equal to bit 7 (the {\em{sign bit}}) of the result.\\
+    Conventionally, C is taken to be the value that is {\em{carried out}} from Column 7 of the bit-string, and V tells us whether there has been a {\em{two's complement overflow}} (e.g. when the result of adding together two bit-strings representing positive numbers in two's complement form is a bit-string that represents a negative number in two's complement form, such as 01000000 + 01100000 = 10100000).\\
+    It is important to remember, however, that the true `meaning' of each of the status flags depends upon what the bit-strings being manipulated actually represent. For example, it is perfectly possible to apply an {\em{add}} operation to a pair of registers containing bit-strings that represent ASCII characters. Neither the resulting bit-string nor the flags would be terribly meaningful under such circumstances, and to interpret V=1 as a two's complement overflow (for example) would be pretty daft.
+
+
+    \instructionHeader{move}{\regn,\regm}{\regm\  $\rightarrow$ \regn}{\instrFlagsMvt{Z,N}{C,V}}{
+            {\bf Move} \regn\, {\bf to}\, \regm\\
+        Copies the content of \regn\ to \regm. \C\ and \V\ are cleared. \N\ and \Z\ are based on the modified \regn.
+
+        \machinecode{2}{0000}{\regoperand}{\regoperand}
+    }
+
+    \instructionHeader{add}{\regn,\regm}{(\regn\ $+$ \regm) $\rightarrow$ \regm}{\instrFlagsArith{C,V,Z,N}}{
+            {\bf Add} together the bit-strings in \regn\ and \regm, assuming they represent binary numbers.\\
+        The result is placed in \regm.\\
+        C is the carry-out from column 7.\\
+        V is 1 when \regn$_7 =$ \regm$_7$ before the operation and \regn$_7 \neq$ \regm$_7$ afterwards. Otherwise V is 0.
+
+        \machinecode{1}{0001}{\regoperand}{\regoperand}
+    }
+
+    \instructionHeader{addc}{\regn,\regm}{(\regn\ $+$ \regm\ $+$ C) $\rightarrow$ \regm}{\instrFlagsArith{C,V,Z,N}}{
+            {\bf Add} together the {{\bf C}} flag (0 or 1) and the bit-strings in \regn\ and \regm, assuming they represent binary numbers.\\
+        The result is placed in \regm.\\
+        {\em{Add-with-carry-in}} is used when performing {\em{byte-sliced addition}} on numbers that are represented by bit-strings made up of two or more bytes.\\
+        Beforehand the \C\ flag holds a {\em carry-in} value (the carry-out from bit 7 of a lower-order byte), and afterwards its content is the {\em carry-out} from bit 7 of the addition.\\
+        V is 1 when \regn$_7 =$ \regm$_7$ before the operation and \regn$_7 \neq$ \regm$_7$ afterwards. Otherwise V is 0.
+
+        \machinecode{1}{0010}{\regoperand}{\regoperand}
+    }
+
+    \instructionHeader{sub}{\regn,\regm}{(\regn\ $-$ \regm) $\rightarrow$ \regm}{\instrFlagsArith{C,V,Z,N}}{
+            {\bf Subtract} the byte in \regm\ from the byte in \regn, assuming they represent binary numbers.\\
+        The result is placed in \regm.
+
+        \machinecode{1}{0011}{\regoperand}{\regoperand}
+    }
+
+    \instructionHeader{cmp}{\regn,\regm}{Calculates (\regn\ $-$ \regm)}{\instrFlagsArith{C,V,Z,N}}{
+            {\bf Compare} \regm\ with \regn.\\
+        Assume the bytes in \regn\ and \regm\ represent binary numbers and perform the subtraction (\regn$-$\regm).\\
+        Used to modify flags without affecting registers or memory.\\
+        The registers \regn\ and \regm\ remain unchanged by this operation. Any of the four flags may change.\\
+
+        \machinecode{1}{0111}{\regoperand}{\regoperand}
+    }
+
+    \instructionHeader{neg}{\regn}{($-$\regn) $\rightarrow$  \regn}{\instrFlagsArith{C,V,Z,N}}{
+            {\bf Negate} \regn\\
+        Replace the contents of \regn\ by its 8-bit two's complement.\\
+        If \regn\ holds the 8-bit two's complement representation of the numerical value $x$ before the operation it will contain the 8-bit two's complement representation of $-x$ afterwards.\footnote{ The exception to this is the number -128, represented by 10000000, which has 10000000 as its 8-bit two's complement. So negating -128 gives -128.}\\
+
+        \machinecode{1}{100001}{\regoperand}{None}
+    }
+
+    \instructionHeader{inc}{\regn}{(\regn\ $+$ 1)  $\rightarrow$  \regn}{\instrFlagsArith{C,V,Z,N}}{
+        Treats \regn\ as a binary number, and adds 1 to it.\\
+        The addition 'wraps around', so when \regn\ contains 11111111 beforehand it will contain 00000000 afterwards (and the C, V and Z flags will all be set to 1). The V flag will also be set to 1 by {\tt{inc}} when 01111111 is incremented to 10000000, but otherwise it will be 0.\\
+
+        \machinecode{1}{100011}{\regoperand}{None}
+    }
+
+    \instructionHeader{dec}{\regn}{(\regn\ $-$ 1)  $\rightarrow$  \regn}{\instrFlagsArith{C,V,Z,N}}{
+        Treats \regn\ as a binary number, and subtracts 1 from it.\\
+        The subtraction 'wraps around', so when \regn\ contains 00000000 beforehand it will contain 11111111 afterwards (and the C, V and Z flags will all be set to 1). The only other time a flag will be set by {\tt{inc}} is when 01111111 is incremented to 10000000 (in which case the V flag will be set to 1).
+
+        \machinecode{1}{100010}{\regoperand}{None}
+    }
+
+    \instructionHeader{and}{\regn,\regm}{(\regn\ and \regm) $\rightarrow$ \regm}{\instrFlagsLogic{Z,N}{C,V}}{
+            {\bf And} \regn\ with \regm.\\
+        Computes the bitwise conjunction of \regn\ and \regm\, placing the result in \regm.
+
+        \machinecode{2}{0100}{\regoperand}{\regoperand}
+    }
+
+    \instructionHeader{or}{\regn,\regm}{(\regn\ or \regm) $\rightarrow$ \regm}{\instrFlagsLogic{Z,N}{C,V}}{
+            {\bf Or} \regn\ with \regm.\\
+        Computes the bitwise disjunction of \regn\ and \regm\, placing the result in \regm.
+
+        \machinecode{2}{0101}{\regoperand}{\regoperand}
+    }
+
+    \instructionHeader{xor}{\regn,\regm}{(\regn\ xor \regm) $\rightarrow$ \regm}{\instrFlagsLogic{Z,N}{C,V}}{
+            {\bf Exclusive Or} \regn\ with \regm.\\
+        Computes the bitwise exclusive-or of \regn\ and \regm\, placing the result in \regm.
+
+        \machinecode{2}{0110}{\regoperand}{\regoperand}
+    }
+
+    \instructionHeader{not}{\regn}{(not \regn) $\rightarrow$ \regn}{\instrFlagsLogic{Z,N}{C,V}}{
+            {\bf Not} \regn.\\
+        Flips all bits in \regn.
+
+        \machinecode{1}{100000}{\regoperand}{None}
+    }
+
+    \instructionHeader{shra}{\regn}{(\regn\ div 2) $\rightarrow$ \regn}{\instrFlagsMvt{C,Z,N}{V}}{
+            {\bf Arithmetic shift right} \regn\\
+        Shift every bit in the bit-string in \regn\ one place to the right, whilst leaving the sign bit (bit 7) unchanged.\\
+        Bit 0 is shifted into \C;\ \V\ is 0; \N\ \& \Z\ are based on the modified \regn.\\
+        The effect on \regn\ is the same as dividing a two's complement number by 2, with the result being that \regn\ contains the {\em quotient} and \C\ contains the {\em remainder} of the division.
+
+        \machinecode{1}{100110}{\regoperand}{None}
+    }
+
+    \instructionHeader{shla}{\regn}{(\regn\ $\times$ 2)  $\rightarrow$ \regn}{\instrFlagsMvt{C,V,Z,N}{-}}{
+            {\bf Arithmetic shift left} \regn\\
+        Shift every bit in the bit-string in \regn\ one place to the left, filling the least significant bit (bit 0) with 0.\\
+        Bit 7 is shifted into \C;\ \V\ is 1 if bit 7 changes and 0 if it does not; \N\ \& \Z\ are based on the modified \regn.\\
+        The effect on \regn\ is the same as multiplying a two's complement number by 2.
+
+        \machinecode{1}{100101}{\regoperand}{None}
+
+    }
+
+    \instructionHeader{shr}{\regn}{(\regn\ >>) $\rightarrow$ \regn}{\instrFlagsMvt{C,Z,N}{V}}{
+            {\bf Sliced shift right} \regn\\
+        Shifts the bit-string in \regn\ one place to the right without maintaining the sign. The old value of \C\ is shifted into the sign bit (bit 7), and bit 0 is shifted into \C. \V\ becomes 0. \N\ and \Z\ are based on the modified \regn.\
+
+        \machinecode{1}{100100}{\regoperand}{None}
+    }
+
+    \instructionHeader{rol}{\regn}{(rotate-left \regn) $\rightarrow$ \regn}{\instrFlagsMvt{C,V,Z,N}{-}}{
+            {\bf Rotate left} \regn\\
+        Treats the bit-string in \regn\ as if the opposite ends are directly connected, and shifts it left one place. The sign bit (b7) is shifted into b0, and also into \C. \V\ is cleared. \N\ and \Z\ are based on the modified \regn.\
+
+        \machinecode{1}{100111}{\regoperand}{None}
+    }
+
+    \subsection{Control instructions}
+
+
+    \instructionHeader{b*}{\emph{const}}{\emph{const} + PC \rarrow PC if codition matches}{\instrFlagsCTRL}{
+        \textbf{Branch} (conditionally or unconditionally) to certain address.\\
+        Branches on cdm8e are relative, this means that \emph{const} is treated as signed offset relative to current value of PC. Assembler automatically calculates difference between location of instruction and target value of PC, so user absolute value should be passed to this instruction in assembly. If the jump is too far, assembler will give an error.
+        The * symbol should be replaced with one of the branch condition mnemonics, which will be described later in this document.
+
+        \machinecode{2}{1110}{4-bit branch condition code}{\immoperand}
+    }
+
+    \subsubsection{Branch conditions}
+
+    {\ttfamily
+    \def\not{{$\neg$}}
+    \def\tand{{$\wedge$}}
+    \def\tor{{$\vee$}}
+    \renewcommand{\arraystretch}{1.2}
+        \begin{tabularx}{\textwidth}{l l l X}
+            op & name   & test                                                      & interpretation                       \\\hline
+            0  & eq/z   & Z                                                         & equal, equal to zero / Zero is set   \\
+            1  & ne/nz  & \not Z                                                    & not equal, not zero, Zero is clear   \\
+            2  & hs/cs  & C                                                         & unsigned higher or same/Carry is set \\
+            3  & lo/cc  & \not C                                                    & unsigned lower / Carry is clear      \\
+            4  & mi/npl & N                                                         & negative (minus)                     \\
+            5  & pl/nmi & \not N                                                    & positive or zero (plus)              \\
+            6  & vs/nvc & V                                                         & oVerflow is set                      \\
+            7  & vc/nvs & \not V                                                    & oVerflow is clear                    \\
+            8  & hi/nlc & C $\wedge \neg$Z                                          & unsigned higher                      \\
+            9  & ls/nhi & \not C $\vee$ Z                                           & unsigned lower or same               \\
+            A  & ge/nlt & (N\tand V)\tor (\not N\tand\not V)                        & greater than or equal                \\
+            B  & lt/nge & N$\oplus$V                                                & less than, less than zero            \\
+            C  & gt/nle & (\not Z\tand N\tand V)\tor (\not Z\tand\not N\tand\not V) & greater than,                        \\
+            D  & le/ngt & (Z\tor N\tand\not V)\tor (\not N\tand V)                  & less than or equal                   \\
+            E  & r/true & true                                                      & unconditional bRanch                 \\
+            F  & false  & false                                                     & no-op                                \\
+
+        \end{tabularx}
+    }
+
+    \instructionHeader{jmp}{\emph{const}}{\emph{const} \rarrow PC}{\instrFlagsCTRL}{
+        Unconditional absolute \textbf{jump}.
+        Pc is set to 16-bit const.
+
+        \machinecode{3}{11011101}{\immoperandLong}{None}
+    }
+
+    \instructionHeader{jsr}{\emph{const}}{(SP-2)\rarrow SP; PC -> *SP; \emph{const}\rarrow PC}{\instrFlagsCTRL}{
+        \textbf{Jump subroutine}.\\
+        Branch unconditionally to a constant absolute address, pushing current value of PC to the stack. Pushed value is in the little endian format.
+
+        \machinecode{3}{11010110}{\immoperandLong}{None}
+    }
+
+    \instructionHeader{rts}{}{*SP\rarrow PC; (SP+2)\rarrow SP}{\instrFlagsCTRL}{
+        \textbf{Return from subroutine}.\\
+        Pop PC value from stack.
+
+        \machinecode{1}{11010110}{None}{None}
+    }
+
+    \instructionHeader{ioi}{}{}{}{
+        Push cureent value of PC and PS onto stack, then load values od PC and SP from current
+        interrupt vector.
+        This instrcution executes instead of cureent instrcution if interrupt is triggeres.
+        Software interrupt can be generated by using this instruction (but it is not possible to set interrupt vector with software).
+
+        \machinecode{1}{11011000}{None}{None}
+    }
+
+    \instructionHeader{rti}{}{}{}{
+        \textbf{Return} from \textbf{interrupt}.\\
+        Pop current value of PC and PS from stack.
+        This instruction should meu sed at the end of interrupt handler to return to main program.
+
+        \machinecode{1}{11011001}{None}{None}
+    }
+
+    \instructionHeader{crc}{}{}{\instrFlagsCTRL}{
+        Exchange PC with value at the top of the stack.
+
+        \machinecode{1}{11011010}{None}{None}
+    }
+
+    \subsection{Clock control instructions}
+
+    \instructionHeader{halt}{}{Stop the clock}{\instrFlagsCTRL}{
+            {\bf Halt} the cdm8e processor.\\
+        Switches off the platform clock.\\
+        The PC is not updated, so if the clock is re-started the halt will be executed again. It makes no difference {\em{how}} the clock is re-started.
+        \machinecode{1}{11010100}{None}{None}
+    }
+
+
+    \instructionHeader{wait}{}{Suspend the clock}{\instrFlagsCTRL}{
+            {\bf Wait} until an {\em interrupt} occurs.\\
+        Suspends the platform clock in anticipation of an interrupt.\\
+        The PC is not updated. If the clock is re-started the wait will be executed again {\em{unless}} the re-start is initiated by a hardware interrupt, in which case the PC is loaded with the start address of an interrupt service routine, and {\em{then}} the clock is re-started.
+
+        \machinecode{1}{11010101}{None}{None}
+    }
+
+
+    \subsection{Macros from standard library}
+
+    \instructionHeader{tst}{\regn}{Modifies Z \& N flags}{\instrFlagsArith{Z,N}}{
+        Assume the byte in \regn\ represents a binary number and test whether it is zero or negative.\\
+Used to modify flags without changing registers or memory.\\
+The register \regn\ remains unchanged by this operation, as do C and V.\\
+    }
+
+    \instructionHeader{clr}{\regn}{0\rarrow \regn}{\instrFlagsArith{C,V,Z,N}}{
+        \textbf{Clear} \regn.
+        This macro only takes one byte, to it is faster than \texttt{ldi \regn, 0}
+    }
+
+    \instructionHeader{shl}{\regn}{(\regn\ << 1) $\rightarrow$ \regn)}{\instrFlagsMvt{C,V,Z,N}{-}}{
+        {\bf Sliced shift left} \regn\\
+    Shifts the bit-string in \regn\ one place to the left without ensuring that the result is a multiple of two. The old value of \C\  is shifted into bit 0, and the sign bit (bit 7) is shifted into \C;\ \V\ is 1 if bit 7 changes and 0 if it does not; \N\ and \Z\ are based on the modified \regn.\
+
+    }
+
+    \instructionHeader{ldv}{\emph{const},\regn}{*\emph{const}\rarrow\regn}{\instrFlagsMem}{
+        Gets a value from memory addr \emph{const} to \regn.
+    }
+
+    \instructionHeader{stv}{\regn,\emph{const}}{\regn\rarrow\emph{const}}{\instrFlagsMem}{
+        Puts \regn contents to memory addr \emph{const}
+    }
+
+    \instructionHeader{ei}{}{0b10000000\rarrow PS}{C,V,Z,N become zero}{
+        \textbf{Enable interrupts}
+    }
+
+    \instructionHeader{di}{}{0\rarrow PS}{C,V,Z,N become zero}{
+        \textbf{Disable interrupts}
+    }
+
+    \newpage
+    \appendix
+    \section{Cdm8e assembler grammar}
+    \subsection{Lexer rules}
+    \inputminted[breaklines]{antlr}{../cdm_asm/AsmLexer.g4}
+    \subsection{Parser rules}
+    \inputminted[breaklines]{antlr}{../cdm_asm/AsmParser.g4}
+
+
+\end{document}

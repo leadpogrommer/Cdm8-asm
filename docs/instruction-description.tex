@@ -1,0 +1,110 @@
+
+%%%%%%%%
+
+    \def\C{{\tt C}}
+    \def\V{{\tt V}}
+    \def\Z{{\tt Z}}
+    \def\N{{\tt N}}
+
+    \def\regn{{\tt r$n$}}
+    \def\regm{{\tt r$m$}}
+
+    \newcommand{\regoperand}{2-bit register number ({\tt{00, 01, 10 or 11}})}
+
+    \newcommand{\immoperand}{immediate value (second byte of instruction)}
+    \newcommand{\immoperandLong}{2-byte immediate value in little-endian format}
+
+
+
+    \newcommand{\instrFlagsArith}[1]{%
+        {\tt #1} reflect result
+        }
+
+    \newcommand{\instrFlagsMvt}[2]{%
+       {\tt #1} reflect result\\
+        {\tt #2} become 0\par}
+
+    \newcommand{\instrFlagsLogic}[2]{%
+        {\tt #1} reflect result\\
+        {\tt #2} become 0\par}
+
+    \newcommand{\instrFlagsMem}[0]{%
+        Flags unchanged}
+
+    \newcommand{\instrFlagsCTRL}[0]{%
+        Flags unchanged}
+
+
+
+    \newenvironment{menumerate}
+    {\enumerate\setupmodenumerate}
+    {\endenumerate}
+
+    \newif\ifmoditem
+    \newcommand{\setupmodenumerate}{%
+        \global\moditemfalse
+        \let\origmakelabel\makelabel
+        \def\mitem##1{\global\moditemtrue\def\mesymbol{##1}\item}%
+        \def\makelabel##1{%
+            \origmakelabel{##1\ifmoditem\rlap{\mesymbol}\fi\enspace}%
+            \global\moditemfalse}%
+    }
+
+%%%%%%%%
+
+    \newcommand{\machinecode}[4]{%
+    \vspace{1em}
+            {\bf{#1}-byte} machine code instruction\\
+            \begin{tabularx}{\textwidth}{l X}
+                Opcode: & {\tt #2}\\
+                Operand1: & {#3}\\
+                Operand2: & {#4}
+            \end{tabularx}
+        
+        \vspace{0.5em}}
+
+    \newcommand{\usage}[4]{
+        \vspace{0.5em}
+            {\bf{Example usage}}\\
+        \begin{tabularx}{\textwidth}{l X}
+            Instruction: & {\tt{#1}}\\
+            In binary: & {\tt{#2}}\\
+            Before: & \tt{#3}\\
+            After: & \tt{#4}
+        \end{tabularx}
+        \vspace{1em}
+
+    }
+
+
+% name, operands, action, flags, body
+    \newcommand{\instructionHeader}[5]{
+            {
+                \parindent0pt
+                \parskip0pt
+                \begin{minipage}{\textwidth}
+
+                    \vspace{1em}
+           \begin{tabularx}{\textwidth}{l X r}
+
+               \framebox{
+                       \texttt{
+                       #1
+                   }
+                   #2
+               } & #3 & \makecell[l]{#4}
+
+           \end{tabularx}
+
+            \vspace{1em}
+           #5
+            \vspace{1em}
+
+        \end{minipage}
+        }
+        
+    }
+
+    \newcommand{\rarrow}[0]{
+        $\rightarrow$
+    }

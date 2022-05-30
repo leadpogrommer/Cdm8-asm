@@ -259,6 +259,6 @@ gen
 *.img
 *.dbg.json
 
-docs
+
 *.tokens
 notes.txt
