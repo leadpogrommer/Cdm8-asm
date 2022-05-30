@@ -1,35 +1,34 @@
 # Cdm8 extended
-## Что это такое?
-Данный репозиторий содержит расширенную версию процессора Cdm8 (Cdm8e) созданную в logisim'е, а так же ассемблер, линкер и эмулятор к нему.
-## Отличия от обычного Cdm-8
-У Cdm8e 16-битный Program Counter, что позволяет использовать до 64кб памяти кода.
-Адресное пространство выглядит следующим образом:\
-`0x0000 - 0x00ff` - память кода и данных\
-`0x0100 - 0xffff` - память кода
+This repository contains cdm8e processor implemented in logisim, cdm8e assembler and cdm8e emulator.
+## Installation
+1. Install python 3.10 or higher, VS Code and logisim
+2. Download [logisim circuit](https://github.com/leadpogrommer/Cdm8-asm/releases/download/latest/CdM-8-mark5-full.circ) and [python package](https://github.com/leadpogrommer/Cdm8-asm/releases/download/latest/cdm8-0.1.0-py3-none-any.whl)
+3. Install python package (`pip install cdm8-0.1.0-py3-none-any.whl`)
+4. Install [cdm8-asm](https://marketplace.visualstudio.com/items?itemName=leadpogrommer.cdm8-asm) VS Code extension
+5. Go to VS Code preferences, search from `cdm` and set **ABSOLUTE** path to `cdm_asm` and `cdm_emu`
+   ![](readme_images/1.png)
+6. Next steps are needed only if you want to debug programs in logisim
+7. Download [logisim debug library](https://github.com/leadpogrommer/logisim_debug/releases/download/latest/logisim-debug-1.0-SNAPSHOT-all.jar)
+8. Build you circuit with cdm8e. Circuit must meet following requirements
+   - Circuit must use `logisim_debug` library
+   - Cdm8e must be on top level
+   - Circuit should have exactly one `debug ROM` and one `debug RAM`
+   [example circuit](https://github.com/leadpogrommer/logisim_debug/raw/master/test.circ)
 
-Все инструкции br переходят относительно адреса операнда инструкции (максимум можно прыгнуть на 127 байт).
-Абсолютный переход возможен с помощью `jsr` (синтаксис: `0xD6 <PCL> <PCH>`, где PCL и PCH - 16-битный адрес в little-endian формате)
+## Usage
+### Running `.asm` files in emulator
+1. Open `.asm` file in VS Code
+2. Open command palette (`Ctrl+Shift+P` by default) and type `Select and start debugging`
+3. Select `Cdm8 debugger`
+4. Select `Emulator current file`
+![](readme_images/2.gif)
 
-Вектора прерываний занимают 4 байта и имеют следующий формат: `<PCL> <PCH> <PS> 0x00`, PCL и PCH - адрес обработчика, PS - слово состояния процессора.
-Нулевой вектор расположен по адресу `0xffe0`
 
-## Зависимости
-- python 3.10
-- пакеты antlr4-python3-runtime websocket_server bitstruct (``pip3 install --user antlr4-python3-runtime websocket_server bitstruct``)
-- java (для тестов)
+### Running `.asm` files in logisim
+1. Open your circuit in logisim
+2. Select `Cdm8e debug -> Debug tool` on tool panel. A message indicating that server has started should appear
+3. Repeat steps from previous paragraph, except on the last step choose `Logisim current file`
+![](readme_images/3.gif)
 
-## Структура репозитория
-- `assembler/main.py` - ассемблер, использование - `python main.py filename.asm`, будут созданы файлы `filename.obj` и `filename.img`
-- `emulator/emulator.py` - эмулятор Cdm8e, использование - `python emulator.py filename.img`
-- `logisim/CdM-8-mark5-full.circ` - реализация Cdm8e в logisim. Пример подключения в схеме `test16`. `test16` Загружает прошивку из файла, перед использованием необходимо собрать `long_code_test.img` и указать путь к нему в атрибутах ROM
-- `long_code_test.asm` - прошивка для схемы test16 в `CdM-8-mark5-full.circ`, считает число Фибоначчи рекурсивно
-- `assembler/*.g4` - грамматика ассемблера в формате antlr4
-- `logisim/*.def` - исходники декодера
-- `logisim/generate-decoder.py` - генерирует декодер из .def файлов и вставляет его в `CdM-8-mark5-full.circ`
-- `tester/main.py` - тестер, сравнивает работу эмулятора и logisim'а, берёт тесты из папки `tests`
-## Что НЕ работает
-- CocoIDE
-- Ассемблер плохо тестировался с расширенной архитектурой, поддержка нескольких файлов не тестировалась вообще
-- Не тестировались rsect, tplate
-- Эмулятор поддерживает только Гарвардскую архитектуру и не поддерживает прерывания
-
+## Documentation
+Documentation for cdm8e architecture and assembler is [here](https://github.com/leadpogrommer/Cdm8-asm/raw/master/docs/main.pdf)
