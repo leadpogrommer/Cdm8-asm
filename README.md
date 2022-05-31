@@ -1,4 +1,10 @@
 # Cdm8 extended
+![example workflow](https://github.com/leadpogrommer/Cdm8-asm/actions/workflows/release.yml/badge.svg)
+[![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg)](https://www.python.org/)
+[![Badge for version for Visual Studio Code extension](https://vsmarketplacebadge.apphb.com/version/leadpogrommer.cdm8-asm.svg)](https://marketplace.visualstudio.com/items?itemName=leadpogrommer.cdm8-asm)
+[![Awesome Badges](https://img.shields.io/badge/badges-awesome-green.svg)](https://github.com/Naereen/badges)
+
+
 This repository contains cdm8e processor implemented in logisim, cdm8e assembler and cdm8e emulator.
 ## Installation
 1. Install python 3.10 or higher, VS Code and logisim
